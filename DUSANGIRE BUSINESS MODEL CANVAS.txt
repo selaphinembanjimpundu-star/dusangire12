@@ -1,0 +1,112 @@
+BUSINESS MODEL CANVAS - Hospital E-Commerce Restaurant
+
+1. Customer Segments
+Primary Customers (Inside Hospital):
+- Hospital patients (inpatient and outpatient)
+- Doctors, nurses, technicians, and staff
+- Caregivers and visitors
+- Long-term patients with ongoing dietary needs
+
+Secondary Customers (Outside Hospital):
+- Nearby residents
+- Workers in the area
+- Students or others seeking healthy, affordable meals
+- Health-conscious customers (fitness and diet plans)
+
+2. Value Propositions
+For Patients:
+- Healthy, medically-approved meals for quicker recovery
+- Diet-specific options (diabetic, low-sodium, post-surgery, high-protein)
+- Convenient bedside ordering through an app
+- Fast delivery within the hospital
+
+For Medical Staff:
+- Around-the-clock access to quick, healthy meals
+- No need to leave the workplace to find food
+- Subscription meal plans for busy shifts
+
+For Outside Customers:
+- High-quality healthy meals at reasonable prices
+- Convenient e-commerce ordering and home or office delivery
+- Access to medically-recommended meal options
+
+General Value:
+- Technology-enabled restaurant
+- Clean, modern, fast, and reliable service
+- Meal plans created by nutritionists
+- Clear ingredient lists and health-focused recipes
+
+3. Channels
+- E-commerce website
+- Mobile app (Android and iOS)
+- On-site restaurant outlet within the hospital
+- Delivery within the hospital (ward delivery)
+- Home and office delivery (for outside customers)
+- Social media (Facebook, Instagram, TikTok)
+- Hospital information desk and flyers
+
+4. Customer Relationships
+- Personalized nutrition suggestions based on health status
+- Self-service through app or website
+- Chat support for orders and dietary questions
+- Loyalty programs (points for each order)
+- Subscription meal plans for staff, patients, and external users
+- Feedback system for ongoing improvement
+
+5. Revenue Streams
+- Direct food sales (in-restaurant and online)
+
+- Delivery charges (inside the hospital and outside)
+
+- Subscription meal plans (daily, weekly, or monthly)
+- Diet-specialized meal packages
+- Corporate and staff meal deals
+- Partnerships with hospitals and nutrition departments
+- Catering services for hospital events
+- Healthy snacks and packaged foods
+
+6. Key Activities
+- Preparing healthy, recovery-oriented meals
+- Running the e-commerce platform (website and app)
+- Delivering orders inside and outside the hospital
+- Menu development with nutritionists
+- Customer support and order management
+- Procuring fresh ingredients
+- Marketing and social media promotion
+- Managing subscriptions and meal plans
+
+7. Key Resources
+- Kitchen and restaurant space within the hospital
+- Qualified chefs
+- Nutritionists and dieticians
+- Delivery team (runners inside the hospital and riders for outside)
+- E-commerce system (website, app, and database)
+- Logistics technology (order tracking and point-of-sale system)
+- Supplier relationships (farmers and distributors)
+- Branding and marketing materials
+
+8. Key Partners
+
+- Hospitals (for space, access, and patient dietary coordination)
+- Nutritionists and medical dieticians
+- Food suppliers, local farmers, and beverage distributors
+- Delivery partners or own delivery fleet
+- App developers and IT service providers
+- Payment service providers (mobile money, cash, bank transfer, etc.)
+- Nearby pharmacies or wellness centers for cross-promotion.
+
+- Health insurance providers
+- NGOs and institutional partners supporting health and nutrition(RBC,MoH,Gvt,etc)
+
+9. Cost Structure
+- Staff salaries (chefs, delivery personnel, IT, cleaners, etc.)
+- Kitchen and restaurant equipment
+- Food supplies and raw ingredients
+- Technology development and maintenance (app and website)
+- Marketing and advertising
+- Delivery operations (packaging)
+- Rent or commission to hospital for operating space
+- Utilities (water, electricity, internet)
+- Packaging and hygiene supplies
+
+

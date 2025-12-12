@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ menu_item.name }} - Dusangire Restaurant{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            {% if menu_item.image %}
+                <img src="{{ menu_item.image.url }}" class="img-fluid rounded shadow" alt="{{ menu_item.name }}">
+            {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-5">{{ menu_item.name }}</h1>
+            <p class="text-muted">{{ menu_item.category.name }}</p>
+            
+            <div class="mb-3">
+                <h2 class="text-primary">${{ menu_item.price }}</h2>
+            </div>
+            
+            <p class="lead">{{ menu_item.description }}</p>
+            
+            {% if menu_item.dietary_tags.all %}
+                <div class="mb-3">
+                    <h5>Dietary Tags:</h5>
+                    {% for tag in menu_item.dietary_tags.all %}
+                        <span class="badge bg-info me-1">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if menu_item.calories or menu_item.protein %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Nutrition Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% if menu_item.calories %}
+                                <div class="col-6 mb-2">
+                                    <strong>Calories:</strong> {{ menu_item.calories }} kcal
+                                </div>
+                            {% endif %}
+                            {% if menu_item.protein %}
+                                <div class="col-6 mb-2">
+                                    <strong>Protein:</strong> {{ menu_item.protein }}g
+                                </div>
+                            {% endif %}
+                            {% if menu_item.carbs %}
+                                <div class="col-6 mb-2">
+                                    <strong>Carbs:</strong> {{ menu_item.carbs }}g
+                                </div>
+                            {% endif %}
+                            {% if menu_item.fat %}
+                                <div class="col-6 mb-2">
+                                    <strong>Fat:</strong> {{ menu_item.fat }}g
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-lg" disabled>
+                    <i class="bi bi-cart-plus"></i> Add to Cart (Coming in Phase 3)
+                </button>
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Menu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
