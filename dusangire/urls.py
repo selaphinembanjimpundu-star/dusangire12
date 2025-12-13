@@ -16,6 +16,14 @@ urlpatterns = [
     path('menu/', include('menu.urls')),
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),
+    path('delivery/', include('delivery.urls')),
+    path('payments/', include('payments.urls')),
+    path('dashboard/', include('admin_dashboard.urls')),
+    path('subscriptions/', include('subscriptions.urls')),
+    path('loyalty/', include('loyalty.urls')),
+    path('notifications/', include('notifications.urls')),
+    path('reviews/', include('reviews.urls')),
+    path('support/', include('support.urls')),
 ]
 
 # Serve media files in development

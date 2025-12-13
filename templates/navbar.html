@@ -1,72 +1,158 @@
 {% load static %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
-            <i class="bi bi-hospital"></i> Dusangire Restaurant
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">
-                        <i class="bi bi-house"></i> Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'menu:menu_list' %}">
-                        <i class="bi bi-menu-button-wide"></i> Menu
-                    </a>
-                </li>
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'orders:cart' %}">
-                            <i class="bi bi-cart"></i> Cart
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'orders:order_history' %}">
-                            <i class="bi bi-clock-history"></i> Orders
-                        </a>
-                    </li>
+{% load cart_tags %}
+{% load notifications_tags %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand animate-fade-in" href="{% url 'home' %}">
+      <i class="bi bi-hospital"></i> Dusangire Restaurant
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'home' %}">
+            <i class="bi bi-house"></i> Home
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'menu:menu_list' %}">
+            <i class="bi bi-menu-button-wide"></i> Menu
+          </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'subscriptions:plans' %}">
+            <i class="bi bi-calendar-check"></i> Subscriptions
+          </a>
+        </li>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link position-relative" href="{% url 'orders:cart' %}">
+            <i class="bi bi-cart"></i> Cart
+            {% get_cart_count user as cart_count %}
+            {% if cart_count > 0 %}
+            <span
+              class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+              id="cart-badge"
+            >
+              {{ cart_count }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link position-relative" href="{% url 'notifications:list' %}">
+            <i class="bi bi-bell"></i> Notifications
+            {% get_unread_notification_count user as unread_count %}
+            {% if unread_count > 0 %}
+            <span
+              class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+              id="notification-badge"
+            >
+              {{ unread_count }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'orders:order_history' %}">
+            <i class="bi bi-clock-history"></i> Orders
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'loyalty:dashboard' %}">
+            <i class="bi bi-star"></i> Points
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle d-flex align-items-center"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-person-circle me-1"></i>
+            <span class="d-none d-md-inline">{{ user.username }}</span>
+          </a>
+          <ul
+            class="dropdown-menu dropdown-menu-end shadow-lg"
+            aria-labelledby="navbarDropdown"
+          >
+            <li>
+              <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                <i class="bi bi-person"></i> Profile
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'loyalty:dashboard' %}">
+                <i class="bi bi-star"></i> Loyalty Points
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'notifications:list' %}">
+                <i class="bi bi-bell"></i> Notifications
+                {% get_unread_notification_count user as unread_count %}
+                {% if unread_count > 0 %}
+                <span class="badge bg-danger ms-2">{{ unread_count }}</span>
                 {% endif %}
-            </ul>
-            <ul class="navbar-nav">
-                {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i> {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                <i class="bi bi-person"></i> Profile
-                            </a></li>
+              </a>
+            </li>
                             {% if user.is_staff %}
-                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">
-                                    <i class="bi bi-gear"></i> Admin Panel
-                                </a></li>
+                            <li>
+                              <a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                              </a>
+                            </li>
+                            <li>
+                              <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                <i class="bi bi-gear"></i> Admin Panel
+                              </a>
+                            </li>
                             {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </a></li>
-                        </ul>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">
-                            <i class="bi bi-box-arrow-in-right"></i> Login
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:register' %}">
-                            <i class="bi bi-person-plus"></i> Register
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <form method="post" action="{% url 'accounts:logout' %}" class="d-inline w-100">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start p-0" style="padding: 0.25rem 1rem !important;">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'accounts:login' %}">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link btn btn-outline-light ms-2 px-3"
+            href="{% url 'accounts:register' %}"
+          >
+            <i class="bi bi-person-plus"></i> Register
+          </a>
+        </li>
+        {% endif %}
+      </ul>
     </div>
+  </div>
 </nav>
-

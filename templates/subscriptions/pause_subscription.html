@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Pause Subscription - Dusangire Restaurant{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0"><i class="bi bi-pause-circle"></i> Pause Subscription</h3>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to pause this subscription?</p>
+                    <div class="alert alert-info">
+                        <strong>{{ subscription.plan.name }}</strong><br>
+                        <small>Paused subscriptions can be resumed later.</small>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'subscriptions:subscription_detail' subscription.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-pause-circle"></i> Pause Subscription
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

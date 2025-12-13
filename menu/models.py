@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from decimal import Decimal
+from .validators import validate_image_size, validate_image_format, validate_image_dimensions
 
 
 class Category(models.Model):
@@ -43,8 +45,18 @@ class MenuItem(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
-    image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
+    image = models.ImageField(
+        upload_to='menu_items/',
+        blank=True,
+        null=True,
+        help_text='Upload an image for this menu item. Recommended size: 800x600px. Max size: 5MB. Formats: JPEG, PNG, WEBP',
+        validators=[validate_image_size, validate_image_format, validate_image_dimensions]
+    )
     dietary_tags = models.ManyToManyField(DietaryTag, blank=True, related_name='menu_items')
+    ingredients = models.TextField(
+        blank=True,
+        help_text="List of ingredients (comma-separated or one per line)"
+    )
     
     # Nutrition information
     calories = models.PositiveIntegerField(blank=True, null=True, help_text="Calories per serving")

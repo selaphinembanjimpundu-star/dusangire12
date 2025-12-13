@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Dusangire Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-summary {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+    }
+    .address-card {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .address-card:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    .address-card.selected {
+        border-color: #0d6efd;
+        background: #e7f1ff;
+    }
+    .new-address-form {
+        display: none;
+    }
+    .new-address-form.show {
+        display: block;
+    }
+    .payment-method-card {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.2s;
+    }
+    .payment-method-card:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    .payment-method-card input:checked ~ label {
+        color: #0d6efd;
+    }
+    .payment-method-card input:checked {
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4"><i class="bi bi-credit-card"></i> Checkout</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Delivery Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="checkout-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="use_saved_address" id="use_saved_address" value="{% if delivery_addresses and default_address %}true{% else %}false{% endif %}">
+                        
+                        <!-- Saved Addresses -->
+                        {% if delivery_addresses %}
+                            <div class="mb-4">
+                                <h6 class="mb-3">Select a Saved Address</h6>
+                                <div id="saved-addresses">
+                                    {% for address in delivery_addresses %}
+                                        <div class="address-card" data-address-id="{{ address.id }}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" 
+                                                       type="radio" 
+                                                       name="saved_address_id" 
+                                                       id="address_{{ address.id }}" 
+                                                       value="{{ address.id }}"
+                                                       {% if address.is_default %}checked{% endif %}>
+                                                <label class="form-check-label w-100" for="address_{{ address.id }}">
+                                                    <strong>{{ address.label }}</strong>
+                                                    {% if address.is_default %}
+                                                        <span class="badge bg-primary ms-2">Default</span>
+                                                    {% endif %}
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        {{ address.full_name }} | {{ address.phone }}<br>
+                                                        {{ address.get_full_address }}
+                                                        {% if address.zone %}
+                                                            <br><span class="badge bg-info">{{ address.zone.name }} - RWF {{ address.get_delivery_charge }}</span>
+                                                        {% endif %}
+                                                    </small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <a href="{% url 'delivery:address_create' %}" class="btn btn-outline-primary btn-sm mb-3">
+                                    <i class="bi bi-plus-circle"></i> Add New Address
+                                </a>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-link p-0" id="toggle-new-address">
+                                    <i class="bi bi-plus-circle"></i> Or enter a new address
+                                </button>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- New Address Form -->
+                        <div class="new-address-form {% if not delivery_addresses %}show{% endif %}" id="new-address-form">
+                            <div class="mb-3">
+                                <label for="customer_name" class="form-label">Full Name *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="customer_name" 
+                                       name="customer_name" 
+                                       value="{% if profile %}{{ user.get_full_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}" 
+                                       required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customer_phone" class="form-label">Phone Number *</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="customer_phone" 
+                                       name="customer_phone" 
+                                       value="{% if profile %}{{ profile.phone }}{% endif %}" 
+                                       required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="delivery_address" class="form-label">Delivery Address *</label>
+                                <textarea class="form-control" 
+                                          id="delivery_address" 
+                                          name="delivery_address" 
+                                          rows="3" 
+                                          required 
+                                          placeholder="Enter your delivery address (e.g., Ward 3, Room 205, Hospital Building)"></textarea>
+                                <div class="form-text">Please provide detailed address including ward, room number, or building</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="delivery_zone" class="form-label">Delivery Zone</label>
+                                <select class="form-select" id="delivery_zone" name="delivery_zone">
+                                    <option value="">Select zone (optional)</option>
+                                    {% for zone in delivery_zones %}
+                                        <option value="{{ zone.id }}" data-charge="{{ zone.delivery_charge }}">
+                                            {{ zone.name }} - RWF {{ zone.delivery_charge }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Select delivery zone to calculate delivery charge</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="delivery_instructions" class="form-label">Delivery Instructions (Optional)</label>
+                                <textarea class="form-control" 
+                                          id="delivery_instructions" 
+                                          name="delivery_instructions" 
+                                          rows="2" 
+                                          placeholder="Any special instructions for delivery..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Method</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Select Payment Method *</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check payment-method-card">
+                                                <input class="form-check-input" type="radio" name="payment_method" id="cash_on_delivery" value="cash_on_delivery" checked>
+                                                <label class="form-check-label w-100" for="cash_on_delivery">
+                                                    <i class="bi bi-cash-coin"></i> <strong>Cash on Delivery</strong>
+                                                    <br><small class="text-muted">Pay when your order arrives</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check payment-method-card">
+                                                <input class="form-check-input" type="radio" name="payment_method" id="mtn_mobile_money" value="mtn_mobile_money">
+                                                <label class="form-check-label w-100" for="mtn_mobile_money">
+                                                    <i class="bi bi-phone"></i> <strong>MTN Mobile Money</strong>
+                                                    <br><small class="text-muted">Pay via MTN Mobile Money</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check payment-method-card">
+                                                <input class="form-check-input" type="radio" name="payment_method" id="airtel_money" value="airtel_money">
+                                                <label class="form-check-label w-100" for="airtel_money">
+                                                    <i class="bi bi-phone"></i> <strong>Airtel Money</strong>
+                                                    <br><small class="text-muted">Pay via Airtel Money</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check payment-method-card">
+                                                <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                                <label class="form-check-label w-100" for="bank_transfer">
+                                                    <i class="bi bi-bank"></i> <strong>Bank Transfer</strong>
+                                                    <br><small class="text-muted">Pay via bank transfer</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mobile Money Fields -->
+                                <div class="payment-details" id="mobile_money_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="phone_number" class="form-label">Phone Number *</label>
+                                        <input type="tel" class="form-control" id="phone_number" name="phone_number" placeholder="e.g., 0781234567">
+                                        <div class="form-text">Enter your mobile money phone number</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="transaction_id" class="form-label">Transaction ID (Optional)</label>
+                                        <input type="text" class="form-control" id="transaction_id" name="transaction_id" placeholder="Enter transaction ID if already paid">
+                                        <div class="form-text">If you've already made the payment, enter the transaction ID</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bank Transfer Fields -->
+                                <div class="payment-details" id="bank_transfer_details" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="account_number" class="form-label">Account Number / Reference *</label>
+                                        <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Enter account number or reference">
+                                        <div class="form-text">Enter your account number or transfer reference</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="transaction_id_bank" class="form-label">Transaction ID (Optional)</label>
+                                        <input type="text" class="form-control" id="transaction_id_bank" name="transaction_id" placeholder="Enter transaction ID if already paid">
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Notes -->
+                                <div class="mb-3">
+                                    <label for="payment_notes" class="form-label">Payment Notes (Optional)</label>
+                                    <textarea class="form-control" id="payment_notes" name="payment_notes" rows="2" placeholder="Any additional payment information..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'orders:cart' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Place Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="checkout-summary">
+                <h5 class="mb-3">Order Summary</h5>
+                
+                <div class="mb-3">
+                    <strong>Items:</strong>
+                    <ul class="list-unstyled mt-2">
+                        {% for item in cart_items %}
+                            <li class="d-flex justify-content-between mb-2">
+                                <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+                                <span>RWF {{ item.get_subtotal }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <strong>RWF <span id="subtotal">{{ subtotal }}</span></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Delivery Charge:</span>
+                    <strong>RWF <span id="delivery-charge">{{ delivery_charge }}</span></strong>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <strong class="text-primary fs-5">RWF <span id="total">{{ total }}</span></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const savedAddresses = document.getElementById('saved-addresses');
+    const newAddressForm = document.getElementById('new-address-form');
+    const useSavedAddressInput = document.getElementById('use_saved_address');
+    const toggleNewAddressBtn = document.getElementById('toggle-new-address');
+    const deliveryZoneSelect = document.getElementById('delivery_zone');
+    const savedAddressRadios = document.querySelectorAll('input[name="saved_address_id"]');
+    
+    // Toggle between saved addresses and new address
+    if (toggleNewAddressBtn) {
+        toggleNewAddressBtn.addEventListener('click', function() {
+            newAddressForm.classList.toggle('show');
+            // Uncheck all saved addresses
+            savedAddressRadios.forEach(radio => radio.checked = false);
+            useSavedAddressInput.value = 'false';
+            updateDeliveryCharge();
+        });
+    }
+    
+    // Handle saved address selection
+    savedAddressRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                useSavedAddressInput.value = 'true';
+                if (newAddressForm) {
+                    newAddressForm.classList.remove('show');
+                }
+                // Disable required fields in new address form
+                const newAddressFields = document.querySelectorAll('#new-address-form input[required], #new-address-form textarea[required]');
+                newAddressFields.forEach(field => {
+                    field.removeAttribute('required');
+                });
+                // Get delivery charge from selected address
+                const addressCard = this.closest('.address-card');
+                const addressId = addressCard.dataset.addressId;
+                updateDeliveryChargeFromAddress(addressId);
+            }
+        });
+    });
+    
+    // If default address is selected on page load, set use_saved_address to true
+    const defaultAddressRadio = document.querySelector('input[name="saved_address_id"]:checked');
+    if (defaultAddressRadio) {
+        useSavedAddressInput.value = 'true';
+        const addressId = defaultAddressRadio.value;
+        updateDeliveryChargeFromAddress(addressId);
+    }
+    
+    // Handle delivery zone change for new address
+    if (deliveryZoneSelect) {
+        deliveryZoneSelect.addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const charge = selectedOption.dataset.charge;
+                updateDeliveryCharge(parseFloat(charge));
+            } else {
+                updateDeliveryCharge(2.00); // Default
+            }
+        });
+    }
+    
+    function updateDeliveryChargeFromAddress(addressId) {
+        // This would need to fetch from server or store in data attribute
+        // For now, we'll use a default calculation
+        updateDeliveryCharge(2.00);
+    }
+    
+    function updateDeliveryCharge(charge = null) {
+        const subtotal = parseFloat(document.getElementById('subtotal').textContent);
+        const deliveryChargeEl = document.getElementById('delivery-charge');
+        const totalEl = document.getElementById('total');
+        
+        if (charge === null) {
+            charge = parseFloat(deliveryChargeEl.textContent);
+        }
+        
+        deliveryChargeEl.textContent = charge.toFixed(2);
+        totalEl.textContent = (subtotal + charge).toFixed(2);
+    }
+    
+    // Payment method selection
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const mobileMoneyDetails = document.getElementById('mobile_money_details');
+    const bankTransferDetails = document.getElementById('bank_transfer_details');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            // Hide all payment details
+            mobileMoneyDetails.style.display = 'none';
+            bankTransferDetails.style.display = 'none';
+            
+            // Show relevant payment details
+            if (this.value === 'mtn_mobile_money' || this.value === 'airtel_money') {
+                mobileMoneyDetails.style.display = 'block';
+                document.getElementById('phone_number').required = true;
+            } else {
+                document.getElementById('phone_number').required = false;
+            }
+            
+            if (this.value === 'bank_transfer') {
+                bankTransferDetails.style.display = 'block';
+                document.getElementById('account_number').required = true;
+            } else {
+                document.getElementById('account_number').required = false;
+            }
+        });
+    });
+    
+    // Form submission handling - prevent double submission
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                // Disable submit button to prevent double submission
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+                
+                // Validate form before submission
+                if (!this.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
+                    this.classList.add('was-validated');
+                    return false;
+                }
+                
+                // Ensure use_saved_address is set correctly
+                const hasCheckedSavedAddress = document.querySelector('input[name="saved_address_id"]:checked');
+                if (hasCheckedSavedAddress) {
+                    useSavedAddressInput.value = 'true';
+                } else {
+                    useSavedAddressInput.value = 'false';
+                    // Validate new address fields are filled
+                    const customerName = document.getElementById('customer_name');
+                    const customerPhone = document.getElementById('customer_phone');
+                    const deliveryAddress = document.getElementById('delivery_address');
+                    
+                    if (!customerName || !customerName.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter your full name');
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
+                        return false;
+                    }
+                    if (!customerPhone || !customerPhone.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter your phone number');
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
+                        return false;
+                    }
+                    if (!deliveryAddress || !deliveryAddress.value.trim()) {
+                        e.preventDefault();
+                        alert('Please enter your delivery address');
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
+                        return false;
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

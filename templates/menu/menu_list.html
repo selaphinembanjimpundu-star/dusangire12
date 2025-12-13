@@ -1,67 +1,232 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Menu - Dusangire Restaurant{% endblock %}
 
+{% block extra_css %}
+<style>
+    .filter-sidebar {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        position: sticky;
+        top: 20px;
+    }
+    .menu-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .menu-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .menu-card img {
+        transition: transform 0.3s;
+    }
+    .menu-card:hover img {
+        transform: scale(1.05);
+    }
+    .dietary-tag-filter {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .filter-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
+    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12 text-center">
-            <h1 class="display-4"><i class="bi bi-menu-button-wide"></i> Our Menu</h1>
-            <p class="lead">Healthy, medically-approved meals for your recovery</p>
+            <h1 class="display-4 mb-3">
+                <i class="bi bi-menu-button-wide"></i> Our Menu
+            </h1>
+            <p class="lead text-muted">Healthy, medically-approved meals for your recovery</p>
         </div>
     </div>
-    
-    {% if menu_by_category %}
-        {% for category, items in menu_by_category.items %}
-            <div class="mb-5">
-                <h2 class="border-bottom pb-2 mb-4">{{ category.name }}</h2>
-                {% if category.description %}
-                    <p class="text-muted mb-4">{{ category.description }}</p>
-                {% endif %}
+
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar">
+                <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter Menu</h5>
                 
-                <div class="row g-4">
-                    {% for item in items %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 shadow-sm">
-                                {% if item.image %}
-                                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 200px; object-fit: cover;">
-                                {% else %}
-                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">{{ item.name }}</h5>
-                                    <p class="card-text text-muted">{{ item.description|truncatewords:20 }}</p>
-                                    
-                                    {% if item.dietary_tags.all %}
-                                        <div class="mb-2">
-                                            {% for tag in item.dietary_tags.all %}
-                                                <span class="badge bg-info me-1">{{ tag.name }}</span>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                    
-                                    <div class="mt-auto">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h4 class="text-primary mb-0">${{ item.price }}</h4>
-                                            <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                <i class="bi bi-eye"></i> View Details
-                                            </a>
+                <form method="get" id="filter-form">
+                    <!-- Search -->
+                    <div class="filter-section">
+                        <label for="id_search" class="form-label fw-bold">Search</label>
+                        <input type="text" 
+                               name="search" 
+                               id="id_search" 
+                               class="form-control" 
+                               placeholder="Search menu items..."
+                               value="{{ search_query }}">
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="filter-section">
+                        <label for="id_category" class="form-label fw-bold">Category</label>
+                        <select name="category" id="id_category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if selected_category_id == cat.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Dietary Tags Filter -->
+                    <div class="filter-section">
+                        <label class="form-label fw-bold">Dietary Requirements</label>
+                        <div class="dietary-tag-filter">
+                            {% for tag in dietary_tags %}
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="dietary_tags" 
+                                           value="{{ tag.id }}" 
+                                           id="tag_{{ tag.id }}"
+                                           {% if tag.id in selected_dietary_tags %}checked{% endif %}>
+                                    <label class="form-check-label" for="tag_{{ tag.id }}">
+                                        {{ tag.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Price Range -->
+                    <div class="filter-section">
+                        <label class="form-label fw-bold">Price Range</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" 
+                                       name="min_price" 
+                                       id="id_min_price" 
+                                       class="form-control form-control-sm" 
+                                       placeholder="Min"
+                                       step="0.01"
+                                       min="0">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" 
+                                       name="max_price" 
+                                       id="id_max_price" 
+                                       class="form-control form-control-sm" 
+                                       placeholder="Max"
+                                       step="0.01"
+                                       min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="col-lg-9">
+            {% if menu_by_category %}
+                {% for category, items in menu_by_category.items %}
+                    <div class="mb-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <h2 class="mb-0">{{ category.name }}</h2>
+                            <span class="badge bg-primary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
+                        </div>
+                        {% if category.description %}
+                            <p class="text-muted mb-4">{{ category.description }}</p>
+                        {% endif %}
+
+                        <div class="row g-4">
+                            {% for item in items %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card menu-card h-100 shadow-sm">
+                                        {% if item.image %}
+                                            <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                <img src="{{ item.image.url }}" 
+                                                     class="card-img-top w-100 h-100" 
+                                                     alt="{{ item.name }}"
+                                                     style="object-fit: cover;">
+                                            </div>
+                                        {% else %}
+                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title">{{ item.name }}</h5>
+                                            <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                            
+                                            {% if item.dietary_tags.all %}
+                                                <div class="mb-2">
+                                                    {% for tag in item.dietary_tags.all %}
+                                                        <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+
+                                            {% if item.calories %}
+                                                <div class="mb-2">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-fire"></i> {{ item.calories }} kcal
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="mt-auto pt-3 border-top">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <span class="text-muted small d-block">Price</span>
+                                                        <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                    </div>
+                                                    <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i>
+                    <h5 class="mt-2">No menu items found</h5>
+                    <p class="mb-0">
+                        {% if search_query or selected_category_id or selected_dietary_tags %}
+                            Try adjusting your filters or search terms.
+                        {% else %}
+                            No menu items available at the moment. Please check back later.
+                        {% endif %}
+                    </p>
                 </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="alert alert-info text-center">
-            <i class="bi bi-info-circle"></i> No menu items available at the moment. Please check back later.
+            {% endif %}
         </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script src="{% static 'js/menu.js' %}"></script>
+{% endblock %}

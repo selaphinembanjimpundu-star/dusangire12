@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Dusangire Restaurant{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="bi bi-geo-alt"></i> {{ title }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_label" class="form-label">Address Label *</label>
+                                {{ form.label }}
+                                <div class="form-text">e.g., Home, Work, Ward 3, Room 205</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_zone" class="form-label">Delivery Zone</label>
+                                {{ form.zone }}
+                                <div class="form-text">Select delivery zone (optional)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_full_name" class="form-label">Full Name *</label>
+                                {{ form.full_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_phone" class="form-label">Phone Number *</label>
+                                {{ form.phone }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_address_line1" class="form-label">Address Line 1 *</label>
+                            {{ form.address_line1 }}
+                            <div class="form-text">Ward, Room, Building, etc.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_address_line2" class="form-label">Address Line 2</label>
+                            {{ form.address_line2 }}
+                            <div class="form-text">Additional address details (optional)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_city" class="form-label">City *</label>
+                            {{ form.city }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_delivery_instructions" class="form-label">Delivery Instructions</label>
+                            {{ form.delivery_instructions }}
+                            <div class="form-text">Special instructions for delivery (optional)</div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            {{ form.is_default }}
+                            <label class="form-check-label" for="id_is_default">
+                                Set as default delivery address
+                            </label>
+                        </div>
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <strong>Please correct the errors below:</strong>
+                                {{ form.errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'delivery:address_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Address
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

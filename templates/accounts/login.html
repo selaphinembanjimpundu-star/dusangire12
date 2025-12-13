@@ -1,42 +1,112 @@
-{% extends 'base.html' %}
-{% load crispy_forms_tags %}
-
-{% block title %}Login - Dusangire Restaurant{% endblock %}
-
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center mb-4">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
-                    </h2>
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Username</label>
-                            <input type="text" name="username" class="form-control" id="id_username" required autofocus>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_password" class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" id="id_password" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </button>
-                        </div>
-                    </form>
-                    <hr>
-                    <p class="text-center mb-0">
-                        Don't have an account? 
-                        <a href="{% url 'accounts:register' %}" class="text-decoration-none">Register here</a>
-                    </p>
-                </div>
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title %}Login -
+Dusangire Restaurant{% endblock %} {% block content %}
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center align-items-center min-vh-50">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-lg border-0 animate-fade-in-up">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="mb-3">
+              <i
+                class="bi bi-hospital"
+                style="font-size: 3rem; color: var(--primary-color)"
+              ></i>
             </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+            <h2 class="card-title mb-2">Welcome Back</h2>
+            <p class="text-muted">
+              Sign in to continue to Dusangire Restaurant
+            </p>
+          </div>
 
+          <form method="post" action="{% url 'accounts:login' %}" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="id_username" class="form-label">
+                <i class="bi bi-person me-2"></i>Username
+              </label>
+              <input
+                type="text"
+                name="username"
+                class="form-control form-control-lg"
+                id="id_username"
+                required
+                autofocus
+                placeholder="Enter your username"
+              />
+              <div class="invalid-feedback">
+                Please provide a valid username.
+              </div>
+            </div>
+            <div class="mb-4">
+              <label for="id_password" class="form-label">
+                <i class="bi bi-lock me-2"></i>Password
+              </label>
+              <div class="input-group">
+                <input
+                  type="password"
+                  name="password"
+                  class="form-control form-control-lg"
+                  id="id_password"
+                  required
+                  placeholder="Enter your password"
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  id="togglePassword"
+                  style="border-left: none"
+                >
+                  <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                </button>
+              </div>
+              <div class="invalid-feedback">Please provide your password.</div>
+            </div>
+            <div class="mb-4 form-check">
+              <input type="checkbox" class="form-check-input" id="rememberMe" />
+              <label class="form-check-label" for="rememberMe">
+                Remember me
+              </label>
+            </div>
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+              </button>
+            </div>
+          </form>
+
+          <hr class="my-4" />
+          <div class="text-center">
+            <p class="mb-2 text-muted">Don't have an account?</p>
+            <a
+              href="{% url 'accounts:register' %}"
+              class="btn btn-outline-primary"
+            >
+              <i class="bi bi-person-plus me-2"></i>Create Account
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle password visibility
+  document
+    .getElementById("togglePassword")
+    ?.addEventListener("click", function () {
+      const passwordInput = document.getElementById("id_password");
+      const icon = document.getElementById("togglePasswordIcon");
+
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove("bi-eye");
+        icon.classList.add("bi-eye-slash");
+      } else {
+        passwordInput.type = "password";
+        icon.classList.remove("bi-eye-slash");
+        icon.classList.add("bi-eye");
+      }
+    });
+</script>
+{% endblock %}

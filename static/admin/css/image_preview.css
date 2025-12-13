@@ -1,0 +1,30 @@
+/* Admin image preview styling */
+.field-image_preview img {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    border: 2px solid #e0e0e0;
+}
+
+.field-image_preview {
+    margin-top: 10px;
+}
+
+/* Image upload field styling */
+input[type="file"] {
+    padding: 8px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+input[type="file"]:hover {
+    border-color: #0d6efd;
+    background: #f0f7ff;
+}
+
+
+
+

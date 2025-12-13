@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loyalty Points - Dusangire Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .points-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .points-value {
+        font-size: 4rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    .redemption-card {
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s;
+    }
+    .redemption-card:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.15);
+    }
+    .transaction-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+    .points-earned {
+        color: #28a745;
+        font-weight: bold;
+    }
+    .points-redeemed {
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-star-fill text-warning"></i> Loyalty Points</h1>
+        <a href="{% url 'loyalty:history' %}" class="btn btn-outline-primary">
+            <i class="bi bi-clock-history"></i> View History
+        </a>
+    </div>
+
+    <!-- Points Summary Card -->
+    <div class="points-card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-3">Your Points Balance</h3>
+                <div class="points-value">{{ loyalty_points.total_points }}</div>
+                <p class="mb-0">Available points to redeem</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-star-fill" style="font-size: 6rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.lifetime_points }}</div>
+                <div class="stat-label">Lifetime Points</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.points_redeemed }}</div>
+                <div class="stat-label">Points Redeemed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.earned_this_month }}</div>
+                <div class="stat-label">Earned This Month</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.transactions_count }}</div>
+                <div class="stat-label">Total Transactions</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Available Redemptions -->
+        <div class="col-md-6">
+            <h3 class="mb-3"><i class="bi bi-gift"></i> Available Redemptions</h3>
+            {% if available_redemptions %}
+                {% for redemption in available_redemptions %}
+                <div class="redemption-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5>{{ redemption.name }}</h5>
+                            <p class="text-muted mb-2">{{ redemption.description }}</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary">{{ redemption.points_required }} points</span>
+                                {% if redemption.discount_amount %}
+                                    <span class="badge bg-success">RWF {{ redemption.discount_amount }} discount</span>
+                                {% elif redemption.discount_percentage %}
+                                    <span class="badge bg-success">{{ redemption.discount_percentage }}% discount</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="{% url 'loyalty:redeem' redemption.id %}" class="btn btn-primary">
+                            <i class="bi bi-gift"></i> Redeem
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No redemptions available at the moment. Check back later!
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="col-md-6">
+            <h3 class="mb-3"><i class="bi bi-list-ul"></i> Recent Transactions</h3>
+            <div class="card">
+                <div class="card-body">
+                    {% if recent_transactions %}
+                        {% for transaction in recent_transactions %}
+                        <div class="transaction-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ transaction.get_transaction_type_display }}</strong>
+                                    {% if transaction.reason %}
+                                        <br><small class="text-muted">{{ transaction.reason }}</small>
+                                    {% endif %}
+                                    {% if transaction.order %}
+                                        <br><small class="text-muted">Order: {{ transaction.order.order_number }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    {% if transaction.is_earned %}
+                                        <span class="points-earned">+{{ transaction.points }} pts</span>
+                                    {% else %}
+                                        <span class="points-redeemed">{{ transaction.points }} pts</span>
+                                    {% endif %}
+                                    <br><small class="text-muted">{{ transaction.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'loyalty:history' %}" class="btn btn-outline-primary btn-sm">
+                                View All Transactions
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No transactions yet. Start ordering to earn points!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-question-circle"></i> How Loyalty Points Work</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <h6><i class="bi bi-1-circle text-primary"></i> Earn Points</h6>
+                    <p>Earn 1 point for every 100 RWF spent on orders. Points are awarded when your order is delivered.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="bi bi-2-circle text-success"></i> Accumulate</h6>
+                    <p>Your points accumulate over time. Check your balance and lifetime points earned.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6><i class="bi bi-3-circle text-warning"></i> Redeem</h6>
+                    <p>Use your points to redeem discounts and special offers. Points never expire!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

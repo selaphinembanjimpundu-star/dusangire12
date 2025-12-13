@@ -12,7 +12,7 @@
                     <h2 class="card-title text-center mb-4">
                         <i class="bi bi-person-plus"></i> Create Account
                     </h2>
-                    <form method="post">
+                    <form method="post" action="{% url 'accounts:register' %}">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">

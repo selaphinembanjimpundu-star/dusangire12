@@ -1,63 +1,133 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ menu_item.name }} - Dusangire Restaurant{% endblock %}
 
+{% block extra_css %}
+<style>
+    .menu-detail-image {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .nutrition-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+    }
+    .nutrition-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    .nutrition-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .related-item-card {
+        transition: transform 0.2s;
+    }
+    .related-item-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-6">
+<div class="container mt-4 mb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'menu:menu_list' %}">Menu</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'menu:menu_list' %}?category={{ menu_item.category.id }}">{{ menu_item.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ menu_item.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-5">
+        <!-- Image Section -->
+        <div class="col-md-6 mb-4">
             {% if menu_item.image %}
-                <img src="{{ menu_item.image.url }}" class="img-fluid rounded shadow" alt="{{ menu_item.name }}">
+                <img src="{{ menu_item.image.url }}" 
+                     class="img-fluid menu-detail-image w-100" 
+                     alt="{{ menu_item.name }}"
+                     style="max-height: 500px; object-fit: cover;">
             {% else %}
-                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 500px;">
                     <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
                 </div>
             {% endif %}
         </div>
+
+        <!-- Details Section -->
         <div class="col-md-6">
-            <h1 class="display-5">{{ menu_item.name }}</h1>
-            <p class="text-muted">{{ menu_item.category.name }}</p>
-            
             <div class="mb-3">
-                <h2 class="text-primary">${{ menu_item.price }}</h2>
+                <span class="badge bg-primary">{{ menu_item.category.name }}</span>
+                {% if menu_item.is_featured %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-star-fill"></i> Featured
+                    </span>
+                {% endif %}
             </div>
             
-            <p class="lead">{{ menu_item.description }}</p>
+            <h1 class="display-5 mb-3">{{ menu_item.name }}</h1>
             
+            <div class="mb-4">
+                <h2 class="text-primary mb-0">RWF {{ menu_item.price }}</h2>
+                <small class="text-muted">per serving</small>
+            </div>
+            
+            <p class="lead mb-4">{{ menu_item.description }}</p>
+            
+            <!-- Dietary Tags -->
             {% if menu_item.dietary_tags.all %}
-                <div class="mb-3">
-                    <h5>Dietary Tags:</h5>
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-tags"></i> Dietary Tags</h5>
                     {% for tag in menu_item.dietary_tags.all %}
-                        <span class="badge bg-info me-1">{{ tag.name }}</span>
+                        <span class="badge bg-info me-2 mb-2" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            {% if tag.icon %}{{ tag.icon }} {% endif %}{{ tag.name }}
+                        </span>
                     {% endfor %}
                 </div>
             {% endif %}
-            
-            {% if menu_item.calories or menu_item.protein %}
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <h5 class="mb-0">Nutrition Information</h5>
-                    </div>
+
+            <!-- Nutrition Information -->
+            {% if menu_item.calories or menu_item.protein or menu_item.carbs or menu_item.fat %}
+                <div class="card nutrition-card mb-4">
                     <div class="card-body">
-                        <div class="row">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-clipboard-data"></i> Nutrition Information
+                        </h5>
+                        <div class="row g-3">
                             {% if menu_item.calories %}
-                                <div class="col-6 mb-2">
-                                    <strong>Calories:</strong> {{ menu_item.calories }} kcal
+                                <div class="col-6 col-md-3">
+                                    <div class="nutrition-item">
+                                        <div class="nutrition-value">{{ menu_item.calories }}</div>
+                                        <div class="small">Calories</div>
+                                    </div>
                                 </div>
                             {% endif %}
                             {% if menu_item.protein %}
-                                <div class="col-6 mb-2">
-                                    <strong>Protein:</strong> {{ menu_item.protein }}g
+                                <div class="col-6 col-md-3">
+                                    <div class="nutrition-item">
+                                        <div class="nutrition-value">{{ menu_item.protein }}g</div>
+                                        <div class="small">Protein</div>
+                                    </div>
                                 </div>
                             {% endif %}
                             {% if menu_item.carbs %}
-                                <div class="col-6 mb-2">
-                                    <strong>Carbs:</strong> {{ menu_item.carbs }}g
+                                <div class="col-6 col-md-3">
+                                    <div class="nutrition-item">
+                                        <div class="nutrition-value">{{ menu_item.carbs }}g</div>
+                                        <div class="small">Carbs</div>
+                                    </div>
                                 </div>
                             {% endif %}
                             {% if menu_item.fat %}
-                                <div class="col-6 mb-2">
-                                    <strong>Fat:</strong> {{ menu_item.fat }}g
+                                <div class="col-6 col-md-3">
+                                    <div class="nutrition-item">
+                                        <div class="nutrition-value">{{ menu_item.fat }}g</div>
+                                        <div class="small">Fat</div>
+                                    </div>
                                 </div>
                             {% endif %}
                         </div>
@@ -65,16 +135,68 @@
                 </div>
             {% endif %}
             
+            <!-- Action Buttons -->
             <div class="d-grid gap-2">
-                <button class="btn btn-primary btn-lg" disabled>
-                    <i class="bi bi-cart-plus"></i> Add to Cart (Coming in Phase 3)
-                </button>
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'orders:add_to_cart' menu_item.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">Quantity</span>
+                            <input type="number" name="quantity" value="1" min="1" class="form-control" style="max-width: 100px;">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'menu:menu_detail' menu_item.id %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login to Add to Cart
+                    </a>
+                {% endif %}
                 <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Menu
                 </a>
             </div>
         </div>
     </div>
+
+    <!-- Related Items -->
+    {% if related_items %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4">
+                    <i class="bi bi-grid"></i> More from {{ menu_item.category.name }}
+                </h3>
+                <div class="row g-4">
+                    {% for item in related_items %}
+                        <div class="col-md-6 col-lg-3">
+                            <div class="card related-item-card h-100 shadow-sm">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" 
+                                         class="card-img-top" 
+                                         alt="{{ item.name }}"
+                                         style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ item.name }}</h6>
+                                    <p class="card-text text-muted small">{{ item.description|truncatewords:10 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-primary fw-bold">RWF {{ item.price }}</span>
+                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
-

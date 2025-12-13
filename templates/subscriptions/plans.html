@@ -1,0 +1,512 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Subscription Meal Plans - Dusangire Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .plan-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: none;
+        border-radius: 1rem;
+        overflow: hidden;
+        position: relative;
+    }
+    .plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .plan-card.featured {
+        border: 3px solid #0d6efd;
+        box-shadow: 0 0.5rem 1rem rgba(13, 110, 253, 0.25);
+    }
+    .plan-card.popular {
+        border: 3px solid #ffc107;
+    }
+    .plan-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        position: relative;
+    }
+    .plan-header.featured {
+        background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    }
+    .plan-header.popular {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    }
+    .plan-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+    .plan-price {
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+    .plan-price-small {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .savings-badge {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        display: inline-block;
+        margin: 0.5rem 0;
+        font-weight: bold;
+    }
+    .feature-list {
+        list-style: none;
+        padding: 0;
+    }
+    .feature-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .feature-list li:last-child {
+        border-bottom: none;
+    }
+    .feature-list li i {
+        color: #28a745;
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+    .benefits-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 3rem;
+    }
+    .benefit-icon {
+        font-size: 3rem;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+    }
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+    .section-header p {
+        font-size: 1.2rem;
+        color: #6c757d;
+    }
+    .price-comparison {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+    .stats-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Hero Section -->
+    <div class="section-header">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-calendar-check-fill text-primary"></i> Subscription Meal Plans
+        </h1>
+        <p class="lead">Subscribe to regular meal plans and save money while enjoying healthy, convenient meals!</p>
+    </div>
+
+    {% if active_subscription %}
+        <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-info-circle-fill"></i>
+            <strong>You have an active subscription:</strong> {{ active_subscription.plan.name }}
+            <a href="{% url 'subscriptions:my_subscriptions' %}" class="btn btn-sm btn-outline-primary ms-2">
+                <i class="bi bi-gear"></i> Manage Subscription
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <!-- Benefits Section -->
+    <div class="benefits-section">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="benefit-icon">
+                    <i class="bi bi-piggy-bank-fill"></i>
+                </div>
+                <h5>Save Money</h5>
+                <p class="text-muted">Up to 20% savings compared to regular orders</p>
+            </div>
+            <div class="col-md-3">
+                <div class="benefit-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h5>Auto-Delivery</h5>
+                <p class="text-muted">Never worry about ordering - we deliver automatically</p>
+            </div>
+            <div class="col-md-3">
+                <div class="benefit-icon">
+                    <i class="bi bi-heart-fill"></i>
+                </div>
+                <h5>Healthy Meals</h5>
+                <p class="text-muted">Medically-approved meals for your recovery</p>
+            </div>
+            <div class="col-md-3">
+                <div class="benefit-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h5>Flexible Plans</h5>
+                <p class="text-muted">Pause, resume, or cancel anytime</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Plans -->
+    {% if daily_plans %}
+        <div class="mb-5">
+            <div class="section-header">
+                <h2><i class="bi bi-sun-fill text-warning"></i> Daily Plans</h2>
+                <p>Perfect for consistent daily nutrition</p>
+            </div>
+            <div class="row g-4">
+                {% for plan in daily_plans %}
+                    {% with savings=plan.calculate_savings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card plan-card h-100 {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                            <div class="plan-header {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                                {% if plan.is_featured %}
+                                    <span class="plan-badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> Featured
+                                    </span>
+                                {% endif %}
+                                {% if plan.is_popular %}
+                                    <span class="plan-badge bg-danger text-white">
+                                        <i class="bi bi-fire"></i> Popular
+                                    </span>
+                                {% endif %}
+                                <h4 class="mb-2">{{ plan.name }}</h4>
+                                <div class="plan-price">
+                                    RWF {{ plan.get_discounted_price|floatformat:0 }}
+                                </div>
+                                {% if plan.discount_percentage > 0 %}
+                                    <div class="mb-2">
+                                        <span class="text-decoration-line-through opacity-75">RWF {{ plan.price|floatformat:0 }}</span>
+                                        <span class="badge bg-success ms-2">-{{ plan.discount_percentage }}% OFF</span>
+                                    </div>
+                                {% endif %}
+                                <div class="plan-price-small">per day</div>
+                                {% if savings.percentage > 0 %}
+                                    <div class="savings-badge mt-2">
+                                        <i class="bi bi-tag-fill"></i> Save {{ savings.percentage|floatformat:0 }}%
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">{{ plan.description }}</p>
+                                
+                                <ul class="feature-list">
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <strong>{{ plan.meals_per_cycle }}</strong> meal{{ plan.meals_per_cycle|pluralize }} per day
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Duration: <strong>{{ plan.duration_days }}</strong> days
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Total: <strong>{{ plan.get_total_meals }}</strong> meals
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Price per meal: <strong>RWF {{ plan.get_price_per_meal|floatformat:0 }}</strong>
+                                    </li>
+                                    {% if plan.menu_items.all %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            {{ plan.menu_items.count }} specific menu items
+                                        </li>
+                                    {% else %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            All menu items available
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Auto-delivery enabled
+                                    </li>
+                                </ul>
+
+                                {% if savings.total_savings > 0 %}
+                                    <div class="price-comparison mt-3">
+                                        <small>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Total Savings:</strong> RWF {{ savings.total_savings|floatformat:0 }} 
+                                            compared to regular orders
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mt-4">
+                                    {% if active_subscription %}
+                                        <button class="btn btn-outline-secondary w-100" disabled>
+                                            <i class="bi bi-check-circle"></i> Already Subscribed
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'subscriptions:subscribe' plan.id %}" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Subscribe Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Weekly Plans -->
+    {% if weekly_plans %}
+        <div class="mb-5">
+            <div class="section-header">
+                <h2><i class="bi bi-calendar-week text-info"></i> Weekly Plans</h2>
+                <p>Great for weekly meal planning</p>
+            </div>
+            <div class="row g-4">
+                {% for plan in weekly_plans %}
+                    {% with savings=plan.calculate_savings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card plan-card h-100 {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                            <div class="plan-header {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                                {% if plan.is_featured %}
+                                    <span class="plan-badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> Featured
+                                    </span>
+                                {% endif %}
+                                {% if plan.is_popular %}
+                                    <span class="plan-badge bg-danger text-white">
+                                        <i class="bi bi-fire"></i> Popular
+                                    </span>
+                                {% endif %}
+                                <h4 class="mb-2">{{ plan.name }}</h4>
+                                <div class="plan-price">
+                                    RWF {{ plan.get_discounted_price|floatformat:0 }}
+                                </div>
+                                {% if plan.discount_percentage > 0 %}
+                                    <div class="mb-2">
+                                        <span class="text-decoration-line-through opacity-75">RWF {{ plan.price|floatformat:0 }}</span>
+                                        <span class="badge bg-success ms-2">-{{ plan.discount_percentage }}% OFF</span>
+                                    </div>
+                                {% endif %}
+                                <div class="plan-price-small">per week</div>
+                                {% if savings.percentage > 0 %}
+                                    <div class="savings-badge mt-2">
+                                        <i class="bi bi-tag-fill"></i> Save {{ savings.percentage|floatformat:0 }}%
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">{{ plan.description }}</p>
+                                
+                                <ul class="feature-list">
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <strong>{{ plan.meals_per_cycle }}</strong> meal{{ plan.meals_per_cycle|pluralize }} per week
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Duration: <strong>{{ plan.duration_days }}</strong> days
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Total: <strong>{{ plan.get_total_meals }}</strong> meals
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Price per meal: <strong>RWF {{ plan.get_price_per_meal|floatformat:0 }}</strong>
+                                    </li>
+                                    {% if plan.menu_items.all %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            {{ plan.menu_items.count }} specific menu items
+                                        </li>
+                                    {% else %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            All menu items available
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Auto-delivery enabled
+                                    </li>
+                                </ul>
+
+                                {% if savings.total_savings > 0 %}
+                                    <div class="price-comparison mt-3">
+                                        <small>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Total Savings:</strong> RWF {{ savings.total_savings|floatformat:0 }} 
+                                            compared to regular orders
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mt-4">
+                                    {% if active_subscription %}
+                                        <button class="btn btn-outline-secondary w-100" disabled>
+                                            <i class="bi bi-check-circle"></i> Already Subscribed
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'subscriptions:subscribe' plan.id %}" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Subscribe Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Monthly Plans -->
+    {% if monthly_plans %}
+        <div class="mb-5">
+            <div class="section-header">
+                <h2><i class="bi bi-calendar-month text-success"></i> Monthly Plans</h2>
+                <p>Best value for long-term nutrition</p>
+            </div>
+            <div class="row g-4">
+                {% for plan in monthly_plans %}
+                    {% with savings=plan.calculate_savings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card plan-card h-100 {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                            <div class="plan-header {% if plan.is_featured %}featured{% endif %} {% if plan.is_popular %}popular{% endif %}">
+                                {% if plan.is_featured %}
+                                    <span class="plan-badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> Featured
+                                    </span>
+                                {% endif %}
+                                {% if plan.is_popular %}
+                                    <span class="plan-badge bg-danger text-white">
+                                        <i class="bi bi-fire"></i> Popular
+                                    </span>
+                                {% endif %}
+                                <h4 class="mb-2">{{ plan.name }}</h4>
+                                <div class="plan-price">
+                                    RWF {{ plan.get_discounted_price|floatformat:0 }}
+                                </div>
+                                {% if plan.discount_percentage > 0 %}
+                                    <div class="mb-2">
+                                        <span class="text-decoration-line-through opacity-75">RWF {{ plan.price|floatformat:0 }}</span>
+                                        <span class="badge bg-success ms-2">-{{ plan.discount_percentage }}% OFF</span>
+                                    </div>
+                                {% endif %}
+                                <div class="plan-price-small">per month</div>
+                                {% if savings.percentage > 0 %}
+                                    <div class="savings-badge mt-2">
+                                        <i class="bi bi-tag-fill"></i> Save {{ savings.percentage|floatformat:0 }}%
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">{{ plan.description }}</p>
+                                
+                                <ul class="feature-list">
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <strong>{{ plan.meals_per_cycle }}</strong> meal{{ plan.meals_per_cycle|pluralize }} per month
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Duration: <strong>{{ plan.duration_days }}</strong> days
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Total: <strong>{{ plan.get_total_meals }}</strong> meals
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Price per meal: <strong>RWF {{ plan.get_price_per_meal|floatformat:0 }}</strong>
+                                    </li>
+                                    {% if plan.menu_items.all %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            {{ plan.menu_items.count }} specific menu items
+                                        </li>
+                                    {% else %}
+                                        <li>
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            All menu items available
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Auto-delivery enabled
+                                    </li>
+                                </ul>
+
+                                {% if savings.total_savings > 0 %}
+                                    <div class="price-comparison mt-3">
+                                        <small>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Total Savings:</strong> RWF {{ savings.total_savings|floatformat:0 }} 
+                                            compared to regular orders
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mt-4">
+                                    {% if active_subscription %}
+                                        <button class="btn btn-outline-secondary w-100" disabled>
+                                            <i class="bi bi-check-circle"></i> Already Subscribed
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'subscriptions:subscribe' plan.id %}" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Subscribe Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if not daily_plans and not weekly_plans and not monthly_plans %}
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">No subscription plans available</h4>
+            <p>Please check back later for subscription meal plans.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

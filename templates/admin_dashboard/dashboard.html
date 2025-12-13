@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Dusangire Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+        <div>
+            <a href="{% url 'admin_dashboard:order_management' %}" class="btn btn-primary">
+                <i class="bi bi-list-ul"></i> Manage Orders
+            </a>
+            <a href="{% url 'admin_dashboard:kitchen_dashboard' %}" class="btn btn-success">
+                <i class="bi bi-egg-fried"></i> Kitchen View
+            </a>
+            <a href="{% url 'admin_dashboard:reports' %}" class="btn btn-info">
+                <i class="bi bi-graph-up"></i> Reports
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Orders Today -->
+        <div class="col-md-3">
+            <div class="card stat-card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Orders Today</h6>
+                            <h2 class="mb-0">{{ today_orders }}</h2>
+                        </div>
+                        <i class="bi bi-calendar-day stat-icon text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revenue Today -->
+        <div class="col-md-3">
+            <div class="card stat-card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Revenue Today</h6>
+                            <h2 class="mb-0">RWF {{ today_revenue|floatformat:0 }}</h2>
+                        </div>
+                        <i class="bi bi-cash-coin stat-icon text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Orders -->
+        <div class="col-md-3">
+            <div class="card stat-card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Pending Orders</h6>
+                            <h2 class="mb-0">{{ pending_orders }}</h2>
+                        </div>
+                        <i class="bi bi-clock-history stat-icon text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Orders -->
+        <div class="col-md-3">
+            <div class="card stat-card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Orders</h6>
+                            <h2 class="mb-0">{{ total_orders }}</h2>
+                        </div>
+                        <i class="bi bi-receipt stat-icon text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <!-- Revenue Stats -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> Revenue Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Total Revenue:</strong>
+                        <h4 class="text-success">RWF {{ total_revenue|floatformat:0 }}</h4>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">This Week:</small>
+                        <strong>RWF {{ week_revenue|floatformat:0 }}</strong>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">This Month:</small>
+                        <strong>RWF {{ month_revenue|floatformat:0 }}</strong>
+                    </div>
+                    <div>
+                        <small class="text-muted">Average Order Value:</small>
+                        <strong>RWF {{ avg_order_value|floatformat:0 }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Status Breakdown -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-check"></i> Order Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-warning">Pending: {{ pending_orders }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info">Confirmed: {{ confirmed_orders }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-primary">Preparing: {{ preparing_orders }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Ready: {{ ready_orders }}</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-success">Delivered: {{ delivered_orders }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Status -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-warning">Pending: {{ pending_payments }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-success">Completed: {{ completed_payments }}</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger">Failed: {{ failed_payments }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Orders</h5>
+                    <a href="{% url 'admin_dashboard:order_management' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Customer</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                    <tr>
+                                        <td><strong>{{ order.order_number }}</strong></td>
+                                        <td>{{ order.customer_name }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ order.get_status_display_class }}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if order.payment %}
+                                                <span class="badge bg-{{ order.payment.get_status_display_class }}">
+                                                    {{ order.payment.get_status_display }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">No Payment</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><strong>RWF {{ order.total }}</strong></td>
+                                        <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">No orders yet</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Items -->
+    {% if popular_items %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star"></i> Popular Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Total Quantity</th>
+                                    <th>Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in popular_items %}
+                                    <tr>
+                                        <td>{{ item.menu_item__name }}</td>
+                                        <td><strong>{{ item.total_quantity }}</strong></td>
+                                        <td>{{ item.total_orders }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

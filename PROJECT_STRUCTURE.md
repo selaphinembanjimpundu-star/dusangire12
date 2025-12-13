@@ -136,50 +136,52 @@ pip freeze > requirements.txt
 ## Base Template Structure (Bootstrap 5)
 
 ### templates/base.html
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Dusangire Restaurant{% endblock %}</title>
-    
+
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
     <!-- Custom CSS -->
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
     {% block extra_css %}{% endblock %}
-</head>
-<body>
+  </head>
+  <body>
     {% include 'navbar.html' %}
-    
+
     <main>
-        {% if messages %}
-            {% include 'includes/messages.html' %}
-        {% endif %}
-        
-        {% block content %}{% endblock %}
+      {% if messages %} {% include 'includes/messages.html' %} {% endif %} {%
+      block content %}{% endblock %}
     </main>
-    
+
     {% include 'footer.html' %}
-    
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
-    
+
     {% block extra_js %}{% endblock %}
-</body>
+  </body>
 </html>
 ```
 
 ## Key Settings Configuration
 
 ### settings/base.py (excerpt)
+
 ```python
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -188,11 +190,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # Third party
     'crispy_forms',
     'crispy_bootstrap5',
-    
+
     # Local apps
     'accounts',
     'menu',
@@ -215,16 +217,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 ## Database Models Quick Reference
 
 ### accounts/models.py (Phase 1)
+
 - User (extends Django User)
 - Profile (phone, address, dietary_preferences)
 
 ### menu/models.py (Phase 2)
+
 - Category
 - DietaryTag
 - MenuItem (with image, price, category, tags)
 - NutritionInfo
 
 ### orders/models.py (Phase 3)
+
 - Cart
 - CartItem
 - Order
@@ -232,10 +237,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 - OrderStatus
 
 ### delivery/models.py (Phase 4)
+
 - DeliveryAddress
 - DeliveryZone
 
 ### payments/models.py (Phase 5)
+
 - PaymentMethod
 - Payment
 
@@ -246,4 +253,3 @@ MEDIA_ROOT = BASE_DIR / 'media'
 3. Initialize Git repository
 4. Create initial database migrations
 5. Build base templates with Bootstrap
-

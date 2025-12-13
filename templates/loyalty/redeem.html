@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Redeem Points - Dusangire Restaurant{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-gift"></i> Redeem Points</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Your Balance:</strong> {{ loyalty_points.total_points }} points
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5>{{ redemption.name }}</h5>
+                            <p class="text-muted">{{ redemption.description }}</p>
+                            <div class="mb-3">
+                                <span class="badge bg-primary fs-6">{{ redemption.points_required }} points required</span>
+                                {% if redemption.discount_amount %}
+                                    <span class="badge bg-success fs-6 ms-2">RWF {{ redemption.discount_amount }} discount</span>
+                                {% elif redemption.discount_percentage %}
+                                    <span class="badge bg-success fs-6 ms-2">{{ redemption.discount_percentage }}% discount</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if loyalty_points.total_points >= redemption.points_required %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Are you sure you want to redeem <strong>{{ redemption.points_required }} points</strong> for <strong>{{ redemption.name }}</strong>?
+                                {% if new_balance %}
+                                <br><small>Your new balance will be: <strong>{{ new_balance }} points</strong></small>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Confirm Redemption
+                                </button>
+                                <a href="{% url 'loyalty:dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                            You don't have enough points for this redemption. You need {{ redemption.points_required }} points, but you only have {{ loyalty_points.total_points }} points.
+                        </div>
+                        <a href="{% url 'loyalty:dashboard' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

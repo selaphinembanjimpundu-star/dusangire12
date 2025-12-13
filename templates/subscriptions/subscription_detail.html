@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscription Details - Dusangire Restaurant{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>{{ subscription.plan.name }}</h1>
+            <p class="text-muted mb-0">Subscription Details</p>
+        </div>
+        <div>
+            <a href="{% url 'subscriptions:my_subscriptions' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Subscriptions
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Subscription Information -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Subscription Information</h5>
+                    <span class="badge bg-{% if subscription.status == 'active' %}success{% elif subscription.status == 'paused' %}warning{% else %}secondary{% endif %} fs-6">
+                        {{ subscription.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Plan:</strong> {{ subscription.plan.name }}</p>
+                            <p><strong>Type:</strong> {{ subscription.plan.get_plan_type_display }}</p>
+                            <p><strong>Price:</strong> RWF {{ subscription.plan.price }} per {{ subscription.plan.get_plan_type_display|lower }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Start Date:</strong> {{ subscription.start_date|date:"F d, Y" }}</p>
+                            <p><strong>End Date:</strong> {{ subscription.end_date|date:"F d, Y" }}</p>
+                            {% if subscription.is_active %}
+                                <p><strong>Days Remaining:</strong> 
+                                    <span class="badge bg-info">{{ subscription.days_remaining }} days</span>
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if subscription.preferred_delivery_time %}
+                        <p><strong>Preferred Delivery Time:</strong> {{ subscription.preferred_delivery_time|time:"H:i" }}</p>
+                    {% endif %}
+                    
+                    {% if subscription.dietary_preferences %}
+                        <p><strong>Dietary Preferences:</strong> {{ subscription.dietary_preferences }}</p>
+                    {% endif %}
+                    
+                    <div class="mb-2">
+                        <strong>Auto-Order:</strong>
+                        {% if subscription.auto_order_enabled %}
+                            <span class="badge bg-success">Enabled</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Disabled</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Subscription Orders -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> Subscription Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if subscription_orders %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Scheduled Date</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sub_order in subscription_orders %}
+                                        <tr>
+                                            <td><strong>{{ sub_order.order.order_number }}</strong></td>
+                                            <td>{{ sub_order.scheduled_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ sub_order.order.get_status_display_class }}">
+                                                    {{ sub_order.order.get_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>RWF {{ sub_order.order.total }}</td>
+                                            <td>
+                                                <a href="{% url 'orders:order_detail' sub_order.order.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No orders generated yet from this subscription.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if subscription.status == 'active' %}
+                            <a href="{% url 'subscriptions:update' subscription.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Update Preferences
+                            </a>
+                            <a href="{% url 'subscriptions:pause' subscription.id %}" class="btn btn-outline-warning">
+                                <i class="bi bi-pause-circle"></i> Pause Subscription
+                            </a>
+                            <a href="{% url 'subscriptions:cancel' subscription.id %}" class="btn btn-outline-danger">
+                                <i class="bi bi-x-circle"></i> Cancel Subscription
+                            </a>
+                        {% elif subscription.status == 'paused' %}
+                            <a href="{% url 'subscriptions:resume' subscription.id %}" class="btn btn-outline-success">
+                                <i class="bi bi-play-circle"></i> Resume Subscription
+                            </a>
+                            <a href="{% url 'subscriptions:cancel' subscription.id %}" class="btn btn-outline-danger">
+                                <i class="bi bi-x-circle"></i> Cancel Subscription
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
