@@ -69,4 +69,51 @@ class SupportMessageForm(forms.ModelForm):
         }
 
 
-
+class FeedbackForm(forms.Form):
+    """Public feedback form (doesn't require login)"""
+    FEEDBACK_TYPES = [
+        ('general', 'General Feedback'),
+        ('suggestion', 'Feature Suggestion'),
+        ('bug', 'Bug Report'),
+        ('compliment', 'Compliment'),
+        ('complaint', 'Complaint'),
+    ]
+    
+    name = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your name'
+        }),
+        required=True
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'your.email@example.com'
+        }),
+        required=True
+    )
+    feedback_type = forms.ChoiceField(
+        choices=FEEDBACK_TYPES,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        }),
+        required=True
+    )
+    subject = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Brief subject'
+        }),
+        required=True
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 6,
+            'placeholder': 'Your feedback, suggestion, or question...'
+        }),
+        required=True
+    )

@@ -289,12 +289,8 @@ def checkout(request):
                 # Set appropriate payment status
                 if payment_method == PaymentMethod.CASH_ON_DELIVERY:
                     payment_status = PaymentStatus.PENDING
-                elif payment_method in [PaymentMethod.MTN_MOBILE_MONEY, PaymentMethod.AIRTEL_MONEY, PaymentMethod.BANK_TRANSFER]:
-                    # If transaction ID is provided, mark as processing, otherwise pending
-                    transaction_id = request.POST.get('transaction_id', '').strip()
-                    payment_status = PaymentStatus.PROCESSING if transaction_id else PaymentStatus.PENDING
                 else:
-                    payment_status = PaymentStatus.PENDING
+                    payment_status = PaymentStatus.PENDING  # Will be updated by gateway
                 
                 payment = Payment.objects.create(
                     order=order,
@@ -307,10 +303,70 @@ def checkout(request):
                     notes=request.POST.get('payment_notes', '').strip()
                 )
                 
+                # Initiate payment with gateway if not cash on delivery
+                if payment_method != PaymentMethod.CASH_ON_DELIVERY:
+                    try:
+                        from payments.gateways import PaymentGatewayService, PaymentGatewayError
+                        
+                        # Prepare gateway parameters
+                        gateway_params = {
+                            'phone_number': payment.phone_number,
+                            'account_number': payment.account_number,
+                        }
+                        
+                        # Initiate payment
+                        gateway_result = PaymentGatewayService.initiate_payment(payment, **gateway_params)
+                        
+                        # Update payment with gateway response
+                        payment.gateway_response = gateway_result
+                        payment.gateway_name = payment_method
+                        
+                        if gateway_result.get('payment_link'):
+                            payment.payment_link = gateway_result['payment_link']
+                            payment.save()
+                            # Redirect to payment gateway
+                            return redirect(gateway_result['payment_link'])
+                        elif gateway_result.get('transaction_id'):
+                            payment.transaction_id = gateway_result['transaction_id']
+                            payment.status = PaymentStatus.PROCESSING
+                            payment.save()
+                            messages.success(
+                                request, 
+                                f'Order {order.order_number} placed! {gateway_result.get("message", "Please complete payment on your phone.")}'
+                            )
+                        else:
+                            payment.save()
+                            messages.success(request, f'Order {order.order_number} placed! Please complete payment.')
+                            
+                    except PaymentGatewayError as e:
+                        # Log error but don't fail the order
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Payment gateway error for order {order.order_number}: {str(e)}')
+                        payment.gateway_response = {'error': str(e)}
+                        payment.save()
+                        messages.warning(
+                            request, 
+                            f'Order {order.order_number} placed, but payment initiation failed. Please contact support or complete payment manually.'
+                        )
+                    except Exception as e:
+                        # Log error but don't fail the order
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Unexpected payment gateway error: {str(e)}', exc_info=True)
+                        payment.gateway_response = {'error': str(e)}
+                        payment.save()
+                        messages.warning(
+                            request, 
+                            f'Order {order.order_number} placed, but payment initiation encountered an issue. Please contact support.'
+                        )
+                
                 # Clear cart only after successful order creation
                 cart.items.all().delete()
                 
-                messages.success(request, f'Order {order.order_number} placed successfully!')
+                if payment_method == PaymentMethod.CASH_ON_DELIVERY:
+                    messages.success(request, f'Order {order.order_number} placed successfully!')
+                
                 return redirect('payments:payment_confirmation', payment_id=payment.id)
                 
         except ValueError as e:

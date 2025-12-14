@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions - NOURISH LINK{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">
+          <i class="bi bi-question-circle"></i> Frequently Asked Questions
+        </h1>
+        <p class="lead text-muted">Find answers to common questions about NOURISH LINK</p>
+      </div>
+
+      <div class="accordion" id="faqAccordion">
+        {% for faq in faqs %}
+        <div class="accordion-item mb-3 border rounded shadow-sm">
+          <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+            <button
+              class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapse{{ forloop.counter }}"
+              aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-controls="collapse{{ forloop.counter }}"
+            >
+              <i class="bi bi-question-circle-fill text-primary me-2"></i>
+              {{ faq.question }}
+            </button>
+          </h2>
+          <div
+            id="collapse{{ forloop.counter }}"
+            class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+            aria-labelledby="heading{{ forloop.counter }}"
+            data-bs-parent="#faqAccordion"
+          >
+            <div class="accordion-body">
+              <p class="mb-0">{{ faq.answer }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="card mt-5 border-0 shadow-sm">
+        <div class="card-body text-center p-4">
+          <h5 class="card-title">
+            <i class="bi bi-chat-dots"></i> Still have questions?
+          </h5>
+          <p class="card-text text-muted">
+            Can't find what you're looking for? We're here to help!
+          </p>
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <a href="{% url 'support:feedback' %}" class="btn btn-primary">
+              <i class="bi bi-chat-heart"></i> Send Feedback
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'support:create_ticket' %}" class="btn btn-outline-primary">
+              <i class="bi bi-ticket-perforated"></i> Create Support Ticket
+            </a>
+            {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">
+              <i class="bi bi-box-arrow-in-right"></i> Login to Contact Support
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import SupportTicket, SupportMessage
-from .forms import SupportTicketForm, SupportMessageForm
+from .forms import SupportTicketForm, SupportMessageForm, FeedbackForm
 
 
 @login_required
@@ -176,3 +178,82 @@ def staff_ticket_detail(request, ticket_id):
         'staff_users': staff_users,
     }
     return render(request, 'support/staff_ticket_detail.html', context)
+
+
+def feedback(request):
+    """Public feedback form (doesn't require login)"""
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            # Send email to admin
+            subject = f"[Feedback] {form.cleaned_data['feedback_type'].title()}: {form.cleaned_data['subject']}"
+            message = f"""
+From: {form.cleaned_data['name']} ({form.cleaned_data['email']})
+Type: {form.cleaned_data['feedback_type']}
+Subject: {form.cleaned_data['subject']}
+
+Message:
+{form.cleaned_data['message']}
+"""
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.ADMINS[0][1] if settings.ADMINS else settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=False,
+                )
+                messages.success(request, "Thank you for your feedback! We'll review it and get back to you if needed.")
+                return redirect('support:feedback')
+            except Exception as e:
+                messages.error(request, "Sorry, there was an error sending your feedback. Please try again later.")
+    else:
+        form = FeedbackForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'support/feedback.html', context)
+
+
+def faq(request):
+    """FAQ page"""
+    faqs = [
+        {
+            'question': 'How do I place an order?',
+            'answer': 'Browse our menu, add items to your cart, and proceed to checkout. You can choose your delivery address and payment method during checkout.'
+        },
+        {
+            'question': 'What payment methods do you accept?',
+            'answer': 'We accept mobile money (MTN, Airtel), bank transfers, and cash on delivery.'
+        },
+        {
+            'question': 'How long does delivery take?',
+            'answer': 'Delivery times vary by location. For hospital deliveries, we typically deliver within 30-60 minutes. Outside hospital deliveries may take longer.'
+        },
+        {
+            'question': 'Can I subscribe to regular meals?',
+            'answer': 'Yes! We offer daily, weekly, and monthly subscription plans. You can customize your meal preferences and delivery schedule.'
+        },
+        {
+            'question': 'Do you offer meals for special dietary needs?',
+            'answer': 'Absolutely! We have meals for diabetic, low-sodium, high-protein, post-surgery, vegetarian, and other dietary requirements. Use the filters on our menu page to find suitable meals.'
+        },
+        {
+            'question': 'How do I track my order?',
+            'answer': 'After placing an order, you can track its status in your Order History. You\'ll also receive notifications when your order status changes.'
+        },
+        {
+            'question': 'Can I cancel or modify my order?',
+            'answer': 'You can cancel orders that are still pending. Once an order is confirmed and being prepared, please contact support for assistance.'
+        },
+        {
+            'question': 'How do loyalty points work?',
+            'answer': 'You earn points with every order. Points can be redeemed for discounts on future orders. Check your loyalty dashboard to see your points balance and redemption options.'
+        },
+    ]
+    
+    context = {
+        'faqs': faqs,
+    }
+    return render(request, 'support/faq.html', context)

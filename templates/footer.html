@@ -1,8 +1,12 @@
+{% load static %}
 <footer class="text-light mt-5">
   <div class="container">
     <div class="row g-4">
       <div class="col-md-4 col-lg-4">
-        <h5><i class="bi bi-hospital"></i> Dusangire Restaurant</h5>
+        <h5 class="d-flex align-items-center">
+          <img src="{% static 'images/logo.png' %}" alt="NOURISH LINK Logo" class="me-2" style="height: 30px; width: auto;" />
+          NOURISH LINK
+        </h5>
         <p
           class="mt-3"
           style="color: rgba(255, 255, 255, 0.8); line-height: 1.8"
@@ -160,7 +164,7 @@
     <div class="row">
       <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
         <p class="mb-0" style="color: rgba(255, 255, 255, 0.7)">
-          &copy; {% now "Y" %} Dusangire Restaurant. All rights reserved.
+          &copy; {% now "Y" %} NOURISH LINK. All rights reserved.
         </p>
       </div>
       <div class="col-md-6 text-center text-md-end">

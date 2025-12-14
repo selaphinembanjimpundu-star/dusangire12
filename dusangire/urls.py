@@ -13,6 +13,7 @@ from menu import views as menu_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', menu_views.menu_list, name='home'),
+    path('health/', menu_views.health_check, name='health_check'),  # Health check endpoint
     path('menu/', include('menu.urls')),
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),

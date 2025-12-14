@@ -166,3 +166,37 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Payment Gateway Configuration
+# Hospital-ready payment integration settings
+
+# Payment Environment: 'sandbox' or 'production'
+PAYMENT_ENVIRONMENT = 'sandbox'  # Change to 'production' when ready
+
+# Site URL for payment callbacks
+SITE_URL = 'http://localhost:8000'  # Update with your actual domain
+
+# Currency and Country Settings
+CURRENCY_CODE = 'UGX'  # Uganda Shilling
+COUNTRY_CODE = 'UG'  # Uganda
+
+# MTN Mobile Money API Configuration
+MTN_MOMO_API_KEY = ''  # Set in environment variables
+MTN_MOMO_API_SECRET = ''  # Set in environment variables
+MTN_MOMO_SUBSCRIPTION_KEY = ''  # Set in environment variables
+
+# Airtel Money API Configuration
+AIRTEL_MONEY_CLIENT_ID = ''  # Set in environment variables
+AIRTEL_MONEY_CLIENT_SECRET = ''  # Set in environment variables
+
+# Flutterwave API Configuration (for Bank Transfer and Card Payments)
+FLUTTERWAVE_PUBLIC_KEY = ''  # Set in environment variables
+FLUTTERWAVE_SECRET_KEY = ''  # Set in environment variables
+FLUTTERWAVE_SECRET_HASH = ''  # Set in environment variables (for webhook verification)
+
+# Payment Logo URL (for payment pages)
+PAYMENT_LOGO_URL = ''  # Optional: URL to hospital/restaurant logo
+
+# Hospital Acquisition Settings
+HOSPITAL_NAME = 'Hospital Meal Service'  # Update with actual hospital name
+HOSPITAL_ACQUISITION_MODE = True  # Enable hospital-specific features

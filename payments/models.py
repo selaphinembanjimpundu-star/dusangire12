@@ -51,6 +51,11 @@ class Payment(models.Model):
     # Payment notes
     notes = models.TextField(blank=True, help_text="Additional payment notes or instructions")
     
+    # Gateway integration fields
+    gateway_response = models.JSONField(null=True, blank=True, help_text="Response from payment gateway")
+    payment_link = models.URLField(blank=True, help_text="Payment link for redirect-based payments")
+    gateway_name = models.CharField(max_length=50, blank=True, help_text="Payment gateway used")
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

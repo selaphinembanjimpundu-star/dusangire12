@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Menu - Dusangire Restaurant{% endblock %}
+{% block title %}Menu - NOURISH LINK{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -143,86 +143,402 @@
 
         <!-- Menu Items -->
         <div class="col-lg-9">
-            {% if menu_by_category %}
-                {% for category, items in menu_by_category.items %}
-                    <div class="mb-5">
-                        <div class="d-flex align-items-center mb-4">
-                            <h2 class="mb-0">{{ category.name }}</h2>
-                            <span class="badge bg-primary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
-                        </div>
-                        {% if category.description %}
-                            <p class="text-muted mb-4">{{ category.description }}</p>
-                        {% endif %}
+            {% if has_active_filters %}
+                <!-- Show filtered results and suggestions when filters are active -->
+                {% if menu_by_category %}
+                    <div class="mb-4">
+                        <h3 class="mb-3">
+                            <i class="bi bi-funnel-fill"></i> Filtered Results
+                            <span class="badge bg-primary ms-2">{{ page_obj.paginator.count }} Item{{ page_obj.paginator.count|pluralize }}</span>
+                        </h3>
+                    </div>
+                    
+                    {% for category, items in menu_by_category.items %}
+                        <div class="mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <h4 class="mb-0">{{ category.name }}</h4>
+                                <span class="badge bg-secondary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
+                            </div>
 
-                        <div class="row g-4">
-                            {% for item in items %}
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="card menu-card h-100 shadow-sm">
-                                        {% if item.image %}
-                                            <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                     {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                     loading="lazy"
-                                                     class="card-img-top w-100 h-100" 
-                                                     alt="{{ item.name }}"
-                                                     style="object-fit: cover;">
-                                            </div>
-                                        {% else %}
-                                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                            </div>
-                                        {% endif %}
-                                        
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title">{{ item.name }}</h5>
-                                            <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                            <div class="row g-4">
+                                {% for item in items %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card menu-card h-100 shadow-sm">
+                                            {% if item.image %}
+                                                <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                         loading="lazy"
+                                                         class="card-img-top w-100 h-100" 
+                                                         alt="{{ item.name }}"
+                                                         style="object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            {% endif %}
                                             
-                                            {% if item.dietary_tags.all %}
-                                                <div class="mb-2">
-                                                    {% for tag in item.dietary_tags.all %}
-                                                        <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                    {% endfor %}
-                                                </div>
-                                            {% endif %}
-
-                                            {% if item.calories %}
-                                                <div class="mb-2">
-                                                    <small class="text-muted">
-                                                        <i class="bi bi-fire"></i> {{ item.calories }} kcal
-                                                    </small>
-                                                </div>
-                                            {% endif %}
-
-                                            <div class="mt-auto pt-3 border-top">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <span class="text-muted small d-block">Price</span>
-                                                        <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                                
+                                                {% if item.dietary_tags.all %}
+                                                    <div class="mb-2">
+                                                        {% for tag in item.dietary_tags.all %}
+                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                        {% endfor %}
                                                     </div>
-                                                    <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                        <i class="bi bi-eye"></i> View
-                                                    </a>
+                                                {% endif %}
+
+                                                {% if item.calories %}
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-fire"></i> {{ item.calories }} kcal
+                                                        </small>
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="text-muted small d-block">Price</span>
+                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                        </div>
+                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
+                    {% endfor %}
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <h5 class="mt-2">No items match your filters</h5>
+                        <p class="mb-3">Try adjusting your search criteria or check out our suggestions below.</p>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="alert alert-info text-center">
-                    <i class="bi bi-info-circle"></i>
-                    <h5 class="mt-2">No menu items found</h5>
-                    <p class="mb-0">
-                        {% if search_query or selected_category_id or selected_dietary_tags %}
-                            Try adjusting your filters or search terms.
-                        {% else %}
-                            No menu items available at the moment. Please check back later.
-                        {% endif %}
-                    </p>
+                {% endif %}
+                
+                <!-- Suggestions Section -->
+                <div class="mt-5">
+                    <h3 class="mb-4">
+                        <i class="bi bi-lightbulb"></i> Suggestions for You
+                    </h3>
+                    
+                    <!-- Recommendations -->
+                    {% if recommendations %}
+                        <div class="mb-5">
+                            <h5 class="mb-3">
+                                <i class="bi bi-star-fill text-warning"></i> Recommended for You
+                            </h5>
+                            <div class="row g-4">
+                                {% for item in recommendations|slice:":6" %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card menu-card h-100 shadow-sm">
+                                            {% if item.image %}
+                                                <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                         loading="lazy"
+                                                         class="card-img-top w-100 h-100" 
+                                                         alt="{{ item.name }}"
+                                                         style="object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                                
+                                                {% if item.dietary_tags.all %}
+                                                    <div class="mb-2">
+                                                        {% for tag in item.dietary_tags.all %}
+                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="text-muted small d-block">Price</span>
+                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                        </div>
+                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Popular Items -->
+                    {% if popular_items %}
+                        <div class="mb-5">
+                            <h5 class="mb-3">
+                                <i class="bi bi-fire text-danger"></i> Popular Items
+                            </h5>
+                            <div class="row g-4">
+                                {% for item in popular_items|slice:":6" %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card menu-card h-100 shadow-sm">
+                                            {% if item.image %}
+                                                <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                         loading="lazy"
+                                                         class="card-img-top w-100 h-100" 
+                                                         alt="{{ item.name }}"
+                                                         style="object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                                
+                                                {% if item.dietary_tags.all %}
+                                                    <div class="mb-2">
+                                                        {% for tag in item.dietary_tags.all %}
+                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="text-muted small d-block">Price</span>
+                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                        </div>
+                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Highly Rated Items -->
+                    {% if highly_rated_items %}
+                        <div class="mb-5">
+                            <h5 class="mb-3">
+                                <i class="bi bi-star-fill text-warning"></i> Highly Rated
+                            </h5>
+                            <div class="row g-4">
+                                {% for item in highly_rated_items|slice:":6" %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card menu-card h-100 shadow-sm">
+                                            {% if item.image %}
+                                                <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                         loading="lazy"
+                                                         class="card-img-top w-100 h-100" 
+                                                         alt="{{ item.name }}"
+                                                         style="object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                                
+                                                {% if item.dietary_tags.all %}
+                                                    <div class="mb-2">
+                                                        {% for tag in item.dietary_tags.all %}
+                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="text-muted small d-block">Price</span>
+                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                        </div>
+                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
+            {% else %}
+                <!-- No filters active - show all menu items grouped by category -->
+                {% if menu_by_category %}
+                    {% for category, items in menu_by_category.items %}
+                        <div class="mb-5">
+                            <div class="d-flex align-items-center mb-4">
+                                <h2 class="mb-0">{{ category.name }}</h2>
+                                <span class="badge bg-primary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
+                            </div>
+                            {% if category.description %}
+                                <p class="text-muted mb-4">{{ category.description }}</p>
+                            {% endif %}
+
+                            <div class="row g-4">
+                                {% for item in items %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="card menu-card h-100 shadow-sm">
+                                            {% if item.image %}
+                                                <div class="position-relative overflow-hidden" style="height: 200px;">
+                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                         loading="lazy"
+                                                         class="card-img-top w-100 h-100" 
+                                                         alt="{{ item.name }}"
+                                                         style="object-fit: cover;">
+                                                </div>
+                                            {% else %}
+                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                                
+                                                {% if item.dietary_tags.all %}
+                                                    <div class="mb-2">
+                                                        {% for tag in item.dietary_tags.all %}
+                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if item.calories %}
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-fire"></i> {{ item.calories }} kcal
+                                                        </small>
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <span class="text-muted small d-block">Price</span>
+                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
+                                                        </div>
+                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Pagination for all items -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="bi bi-info-circle"></i>
+                        <h5 class="mt-2">No menu items found</h5>
+                        <p class="mb-0">
+                            No menu items available at the moment. Please check back later.
+                        </p>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
     </div>

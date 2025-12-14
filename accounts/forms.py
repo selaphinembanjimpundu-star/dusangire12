@@ -9,11 +9,11 @@ class UserRegisterForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(max_length=30, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     phone = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    role = forms.ChoiceField(
-        choices=UserRole.choices,
-        initial=UserRole.CUSTOMER,
+    no_light_confirmation = forms.BooleanField(
         required=True,
-        widget=forms.Select(attrs={'class': 'form-select'})
+        label="I confirm that I do not have light",
+        help_text="Registration is only available for customers without light.",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
     
     class Meta:
@@ -31,6 +31,19 @@ class UserRegisterForm(UserCreationForm):
         self.fields['password1'].widget.attrs.update({'class': 'form-control'})
         self.fields['password2'].widget.attrs.update({'class': 'form-control'})
     
+    def clean(self):
+        cleaned_data = super().clean()
+        no_light_confirmation = cleaned_data.get('no_light_confirmation')
+        
+        # Only allow registration if customer confirms they don't have light
+        if not no_light_confirmation:
+            raise forms.ValidationError(
+                "Registration is only available for customers without light. "
+                "Please confirm that you do not have light to proceed."
+            )
+        
+        return cleaned_data
+    
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
@@ -39,10 +52,13 @@ class UserRegisterForm(UserCreationForm):
         
         if commit:
             user.save()
-            # Update profile
+            # Update profile - ALWAYS set role to CUSTOMER for public registration
+            # Admin and nutritionist accounts must be created through admin panel or management commands
             profile = user.profile
             profile.phone = self.cleaned_data.get('phone', '')
-            profile.role = self.cleaned_data.get('role', UserRole.CUSTOMER)
+            profile.role = UserRole.CUSTOMER  # Force CUSTOMER role - no exceptions
+            # Set has_light to False for new registrations (they confirmed they don't have light)
+            profile.has_light = False
             profile.save()
         
         return user

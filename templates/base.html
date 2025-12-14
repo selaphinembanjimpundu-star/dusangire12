@@ -5,14 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Dusangire Restaurant - Healthy, medically-approved meals for faster recovery and better health"
+      content="NOURISH LINK - Hospital E-Commerce Restaurant. Healthy, medically-approved meals for faster recovery and better health. Order nutritious meals delivered to your hospital room or home."
     />
     <meta
       name="keywords"
-      content="restaurant, healthy meals, hospital food, dietary meals, recovery meals"
+      content="hospital restaurant, healthy meals, hospital food, dietary meals, recovery meals, medical nutrition, hospital e-commerce, patient meals, NOURISH LINK"
     />
+    <meta name="author" content="NOURISH LINK" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="NOURISH LINK - Hospital E-Commerce Restaurant" />
+    <meta property="og:description" content="Healthy, medically-approved meals for faster recovery and better health" />
+    <meta property="og:site_name" content="NOURISH LINK" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NOURISH LINK - Hospital E-Commerce Restaurant" />
+    <meta name="twitter:description" content="Healthy, medically-approved meals for faster recovery and better health" />
+    
     <title>
-      {% block title %}Dusangire Restaurant - Healthy Meals for Recovery{% endblock %}
+      {% block title %}NOURISH LINK - Hospital E-Commerce Restaurant{% endblock %}
     </title>
 
     <!-- Preconnect for performance -->
@@ -42,6 +56,31 @@
     <!-- Custom CSS -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": "NOURISH LINK",
+      "description": "Hospital E-Commerce Restaurant providing healthy, medically-approved meals for faster recovery and better health",
+      "url": "{{ request.scheme }}://{{ request.get_host }}",
+      "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
+      "servesCuisine": "Medical Nutrition, Healthy Meals",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Hospital Location",
+        "addressCountry": "UG"
+      },
+      "hasMenu": "{{ request.scheme }}://{{ request.get_host }}{% url 'menu:menu_list' %}",
+      "acceptsReservations": false,
+      "offers": {
+        "@type": "Offer",
+        "description": "Hospital meal delivery service with subscription plans"
+      }
+    }
+    </script>
 
     {% block extra_css %}{% endblock %}
   </head>

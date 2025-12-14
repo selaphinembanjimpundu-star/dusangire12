@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Register - Dusangire Restaurant{% endblock %}
+{% block title %}Register - NOURISH LINK{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -51,9 +51,21 @@
                                 <label for="id_phone" class="form-label">Phone</label>
                                 {{ form.phone }}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="id_role" class="form-label">Account Type *</label>
-                                {{ form.role }}
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    {{ form.no_light_confirmation }}
+                                    <label class="form-check-label" for="id_no_light_confirmation">
+                                        {{ form.no_light_confirmation.label }} *
+                                    </label>
+                                    {% if form.no_light_confirmation.help_text %}
+                                        <div class="form-text text-muted">{{ form.no_light_confirmation.help_text }}</div>
+                                    {% endif %}
+                                    {% if form.no_light_confirmation.errors %}
+                                        <div class="text-danger small">{{ form.no_light_confirmation.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         <div class="row">

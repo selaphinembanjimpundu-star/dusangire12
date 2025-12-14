@@ -26,6 +26,12 @@ class Profile(models.Model):
     # Dietary preferences (comma-separated or JSON field)
     dietary_preferences = models.TextField(blank=True, help_text="Dietary preferences or restrictions")
     
+    # Light status - only customers without light can register
+    has_light = models.BooleanField(
+        default=False,
+        help_text="Whether customer has light. Only customers without light can register."
+    )
+    
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
     

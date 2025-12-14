@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Avg, Count
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.db import connection
+from django.utils import timezone
 from .models import Category, MenuItem, DietaryTag
 from .forms import MenuFilterForm
 from .utils import get_recommendations, get_popular_items, get_highly_rated_items
@@ -62,18 +65,12 @@ def menu_list(request):
     if max_fat:
         menu_items = menu_items.filter(fat__lte=max_fat)
     
-    # Group items by category for display
-    menu_by_category = {}
-    for category in categories:
-        items = menu_items.filter(category=category)
-        if items.exists():
-            menu_by_category[category] = items
-    
-    # If no category filter, show all items grouped
-    # If category filter is applied, show only that category
-    if category_id:
-        selected_category = get_object_or_404(Category, id=category_id)
-        menu_by_category = {selected_category: menu_items.filter(category=selected_category)}
+    # Check if any filters are active
+    has_active_filters = bool(
+        search_query or category_id or dietary_tag_ids or 
+        min_price or max_price or max_calories or 
+        min_protein or max_carbs or max_fat
+    )
     
     # Get recommendations for authenticated users
     recommendations = None
@@ -84,18 +81,26 @@ def menu_list(request):
     popular_items = get_popular_items(limit=6)
     highly_rated_items = get_highly_rated_items(limit=6)
     
-    # Pagination for menu items (if not grouped by category)
-    # If category filter is applied, paginate within that category
-    if category_id:
-        paginator = Paginator(list(menu_items), 12)  # 12 items per page
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        menu_by_category = {selected_category: page_obj}
-    else:
-        # For all items, paginate the flat list
+    # When filters are active, show only filtered results (not all menu items)
+    if has_active_filters:
+        # Pagination for filtered results
         paginator = Paginator(list(menu_items), 12)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+        
+        # Group paginated items by category
+        menu_by_category = {}
+        for item in page_obj:
+            if item.category not in menu_by_category:
+                menu_by_category[item.category] = []
+            menu_by_category[item.category].append(item)
+    else:
+        # No filters active - show all items grouped by category
+        # Pagination for all items
+        paginator = Paginator(list(menu_items), 12)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
         # Group paginated items by category
         menu_by_category = {}
         for item in page_obj:
@@ -114,7 +119,8 @@ def menu_list(request):
         'recommendations': recommendations,
         'popular_items': popular_items,
         'highly_rated_items': highly_rated_items,
-        'page_obj': page_obj if category_id or search_query or dietary_tag_ids or min_price or max_price or max_calories or min_protein or max_carbs or max_fat else None,
+        'has_active_filters': has_active_filters,
+        'page_obj': page_obj,
     }
     return render(request, 'menu/menu_list.html', context)
 
@@ -155,3 +161,38 @@ def menu_detail(request, item_id):
         'review_stats': review_stats,
     }
     return render(request, 'menu/menu_detail.html', context)
+
+
+def health_check(request):
+    """
+    Health check endpoint for monitoring and load balancers
+    Returns JSON with application status
+    """
+    status = {
+        'status': 'healthy',
+        'timestamp': timezone.now().isoformat(),
+        'checks': {}
+    }
+    
+    # Database check
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            status['checks']['database'] = 'ok'
+    except Exception as e:
+        status['checks']['database'] = f'error: {str(e)}'
+        status['status'] = 'unhealthy'
+    
+    # Basic model check
+    try:
+        menu_count = MenuItem.objects.count()
+        status['checks']['models'] = 'ok'
+        status['menu_items_count'] = menu_count
+    except Exception as e:
+        status['checks']['models'] = f'error: {str(e)}'
+        status['status'] = 'unhealthy'
+    
+    # Return appropriate HTTP status
+    http_status = 200 if status['status'] == 'healthy' else 503
+    
+    return JsonResponse(status, status=http_status)
