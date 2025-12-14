@@ -11,3 +11,5 @@ def get_unread_notification_count(user):
         return 0
     return Notification.get_unread_count(user)
 
+
+

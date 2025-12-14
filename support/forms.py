@@ -68,3 +68,5 @@ class SupportMessageForm(forms.ModelForm):
             'is_internal': 'Internal note (staff only)',
         }
 
+
+

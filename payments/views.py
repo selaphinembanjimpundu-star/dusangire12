@@ -23,10 +23,18 @@ def payment_confirmation(request, payment_id):
 @login_required
 def payment_history(request):
     """Payment history for user"""
+    from django.core.paginator import Paginator
+    
     payments = Payment.objects.filter(order__user=request.user).select_related('order').order_by('-created_at')
     
+    # Pagination
+    paginator = Paginator(payments, 20)  # 20 payments per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'payments': payments,
+        'page_obj': page_obj,
+        'payments': page_obj,  # For backward compatibility
     }
     return render(request, 'payments/payment_history.html', context)
 

@@ -28,7 +28,7 @@ class MenuItemAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'category', 'price', 'image', 'image_preview', 'ingredients')
+            'fields': ('name', 'description', 'category', 'price', 'ingredients', 'image', 'image_preview')
         }),
         ('Nutrition Information', {
             'fields': ('calories', 'protein', 'carbs', 'fat')

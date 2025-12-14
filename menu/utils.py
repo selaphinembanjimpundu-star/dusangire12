@@ -10,13 +10,13 @@ def get_recommendations(user, limit=6):
         return MenuItem.objects.filter(
             is_available=True,
             is_featured=True
-        )[:limit]
+        ).select_related('category').prefetch_related('dietary_tags')[:limit]
     
     # Get user's order history
     user_orders = Order.objects.filter(
         user=user,
         status__in=['delivered', 'ready']
-    ).select_related('user').prefetch_related('items__menu_item')
+    ).select_related('user').prefetch_related('items__menu_item__category', 'items__menu_item__dietary_tags')
     
     if not user_orders.exists():
         # No order history, return featured items
@@ -43,7 +43,7 @@ def get_recommendations(user, limit=6):
     # 3. Exclude already ordered items
     recommendations = MenuItem.objects.filter(
         is_available=True
-    ).exclude(id__in=ordered_items)
+    ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items)
     
     # Prioritize items from same categories
     category_recommendations = recommendations.filter(
@@ -63,14 +63,14 @@ def get_recommendations(user, limit=6):
         featured_items = MenuItem.objects.filter(
             is_available=True,
             is_featured=True
-        ).exclude(id__in=ordered_items)
+        ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items)
         all_recommendations = (all_recommendations | featured_items).distinct()
     
     # If still not enough, add popular items (by order count)
     if all_recommendations.count() < limit:
         popular_items = MenuItem.objects.filter(
             is_available=True
-        ).exclude(id__in=ordered_items).annotate(
+        ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items).annotate(
             order_count=Count('orderitem')
         ).order_by('-order_count')[:limit]
         all_recommendations = (all_recommendations | popular_items).distinct()
@@ -82,7 +82,7 @@ def get_popular_items(limit=6):
     """Get popular menu items based on order count"""
     return MenuItem.objects.filter(
         is_available=True
-    ).annotate(
+    ).select_related('category').prefetch_related('dietary_tags').annotate(
         order_count=Count('orderitem')
     ).order_by('-order_count', '-is_featured')[:limit]
 
@@ -93,11 +93,13 @@ def get_highly_rated_items(limit=6):
     
     return MenuItem.objects.filter(
         is_available=True
-    ).annotate(
+    ).select_related('category').prefetch_related('dietary_tags').annotate(
         avg_rating=Avg('reviews__rating'),
         review_count=Count('reviews')
     ).filter(
         review_count__gte=1,
         avg_rating__gte=4.0
     ).order_by('-avg_rating', '-review_count')[:limit]
+
+
 

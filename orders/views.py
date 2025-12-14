@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 from decimal import Decimal
 from menu.models import MenuItem
 from delivery.models import DeliveryAddress, DeliveryZone
@@ -362,9 +363,15 @@ def order_detail(request, order_id):
 @login_required
 def order_history(request):
     """Order history page"""
-    orders = Order.objects.filter(user=request.user).select_related('user').prefetch_related('items').order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).select_related('user', 'payment').prefetch_related('items__menu_item').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(orders, 10)  # 10 orders per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
     context = {
-        'orders': orders,
+        'page_obj': page_obj,
+        'orders': page_obj,  # For backward compatibility
     }
     return render(request, 'orders/order_history.html', context)

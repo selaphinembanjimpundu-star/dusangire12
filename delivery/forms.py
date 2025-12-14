@@ -54,3 +54,5 @@ class DeliveryAddressForm(forms.ModelForm):
                 self.fields['phone'].initial = user.profile.phone
             self.fields['full_name'].initial = user.get_full_name() or user.username
 
+
+

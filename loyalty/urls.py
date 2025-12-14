@@ -9,3 +9,5 @@ urlpatterns = [
     path('redeem/<int:redemption_id>/', views.redeem_points, name='redeem'),
 ]
 
+
+

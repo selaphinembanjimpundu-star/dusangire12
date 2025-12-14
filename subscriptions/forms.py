@@ -62,3 +62,5 @@ class SubscriptionUpdateForm(forms.ModelForm):
             'auto_order_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+
+

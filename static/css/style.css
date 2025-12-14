@@ -507,6 +507,62 @@ h1, h2, h3, h4, h5, h6 {
     animation: fadeIn 0.6s ease-out;
 }
 
+/* Mobile-First Responsive Design */
+/* Touch-friendly buttons - minimum 44x44px for mobile */
+.btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn-sm {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn-lg {
+    min-height: 52px;
+    min-width: 52px;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+/* Form inputs touch-friendly */
+.form-control,
+.form-select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem 1rem;
+}
+
+/* Card spacing for mobile */
+.card {
+    margin-bottom: 1.5rem;
+}
+
+/* Image lazy loading */
+img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
+/* Menu card images */
+.menu-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #f0f0f0;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .navbar-brand {
@@ -521,9 +577,139 @@ h1, h2, h3, h4, h5, h6 {
         transform: translateY(-4px) scale(1.01);
     }
     
-    .btn {
-        padding: 0.625rem 1.25rem;
-        font-size: 0.8rem;
+    /* Stack filter sidebar on mobile */
+    .filter-sidebar {
+        position: static;
+        margin-bottom: 2rem;
+    }
+    
+    /* Better spacing for mobile */
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Menu grid adjustments */
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Table responsive */
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    /* Pagination mobile-friendly */
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .page-link {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Navbar mobile adjustments */
+    .navbar-nav {
+        padding-top: 1rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem !important;
+        margin: 0.25rem 0;
+    }
+    
+    /* Footer mobile */
+    footer {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    /* Cart and checkout mobile */
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .cart-item-actions {
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Extra small devices */
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .display-4 {
+        font-size: 1.75rem;
+    }
+    
+    .display-5 {
+        font-size: 1.5rem;
+    }
+    
+    .display-6 {
+        font-size: 1.25rem;
+    }
+    
+    /* Cards full width on very small screens */
+    .card {
+        margin-left: -15px;
+        margin-right: -15px;
+        border-radius: 0;
+    }
+    
+    /* Buttons full width on mobile */
+    .btn-mobile-full {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Hide less important elements */
+    .d-none-mobile {
+        display: none !important;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Large screens */
+@media (min-width: 1025px) {
+    .menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects on touch devices */
+    .card:hover,
+    .menu-card:hover,
+    .btn:hover {
+        transform: none;
+    }
+    
+    /* Larger tap targets */
+    a, button, input, select, textarea {
+        min-height: 44px;
+    }
+    
+    /* Better spacing for touch */
+    .nav-link {
+        padding: 1rem !important;
     }
 }
 

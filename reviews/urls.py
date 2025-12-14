@@ -10,3 +10,5 @@ urlpatterns = [
     path('<int:review_id>/helpful/', views.mark_helpful, name='mark_helpful'),
 ]
 
+
+

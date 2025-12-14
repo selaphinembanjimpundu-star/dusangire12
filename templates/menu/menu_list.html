@@ -160,7 +160,9 @@
                                     <div class="card menu-card h-100 shadow-sm">
                                         {% if item.image %}
                                             <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                <img src="{{ item.image.url }}" 
+                                                <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                                     {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                                     loading="lazy"
                                                      class="card-img-top w-100 h-100" 
                                                      alt="{{ item.name }}"
                                                      style="object-fit: cover;">

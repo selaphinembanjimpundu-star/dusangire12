@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q
+from django.db.models import Q, Avg, Count
+from django.core.paginator import Paginator
 from .models import Category, MenuItem, DietaryTag
 from .forms import MenuFilterForm
 from .utils import get_recommendations, get_popular_items, get_highly_rated_items
@@ -83,6 +84,25 @@ def menu_list(request):
     popular_items = get_popular_items(limit=6)
     highly_rated_items = get_highly_rated_items(limit=6)
     
+    # Pagination for menu items (if not grouped by category)
+    # If category filter is applied, paginate within that category
+    if category_id:
+        paginator = Paginator(list(menu_items), 12)  # 12 items per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        menu_by_category = {selected_category: page_obj}
+    else:
+        # For all items, paginate the flat list
+        paginator = Paginator(list(menu_items), 12)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        # Group paginated items by category
+        menu_by_category = {}
+        for item in page_obj:
+            if item.category not in menu_by_category:
+                menu_by_category[item.category] = []
+            menu_by_category[item.category].append(item)
+    
     context = {
         'menu_by_category': menu_by_category,
         'categories': categories,
@@ -94,6 +114,7 @@ def menu_list(request):
         'recommendations': recommendations,
         'popular_items': popular_items,
         'highly_rated_items': highly_rated_items,
+        'page_obj': page_obj if category_id or search_query or dietary_tag_ids or min_price or max_price or max_calories or min_protein or max_carbs or max_fat else None,
     }
     return render(request, 'menu/menu_list.html', context)
 

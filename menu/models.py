@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+import os
 from .validators import validate_image_size, validate_image_format, validate_image_dimensions
 
 
@@ -78,3 +79,28 @@ class MenuItem(models.Model):
     
     def __str__(self):
         return f"{self.name} - {self.category.name}"
+    
+    def get_thumbnail_url(self):
+        """Get thumbnail URL if exists, otherwise return original image URL"""
+        if not self.image:
+            return None
+        
+        try:
+            # Try to find thumbnail
+            if hasattr(self.image, 'path') and os.path.exists(self.image.path):
+                image_path = str(self.image.path)
+                # Generate thumbnail path
+                base_path = os.path.splitext(image_path)[0]
+                ext = os.path.splitext(image_path)[1]
+                thumbnail_path = f"{base_path}_thumb.jpg"
+                
+                if os.path.exists(thumbnail_path):
+                    # Return thumbnail URL
+                    image_url = str(self.image.url)
+                    base_url = os.path.splitext(image_url)[0]
+                    return f"{base_url}_thumb.jpg"
+        except Exception:
+            pass
+        
+        # Fallback to original image
+        return self.image.url if self.image else None

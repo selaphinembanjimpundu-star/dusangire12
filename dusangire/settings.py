@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-40^5e(c&86(8ae3np5&ew%r!z1ifz&d)ex@0i2r3=w3%q3yko2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts for development/testing (change in production)
 
 
 # Application definition
@@ -65,6 +65,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only in production
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = not DEBUG  # HTTPS only in production
+CSRF_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'dusangire.urls'
 

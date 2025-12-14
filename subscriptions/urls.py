@@ -14,3 +14,5 @@ urlpatterns = [
     path('<int:subscription_id>/update/', views.update_subscription, name='update'),
 ]
 
+
+

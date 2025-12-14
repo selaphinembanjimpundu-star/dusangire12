@@ -11,3 +11,5 @@ urlpatterns = [
     path('count/', views.notification_count, name='count'),
 ]
 
+
+

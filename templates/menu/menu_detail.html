@@ -47,7 +47,9 @@
         <!-- Image Section -->
         <div class="col-md-6 mb-4">
             {% if menu_item.image %}
-                <img src="{{ menu_item.image.url }}" 
+                <img src="{% if menu_item.get_thumbnail_url %}{{ menu_item.get_thumbnail_url }}{% else %}{{ menu_item.image.url }}{% endif %}" 
+                     {% if menu_item.get_thumbnail_url %}data-src="{{ menu_item.image.url }}"{% endif %}
+                     loading="lazy"
                      class="img-fluid menu-detail-image w-100" 
                      alt="{{ menu_item.name }}"
                      style="max-height: 500px; object-fit: cover;">
@@ -172,7 +174,9 @@
                         <div class="col-md-6 col-lg-3">
                             <div class="card related-item-card h-100 shadow-sm">
                                 {% if item.image %}
-                                    <img src="{{ item.image.url }}" 
+                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
+                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
+                                         loading="lazy"
                                          class="card-img-top" 
                                          alt="{{ item.name }}"
                                          style="height: 150px; object-fit: cover;">

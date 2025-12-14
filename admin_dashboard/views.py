@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Count, Sum, Q, Avg
+from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -141,8 +142,14 @@ def order_management(request):
             Q(customer_phone__icontains=search_query)
         )
     
+    # Pagination
+    paginator = Paginator(orders, 25)  # 25 orders per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'orders': orders,
+        'page_obj': page_obj,
+        'orders': page_obj,  # For backward compatibility
         'status_choices': OrderStatus.choices,
         'current_status': status_filter,
         'date_from': date_from,

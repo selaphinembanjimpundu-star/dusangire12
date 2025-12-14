@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Q
+from django.core.paginator import Paginator
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -59,8 +60,14 @@ def points_history(request):
     if transaction_type:
         transactions = transactions.filter(transaction_type=transaction_type)
     
+    # Pagination
+    paginator = Paginator(transactions, 20)  # 20 transactions per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'transactions': transactions,
+        'page_obj': page_obj,
+        'transactions': page_obj,  # For backward compatibility
         'current_filter': transaction_type,
     }
     return render(request, 'loyalty/history.html', context)
