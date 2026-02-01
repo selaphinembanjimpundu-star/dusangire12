@@ -368,10 +368,11 @@ def faq_list(request):
 
 
 def contact_form(request):
-    """Contact form view with auto-reply and HTML emails"""
+    """Contact form view with auto-reply and HTML emails with email validation"""
     from .models import ContactMessage
     from django.template.loader import render_to_string
     from django.core.mail import EmailMultiAlternatives
+    from accounts.validators import validate_email_format
     
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -379,6 +380,38 @@ def contact_form(request):
         phone = request.POST.get('phone', '')
         subject = request.POST.get('subject')
         message = request.POST.get('message')
+        
+        # Validate email format
+        if not email or not validate_email_format(email):
+            messages.error(request, 'Please enter a valid email address.')
+            return render(request, 'support/contact_form.html', {
+                'page_title': 'Contact Us',
+                'support_email': settings.CONTACT_EMAIL,
+                'support_phone': settings.CONTACT_PHONE,
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'subject': subject,
+                    'message': message,
+                }
+            })
+        
+        # Validate required fields
+        if not name or not subject or not message:
+            messages.error(request, 'All required fields must be filled.')
+            return render(request, 'support/contact_form.html', {
+                'page_title': 'Contact Us',
+                'support_email': settings.CONTACT_EMAIL,
+                'support_phone': settings.CONTACT_PHONE,
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'subject': subject,
+                    'message': message,
+                }
+            })
         
         # Save contact message
         contact = ContactMessage.objects.create(
