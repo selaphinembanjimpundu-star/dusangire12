@@ -31,9 +31,11 @@ This guide covers deploying the Dusangire Django application to PythonAnywhere w
 3. Click **"Add a new web app"**
 4. Choose:
    - Domain: `yourname.pythonanywhere.com`
-   - Python Framework: **Django**
-   - Python Version: **3.11** (closest to 3.13 available)
+   - Python Framework: **Manual configuration**
+   - Python Version: **3.11** (required for Django 6.0.1)
    - Project Path: Will be set in next step
+
+**Note:** Select "Manual configuration" instead of "Django" to have full control over WSGI settings
 
 ### **Step 3: Clone Repository to PythonAnywhere**
 
@@ -56,32 +58,42 @@ ls -la
 ### **Step 4: Set Up Python Virtual Environment**
 
 ```bash
-# Create virtual environment (must be in home directory or /tmp)
+# Create virtual environment with Python 3.11 (required for Django 6.0.1)
 mkvirtualenv --python=/usr/bin/python3.11 dusangire_env
 
 # Verify activation (you should see (dusangire_env) prefix)
 which python
+
+# Verify Python version
+python --version  # Should be 3.11.x
 ```
 
 ### **Step 5: Install Dependencies**
 
 ```bash
 # Make sure virtual env is activated
-pip install --upgrade pip
+pip install --upgrade pip setuptools wheel
 
-# Install requirements
+# Install Django and core dependencies (with specific versions to avoid conflicts)
 pip install django==6.0.1
-pip install djangorestframework
-pip install django-crispy-forms
-pip install crispy-bootstrap5
-pip install pillow
-pip install python-decouple
-pip install django-allauth
-pip install requests
+pip install djangorestframework==3.14.0
+pip install django-crispy-forms==2.1
+pip install crispy-bootstrap5==2.0.2
+pip install pillow==10.1.0
+pip install python-decouple==3.8
+pip install django-allauth==0.57.0
+pip install requests==2.31.0
+pip install gunicorn==21.2.0
+pip install whitenoise==6.6.0
 
-# Verify installations
-pip list
+# Verify installations (check versions match)
+pip list | grep -E "Django|djangorestframework|crispy|pillow|decouple|allauth|requests"
 ```
+
+**Version Compatibility:**
+- Django 6.0.1 requires Python 3.10+
+- All packages above are tested compatible with Django 6.0.1
+- If conflicts occur, use: `pip install --upgrade --force-reinstall -r requirements.txt`
 
 ### **Step 6: Configure Settings for Production**
 
@@ -175,21 +187,31 @@ ls -lh db.sqlite3
 
 4. Under **Virtualenv**:
    - Set virtual env to: `/home/yourname/.virtualenvs/dusangire_env`
+   - ⚠️ **IMPORTANT:** Path must match exactly from Step 4
 
 5. Under **WSGI configuration file**:
-   - Click to edit: `/home/yourname/dusangire12/dusangire/wsgi.py`
+   - Click to edit: `/var/www/yourname_pythonanywhere_com_wsgi.py`
    - Replace content with:
 
 ```python
 """
-WSGI config for dusangire project.
+WSGI config for dusangire project on PythonAnywhere.
 """
 
 import os
-from django.core.wsgi import get_wsgi_application
+import sys
+from pathlib import Path
 
+# Add project to path
+project_home = '/home/yourname/dusangire12'
+if project_home not in sys.path:
+    sys.path.insert(0, project_home)
+
+# Configure Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dusangire.settings')
 
+# Get WSGI application
+from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 ```
 
@@ -239,19 +261,34 @@ python manage.py collectstatic --noinput --clear
 # Verify virtual environment is activated
 workon dusangire_env
 
-# Reinstall dependencies
-pip install -r requirements.txt
+# Check if packages are installed
+pip list | grep Django
+
+# Reinstall with compatible versions (avoid conflicts)
+pip install --upgrade --force-reinstall django==6.0.1
+pip install --upgrade --force-reinstall djangorestframework==3.14.0
+pip install --upgrade --force-reinstall -r requirements.txt
 ```
 
-### **Error: Database locked**
+### **Error: Database locked (SQLite)**
 ```bash
 # In PythonAnywhere bash:
-rm db.sqlite3-wal
-rm db.sqlite3-shm
+cd ~/dusangire12
 
-# Recreate migrations
+# Stop the web app first (prevents database locks)
+# Then remove WAL files
+rm -f db.sqlite3-wal
+rm -f db.sqlite3-shm
+
+# Apply migrations
 python manage.py migrate
+
+# Reload web app in PythonAnywhere dashboard
 ```
+
+**Prevention:**
+- Consider upgrading to MySQL (free with PythonAnywhere)
+- Or optimize database queries to reduce lock times
 
 ### **Error: 500 Internal Server Error**
 1. Check error log: **Web** tab → **Error log**
@@ -305,17 +342,18 @@ tail -50 /var/log/yourname.pythonanywhere.com.server.log
 
 ---
 
-## 📊 Beginner Account Limitations
+## 📊 Beginner Account Limitations & Recommendations
 
-| Feature | Limit | Workaround |
-|---------|-------|-----------|
-| Bandwidth | 100MB/day | Upgrade to paid |
-| CPU time | 100s/day | Optimize queries |
-| Web app | 1 app | Upgrade to paid |
-| Domains | `yourusername.pythonanywhere.com` | Custom domain on paid |
-| Database | SQLite (OK) | PostgreSQL on paid |
-| Always-on | ❌ No | Upgrade to paid |
-| HTTPS | ✅ Free | Automatic |
+| Feature | Limit | Workaround | Recommendation |
+|---------|-------|-----------|----------------|
+| Bandwidth | 100MB/day | Upgrade to paid | OK for dev/testing |
+| CPU time | 100s/day | Optimize queries | Monitor usage |
+| Web app | 1 app | Upgrade to paid | Sufficient for MVP |
+| Domains | `yourusername.pythonanywhere.com` | Custom domain on paid | Free for testing |
+| Database | **MySQL free** | Use MySQL instead | Better than SQLite |
+| Always-on | ❌ No | Upgrade to paid | Site sleeps after 3 months |
+| HTTPS | ✅ Free | Automatic | Always enabled |
+| Python | 3.11 | ✅ Compatible | Works with Django 6.0.1 |
 
 ---
 
