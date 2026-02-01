@@ -313,3 +313,103 @@ def staff_dashboard(request):
         'title': _('Support Dashboard'),
     }
     return render(request, 'support/staff_dashboard.html', context)
+
+
+def about_us(request):
+    """About Us page"""
+    from .models import AboutUsPage
+    try:
+        about = AboutUsPage.objects.first()
+    except:
+        about = None
+    
+    context = {
+        'about': about,
+        'page_title': 'About Dusangire',
+    }
+    return render(request, 'support/about_us.html', context)
+
+
+def faq_list(request):
+    """FAQ list view"""
+    from .models import FAQ
+    
+    category = request.GET.get('category')
+    search = request.GET.get('search', '')
+    
+    faqs = FAQ.objects.filter(is_active=True)
+    
+    if category:
+        faqs = faqs.filter(category=category)
+    
+    if search:
+        faqs = faqs.filter(
+            Q(question__icontains=search) | 
+            Q(answer__icontains=search)
+        )
+    
+    # Group by category
+    categories = FAQ.CATEGORY_CHOICES
+    
+    context = {
+        'faqs': faqs,
+        'categories': categories,
+        'selected_category': category,
+        'search_query': search,
+        'page_title': 'Frequently Asked Questions',
+    }
+    return render(request, 'support/faq_list.html', context)
+
+
+def contact_form(request):
+    """Contact form view"""
+    from .models import ContactMessage
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone', '')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        # Save contact message
+        contact = ContactMessage.objects.create(
+            name=name,
+            email=email,
+            phone=phone,
+            subject=subject,
+            message=message
+        )
+        
+        # Send email to admin
+        try:
+            send_mail(
+                f'New Contact Form Submission: {subject}',
+                f'Name: {name}\nEmail: {email}\nPhone: {phone}\n\nMessage:\n{message}',
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.CONTACT_EMAIL or 'support@dusangire.com'],
+                fail_silently=True,
+            )
+        except:
+            pass
+        
+        # Send confirmation to user
+        try:
+            send_mail(
+                'We received your message',
+                f'Hi {name},\n\nThank you for contacting us. We received your message and will get back to you soon.\n\nBest regards,\nDusangire Team',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=True,
+            )
+        except:
+            pass
+        
+        messages.success(request, 'Your message has been sent successfully. We will get back to you soon.')
+        return redirect('support:contact_form')
+    
+    context = {
+        'page_title': 'Contact Us',
+    }
+    return render(request, 'support/contact_form.html', context)
+

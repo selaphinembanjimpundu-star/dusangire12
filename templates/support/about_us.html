@@ -1,0 +1,160 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}About Dusangire - Health & Nutrition Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 fw-bold mb-4 text-center">About Dusangire</h1>
+            {% if about.image %}
+            <img src="{{ about.image.url }}" alt="Dusangire" class="img-fluid rounded mb-4" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <p class="lead text-muted text-center mb-5">
+                {{ about.description|default:"Building a healthier future through nutritious meals and personalized health management." }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Mission & Vision -->
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="bi bi-target"></i> Our Mission
+                    </h2>
+                    <p class="card-text">
+                        {{ about.mission|default:"To provide medically-approved, nutritionally-balanced meals that support patient health outcomes and improve quality of life." }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <i class="bi bi-binoculars"></i> Our Vision
+                    </h2>
+                    <p class="card-text">
+                        {{ about.vision|default:"To be the leading healthcare meal provider, revolutionizing nutrition through technology, personalization, and patient-centered care." }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Values -->
+    {% if about.values %}
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="mb-4">Our Core Values</h2>
+            <div class="row g-3">
+                {% for value in about.values|add:"."|split:"," %}
+                    {% if value|length > 1 %}
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">{{ value|trim }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Team Intro -->
+    {% if about.team_intro %}
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="mb-4">Our Team</h2>
+            <p class="lead">{{ about.team_intro }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Why Choose Us -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="mb-4">Why Choose Dusangire?</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-heart-pulse text-danger"></i> Medical Expertise
+                            </h5>
+                            <p class="card-text">Meals designed by nutritionists and approved by medical professionals.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-graph-up text-info"></i> Personalization
+                            </h5>
+                            <p class="card-text">Customized meal plans based on individual health profiles and needs.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lightning-fill text-warning"></i> Technology
+                            </h5>
+                            <p class="card-text">Advanced platform for easy ordering, tracking, and health management.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-people-fill text-success"></i> Community
+                            </h5>
+                            <p class="card-text">Support from nutritionists, healthcare professionals, and fellow members.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center">
+            <div class="card bg-primary text-white">
+                <div class="card-body py-5">
+                    <h3 class="card-title mb-4">Ready to Start Your Health Journey?</h3>
+                    <a href="{% url 'menu:menu_list' %}" class="btn btn-light btn-lg me-2">
+                        <i class="bi bi-shop"></i> Browse Menu
+                    </a>
+                    <a href="{% url 'support:contact_form' %}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-envelope"></i> Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+    }
+</style>
+{% endblock %}

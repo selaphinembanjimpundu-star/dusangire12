@@ -1,0 +1,214 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}Contact Us | Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold mb-2">Get In Touch</h1>
+            <p class="lead text-muted">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+        </div>
+    </div>
+
+    <!-- Contact Info Cards -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-telephone-fill text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Phone</h5>
+                    <p class="card-text text-muted">
+                        <a href="tel:+250787654321" class="text-decoration-none">
+                            +250 (0) 787 654 321
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-envelope-fill text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Email</h5>
+                    <p class="card-text text-muted">
+                        <a href="mailto:support@dusangire.com" class="text-decoration-none">
+                            support@dusangire.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="bi bi-geo-alt-fill text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Address</h5>
+                    <p class="card-text text-muted">
+                        Kigali, Rwanda
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>Success!</strong> {{ success_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Error!</strong> {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <h3 class="card-title mb-4">Send us a Message</h3>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="name" class="form-label fw-bold">Full Name *</label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       id="name" name="name" placeholder="Your full name" required>
+                                <div class="invalid-feedback d-block" id="nameError"></div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="email" class="form-label fw-bold">Email Address *</label>
+                                <input type="email" class="form-control form-control-lg" 
+                                       id="email" name="email" placeholder="your@email.com" required>
+                                <div class="invalid-feedback d-block" id="emailError"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="phone" class="form-label fw-bold">Phone Number</label>
+                                <input type="tel" class="form-control form-control-lg" 
+                                       id="phone" name="phone" placeholder="+250 (0) 123 456 789">
+                                <small class="text-muted">Optional</small>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="subject" class="form-label fw-bold">Subject *</label>
+                                <input type="text" class="form-control form-control-lg" 
+                                       id="subject" name="subject" placeholder="What is this about?" required>
+                                <div class="invalid-feedback d-block" id="subjectError"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-bold">Message *</label>
+                            <textarea class="form-control" id="message" name="message" 
+                                      rows="6" placeholder="Please provide details about your inquiry..." required></textarea>
+                            <small class="text-muted">Minimum 10 characters required</small>
+                            <div class="invalid-feedback d-block" id="messageError"></div>
+                        </div>
+
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-send me-2"></i> Send Message
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <small class="text-muted">All fields marked with * are required</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Help -->
+            <div class="alert alert-info mt-5">
+                <h5 class="alert-heading">
+                    <i class="bi bi-info-circle me-2"></i> Response Time
+                </h5>
+                <p class="mb-0">
+                    We typically respond to messages within 24-48 hours. For urgent matters, 
+                    please call us at <a href="tel:+250787654321" class="alert-link">+250 (0) 787 654 321</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate name
+        const name = document.getElementById('name').value.trim();
+        if (!name) {
+            document.getElementById('nameError').textContent = 'Please enter your full name.';
+            isValid = false;
+        } else if (name.length < 3) {
+            document.getElementById('nameError').textContent = 'Name must be at least 3 characters.';
+            isValid = false;
+        }
+        
+        // Validate email
+        const email = document.getElementById('email').value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            document.getElementById('emailError').textContent = 'Please enter your email address.';
+            isValid = false;
+        } else if (!emailRegex.test(email)) {
+            document.getElementById('emailError').textContent = 'Please enter a valid email address.';
+            isValid = false;
+        }
+        
+        // Validate subject
+        const subject = document.getElementById('subject').value.trim();
+        if (!subject) {
+            document.getElementById('subjectError').textContent = 'Please enter a subject.';
+            isValid = false;
+        }
+        
+        // Validate message
+        const message = document.getElementById('message').value.trim();
+        if (!message) {
+            document.getElementById('messageError').textContent = 'Please enter your message.';
+            isValid = false;
+        } else if (message.length < 10) {
+            document.getElementById('messageError').textContent = 'Message must be at least 10 characters.';
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}

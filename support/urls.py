@@ -11,7 +11,9 @@ urlpatterns = [
     path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
     path('staff/<int:ticket_id>/', views.staff_ticket_detail, name='staff_ticket_detail'),
     path('feedback/', views.feedback, name='feedback'),
-    path('faq/', views.faq, name='faq'),
+    path('faq/', views.faq_list, name='faq'),
+    path('about/', views.about_us, name='about_us'),
+    path('contact/', views.contact_form, name='contact_form'),
 ]
 
 

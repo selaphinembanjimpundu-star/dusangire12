@@ -1,0 +1,133 @@
+{% extends "layouts/base_layout.html" %}
+{% load static %}
+
+{% block title %}FAQ - Frequently Asked Questions | Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 fw-bold mb-2 text-center">Frequently Asked Questions</h1>
+            <p class="lead text-muted text-center mb-5">Find answers to common questions about Dusangire</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <form method="get" class="mb-4">
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" name="search" 
+                           placeholder="Search FAQs..." value="{{ search_query }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="btn-group flex-wrap" role="group">
+                <a href="?search={{ search_query }}" class="btn btn-outline-primary {% if not selected_category %}active{% endif %}">
+                    All Categories
+                </a>
+                {% for value, label in categories %}
+                    <a href="?category={{ value }}&search={{ search_query }}" 
+                       class="btn btn-outline-primary {% if selected_category == value %}active{% endif %}">
+                        {{ label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQs Accordion -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            {% if faqs %}
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button {% if forloop.first %}{% else %}collapsed{% endif %}" 
+                                    type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq{{ faq.id }}">
+                                <span class="badge bg-primary me-3">{{ faq.get_category_display }}</span>
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="faq{{ faq.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Still have questions? -->
+                <div class="alert alert-info mt-5">
+                    <h5 class="alert-heading">Still have questions?</h5>
+                    <p class="mb-0">
+                        Can't find the answer you're looking for? Please 
+                        <a href="{% url 'support:create_ticket' %}" class="alert-link">create a support ticket</a> 
+                        or <a href="{% url 'support:contact_form' %}" class="alert-link">contact us</a>.
+                    </p>
+                </div>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No FAQs found matching your criteria. 
+                    <a href="?">Clear filters</a> to see all FAQs or 
+                    <a href="{% url 'support:contact_form' %}">contact us</a> for help.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-light border-0">
+                <div class="card-body py-5">
+                    <h4 class="card-title mb-4">
+                        <i class="bi bi-headset"></i> Need More Help?
+                    </h4>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{% url 'support:create_ticket' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-ticket"></i> Support Ticket
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'support:contact_form' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-envelope"></i> Contact Form
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'support:about_us' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-info-circle"></i> About Us
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: #f0f6ff;
+        color: #0d6efd;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}

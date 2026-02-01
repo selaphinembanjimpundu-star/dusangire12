@@ -104,3 +104,69 @@ class SupportMessage(models.Model):
     
     def __str__(self):
         return f"Message #{self.id} - Ticket #{self.ticket.id}"
+
+
+class FAQ(models.Model):
+    """Frequently Asked Questions"""
+    
+    CATEGORY_CHOICES = [
+        ('general', 'General'),
+        ('ordering', 'Ordering'),
+        ('payment', 'Payment'),
+        ('delivery', 'Delivery'),
+        ('health', 'Health & Nutrition'),
+        ('account', 'Account'),
+        ('subscription', 'Subscriptions'),
+    ]
+    
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    question = models.CharField(max_length=300)
+    answer = models.TextField()
+    order = models.IntegerField(default=0, help_text="Display order")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['category', 'order', '-created_at']
+        verbose_name_plural = "FAQs"
+    
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.question}"
+
+
+class AboutUsPage(models.Model):
+    """Store About Us page content"""
+    title = models.CharField(max_length=200, default="About Dusangire")
+    description = models.TextField()
+    mission = models.TextField(help_text="Mission statement")
+    vision = models.TextField(help_text="Vision statement")
+    values = models.TextField(help_text="Core values (comma-separated)")
+    team_intro = models.TextField(blank=True)
+    image = models.ImageField(upload_to='about/', blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "About Us Page"
+        verbose_name_plural = "About Us Pages"
+    
+    def __str__(self):
+        return self.title
+
+
+class ContactMessage(models.Model):
+    """General contact form messages"""
+    
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.name} - {self.subject}"

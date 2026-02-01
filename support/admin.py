@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SupportTicket, SupportMessage
+from .models import SupportTicket, SupportMessage, FAQ, AboutUsPage, ContactMessage
 
 
 class SupportMessageInline(admin.TabularInline):
@@ -58,3 +58,71 @@ class SupportMessageAdmin(admin.ModelAdmin):
     search_fields = ['message', 'ticket__subject', 'user__username']
     readonly_fields = ['created_at']
     ordering = ['-created_at']
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    """Manage Frequently Asked Questions"""
+    list_display = ['question', 'category', 'order', 'is_active', 'created_at']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['question', 'answer']
+    ordering = ['category', 'order']
+    
+    fieldsets = (
+        ('Question & Answer', {
+            'fields': ('category', 'question', 'answer')
+        }),
+        ('Display', {
+            'fields': ('order', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(AboutUsPage)
+class AboutUsPageAdmin(admin.ModelAdmin):
+    """Manage About Us page content"""
+    list_display = ['title', 'updated_at']
+    
+    fieldsets = (
+        ('Page Title', {
+            'fields': ('title',)
+        }),
+        ('Content', {
+            'fields': ('description', 'mission', 'vision', 'values', 'team_intro')
+        }),
+        ('Media', {
+            'fields': ('image',)
+        }),
+        ('Timestamps', {
+            'fields': ('updated_at',),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ['updated_at']
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    """Manage general contact form messages"""
+    list_display = ['name', 'email', 'subject', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['name', 'email', 'subject', 'message']
+    readonly_fields = ['created_at', 'name', 'email', 'phone', 'subject', 'message']
+    ordering = ['-created_at']
+    
+    def has_delete_permission(self, request):
+        """Prevent accidental deletion of contact messages"""
+        return request.user.is_superuser
+    
+    def mark_as_read(self, request, queryset):
+        queryset.update(is_read=True)
+        self.message_user(request, f"{queryset.count()} message(s) marked as read.")
+    mark_as_read.short_description = "Mark selected messages as read"
+    
+    actions = ['mark_as_read']
+
