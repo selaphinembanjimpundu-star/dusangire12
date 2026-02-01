@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-radius: 0 0 5px 5px;
+        }
+        .message-box {
+            background-color: #f5f5f5;
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+            font-style: italic;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .info-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 120px;
+            color: #ff6b6b;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 5px 15px 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 New Contact Form Submission</h1>
+            <p>Dusangire Health Platform - Support Alert</p>
+        </div>
+        
+        <div class="content">
+            <p>You have received a new message from the contact form.</p>
+            
+            <h3>Sender Information</h3>
+            <table class="info-table">
+                <tr>
+                    <td>Name:</td>
+                    <td><strong>{{ name }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><strong>{{ email }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Phone:</td>
+                    <td>{{ phone|default:"Not provided" }}</td>
+                </tr>
+                <tr>
+                    <td>Subject:</td>
+                    <td><strong>{{ subject }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Submitted:</td>
+                    <td>{{ created_at|date:"F d, Y - H:i:s" }}</td>
+                </tr>
+                <tr>
+                    <td>Contact ID:</td>
+                    <td style="color: #ff6b6b; font-weight: bold;">#{{ contact_id }}</td>
+                </tr>
+            </table>
+            
+            <h3>Message</h3>
+            <div class="message-box">
+                {{ message|linebreaks }}
+            </div>
+            
+            <h3>Quick Actions</h3>
+            <p>
+                <a href="mailto:{{ email }}" class="action-button">Reply via Email</a>
+                <a href="tel:{{ phone }}" class="action-button">Call {{ phone }}</a>
+            </p>
+            
+            <hr>
+            
+            <p style="color: #666; font-size: 14px;">
+                <strong>Note:</strong> An automatic confirmation has been sent to the sender acknowledging receipt of their message.
+            </p>
+            
+            <p style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 3px;">
+                <strong>⚠️ Reminder:</strong> Respond promptly to maintain customer satisfaction. Target response time: 24-48 hours.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Dusangire Health Platform Support System</strong></p>
+            <p>Admin Notification - Please do not reply to this email</p>
+            <p style="margin-top: 15px; color: #999;">
+                © 2026 Dusangire Health Platform. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

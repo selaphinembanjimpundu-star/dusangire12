@@ -331,13 +331,13 @@ def about_us(request):
 
 
 def faq_list(request):
-    """FAQ list view"""
+    """FAQ list view with auto-reply suggestion"""
     from .models import FAQ
     
     category = request.GET.get('category')
     search = request.GET.get('search', '')
     
-    faqs = FAQ.objects.filter(is_active=True)
+    faqs = FAQ.objects.filter(is_active=True).order_by('category', 'order')
     
     if category:
         faqs = faqs.filter(category=category)
@@ -351,19 +351,27 @@ def faq_list(request):
     # Group by category
     categories = FAQ.CATEGORY_CHOICES
     
+    # Check if user found answer
+    found_answer = request.GET.get('found', False)
+    
     context = {
         'faqs': faqs,
         'categories': categories,
         'selected_category': category,
         'search_query': search,
+        'found_answer': found_answer,
+        'support_email': settings.CONTACT_EMAIL,
+        'support_phone': settings.CONTACT_PHONE,
         'page_title': 'Frequently Asked Questions',
     }
     return render(request, 'support/faq_list.html', context)
 
 
 def contact_form(request):
-    """Contact form view"""
+    """Contact form view with auto-reply and HTML emails"""
     from .models import ContactMessage
+    from django.template.loader import render_to_string
+    from django.core.mail import EmailMultiAlternatives
     
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -381,35 +389,95 @@ def contact_form(request):
             message=message
         )
         
-        # Send email to admin
+        # Send HTML email to admin with fallback plain text
         try:
-            send_mail(
+            admin_context = {
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'subject': subject,
+                'message': message,
+                'contact_id': contact.id,
+                'created_at': contact.created_at,
+            }
+            
+            admin_html = render_to_string('emails/contact_admin_notification.html', admin_context)
+            admin_text = f"""New Contact Form Submission
+
+Name: {name}
+Email: {email}
+Phone: {phone}
+Subject: {subject}
+
+Message:
+{message}
+
+---
+Contact ID: {contact.id}
+Submitted: {contact.created_at}
+"""
+            
+            email_msg = EmailMultiAlternatives(
                 f'New Contact Form Submission: {subject}',
-                f'Name: {name}\nEmail: {email}\nPhone: {phone}\n\nMessage:\n{message}',
+                admin_text,
                 settings.DEFAULT_FROM_EMAIL,
-                [settings.CONTACT_EMAIL or 'support@dusangire.com'],
-                fail_silently=True,
+                [settings.CONTACT_EMAIL]
             )
-        except:
-            pass
+            email_msg.attach_alternative(admin_html, "text/html")
+            email_msg.send(fail_silently=True)
+        except Exception as e:
+            print(f"Error sending admin email: {e}")
         
-        # Send confirmation to user
+        # Send HTML auto-reply to user with fallback plain text
         try:
-            send_mail(
-                'We received your message',
-                f'Hi {name},\n\nThank you for contacting us. We received your message and will get back to you soon.\n\nBest regards,\nDusangire Team',
+            user_context = {
+                'name': name,
+                'email': email,
+                'subject': subject,
+                'contact_id': contact.id,
+                'created_at': contact.created_at,
+            }
+            
+            user_html = render_to_string('emails/contact_auto_reply.html', user_context)
+            user_text = f"""Hi {name},
+
+Thank you for contacting Dusangire Health Platform!
+
+We have received your message regarding: {subject}
+
+Our support team will review your inquiry and get back to you as soon as possible. We typically respond within 24-48 hours.
+
+In the meantime, if you have any urgent concerns, please reach out to us directly:
+
+Contact Details:
+Email: {settings.CONTACT_EMAIL}
+Phone: {settings.CONTACT_PHONE}
+
+Your contact ID for reference: #{contact.id}
+
+Best regards,
+Dusangire Health Platform Support Team
+Rwanda
+"""
+            
+            email_msg = EmailMultiAlternatives(
+                'We received your message - Dusangire Support',
+                user_text,
                 settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=True,
+                [email]
             )
-        except:
-            pass
+            email_msg.attach_alternative(user_html, "text/html")
+            email_msg.send(fail_silently=True)
+        except Exception as e:
+            print(f"Error sending user confirmation: {e}")
         
         messages.success(request, 'Your message has been sent successfully. We will get back to you soon.')
         return redirect('support:contact_form')
     
     context = {
         'page_title': 'Contact Us',
+        'support_email': settings.CONTACT_EMAIL,
+        'support_phone': settings.CONTACT_PHONE,
     }
     return render(request, 'support/contact_form.html', context)
 

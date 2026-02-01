@@ -196,9 +196,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Console back
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'your-email@gmail.com'
 # EMAIL_HOST_PASSWORD = 'your-app-password'  # Use environment variables in production
-EMAIL_FROM_USER = 'noreply@dusangire.local'  # Default from email address
-DEFAULT_FROM_EMAIL = 'noreply@dusangire.local'
-CONTACT_EMAIL = 'support@dusangire.local'
+EMAIL_FROM_USER = 'rukundojeandedieu670@gmail.com'  # Default from email address
+DEFAULT_FROM_EMAIL = 'rukundojeandedieu670@gmail.com'
+CONTACT_EMAIL = 'rukundojeandedieu670@gmail.com'
+CONTACT_PHONE = '+250792392072'
+SUPPORT_EMAIL = 'rukundojeandedieu670@gmail.com'
+SUPPORT_PHONE = '+250792392072'
 PASSWORD_RESET_TIMEOUT = 3600  # Password reset link valid for 1 hour (in seconds)
 
 # Site Configuration

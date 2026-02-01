@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-radius: 0 0 5px 5px;
+        }
+        .contact-info {
+            background-color: #f0f6ff;
+            border-left: 4px solid #0d6efd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 3px;
+        }
+        .contact-info p {
+            margin: 8px 0;
+        }
+        .reference-id {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✓ We Received Your Message</h1>
+            <p>Dusangire Health Platform Support</p>
+        </div>
+        
+        <div class="content">
+            <p>Hi <strong>{{ name }}</strong>,</p>
+            
+            <p>Thank you for contacting <strong>Dusangire Health Platform</strong>! We appreciate you reaching out to us.</p>
+            
+            <h3>Message Summary</h3>
+            <p><strong>Subject:</strong> {{ subject }}</p>
+            <p><strong>Submitted:</strong> {{ created_at|date:"F d, Y - H:i" }}</p>
+            
+            <div class="contact-info">
+                <p><strong>Your Reference ID:</strong></p>
+                <p style="font-size: 18px;" class="reference-id">#{{ contact_id }}</p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Please keep this ID for your records. Use it when following up with us.</p>
+            </div>
+            
+            <h3>What Happens Next?</h3>
+            <p>Our dedicated support team is reviewing your inquiry right now. We typically respond within <strong>24-48 hours</strong>.</p>
+            
+            <p>You'll receive a response email with assistance and next steps. If your issue is urgent, please don't hesitate to reach out directly.</p>
+            
+            <h3>Contact Us Directly</h3>
+            <div class="contact-info">
+                <p><strong>📧 Email:</strong> <a href="mailto:rukundojeandedieu670@gmail.com">rukundojeandedieu670@gmail.com</a></p>
+                <p><strong>📞 Phone:</strong> <a href="tel:+250792392072">+250 792 392 072</a></p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">For urgent matters, call us directly during business hours.</p>
+            </div>
+            
+            <h3>Frequently Asked Questions</h3>
+            <p>If you have similar questions in the future, check out our <a href="#">Frequently Asked Questions</a> page for quick answers.</p>
+            
+            <hr>
+            
+            <p style="color: #666; font-size: 14px;">
+                <strong>Note:</strong> This is an automated response confirming we received your message. A team member will respond to your inquiry shortly.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Dusangire Health Platform</strong></p>
+            <p>Providing Quality Healthcare Services Across Rwanda</p>
+            <p style="margin-top: 15px; color: #999;">
+                © 2026 Dusangire Health Platform. All rights reserved. | 
+                <a href="#" style="color: #0d6efd; text-decoration: none;">Visit Website</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
