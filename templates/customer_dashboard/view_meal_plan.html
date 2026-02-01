@@ -1,0 +1,146 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'customer_dashboard:my_meal_plans' %}"
+                            class="text-decoration-none">Meal Plans</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Plan Details</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">{{ plan.title }}</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-printer me-2"></i> Print Plan
+            </button>
+            <a href="{% url 'customer_dashboard:my_consultations' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-chat-dots me-2"></i> Discuss with Nutritionist
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Plan Overview -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Plan Overview</h5>
+                    <div class="p-4 bg-light rounded-4 mb-4">
+                        <p class="lead mb-0">{{ plan.description }}</p>
+                    </div>
+
+                    <h5 class="fw-bold mb-3">Nutritionist's Notes</h5>
+                    <div class="border-start border-4 border-primary ps-4 py-2 mb-4">
+                        <p class="text-muted mb-0 italic">
+                            {{ plan.notes|default:"No specific notes provided for this plan." }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diet Recommendations -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Recommendations</h5>
+                    {% if plan.recommendations.all %}
+                    <div class="list-group list-group-flush">
+                        {% for rec in plan.recommendations.all %}
+                        <div class="list-group-item border-0 px-0 py-3">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
+                                    <i class="bi bi-info-circle h4 mb-0"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">{{ rec.title }}</h6>
+                                    <p class="text-muted small mb-0">{{ rec.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No specific recommendations linked to this plan.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Plan Details</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3 d-flex justify-content-between">
+                            <span class="text-muted">Status</span>
+                            <span
+                                class="badge rounded-pill bg-{% if plan.status == 'active' %}success{% else %}secondary{% endif %} px-3">
+                                {{ plan.get_status_display }}
+                            </span>
+                        </li>
+                        <li class="mb-3 d-flex justify-content-between">
+                            <span class="text-muted">Start Date</span>
+                            <span class="fw-bold">{{ plan.start_date|date:"M d, Y"|default:"Not set" }}</span>
+                        </li>
+                        <li class="mb-3 d-flex justify-content-between">
+                            <span class="text-muted">End Date</span>
+                            <span class="fw-bold">{{ plan.end_date|date:"M d, Y"|default:"Not set" }}</span>
+                        </li>
+                        <hr>
+                        <li class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle me-3"
+                                    style="width: 48px; height: 48px; object-fit: cover;">
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="small text-muted">Nutritionist</div>
+                                <div class="fw-bold">{{
+                                    plan.nutritionist.get_full_name|default:plan.nutritionist.username }}</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Health Impact Tip -->
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-4">
+                <div class="card-body">
+                    <i class="bi bi-lightning-charge-fill display-4 mb-3 d-block"></i>
+                    <h5 class="fw-bold mb-2">Health Tip</h5>
+                    <p class="small mb-0 opacity-75">
+                        Consistency is key! Following this plan for at least 21 days helps your body adapt to the new
+                        nutritional balance.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+
+        .sidebar,
+        .navbar,
+        .btn,
+        .breadcrumb {
+            display: none !important;
+        }
+
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #eee !important;
+        }
+    }
+</style>
+{% endblock %}

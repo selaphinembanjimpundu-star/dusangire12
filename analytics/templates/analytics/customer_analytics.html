@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .customer-row {
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .customer-row:last-child {
+        border-bottom: none;
+    }
+    
+    .customer-badge {
+        display: inline-block;
+        background-color: #e9ecef;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .customer-badge.vip {
+        background-color: #ffc107;
+        color: white;
+    }
+    
+    .customer-badge.risk {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .customer-badge.active {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .stat-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .stat-box h4 {
+        margin: 0;
+        color: rgba(255,255,255,0.9);
+        font-size: 0.9rem;
+    }
+    
+    .stat-box h3 {
+        margin: 10px 0 0 0;
+        color: white;
+    }
+    
+    .segment-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    
+    .segment-card {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .segment-card h3 {
+        color: #007bff;
+        margin: 0;
+    }
+    
+    .segment-card p {
+        color: #6c757d;
+        margin: 8px 0 0 0;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Customer Analytics</h1>
+            <p class="text-muted">Customer segmentation, behavior, and value analysis</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stat-box">
+                <h4>Total Customers</h4>
+                <h3>{{ total_customers }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stat-box">
+                <h4>Average Lifetime Value</h4>
+                <h3>RWF {{ loyalty_stats.total_loyalty_value|floatformat:0|default:'0' }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stat-box">
+                <h4>Total Referrals</h4>
+                <h3>{{ referral_stats.total_referrals|default:'0' }}</h3>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="stat-box">
+                <h4>Referral Earnings</h4>
+                <h3>RWF {{ referral_stats.total_referral_earnings|floatformat:0|default:'0' }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Segments -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Customer Segments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="segment-grid">
+                        <div class="segment-card">
+                            <h3>{{ segments.vip }}</h3>
+                            <p>VIP Customers</p>
+                        </div>
+                        <div class="segment-card" style="border-left-color: #28a745;">
+                            <h3 style="color: #28a745;">{{ segments.subscribed }}</h3>
+                            <p>Subscribed</p>
+                        </div>
+                        <div class="segment-card" style="border-left-color: #ffc107;">
+                            <h3 style="color: #ffc107;">{{ segments.high_value }}</h3>
+                            <p>High Value (500k+)</p>
+                        </div>
+                        <div class="segment-card" style="border-left-color: #dc3545;">
+                            <h3 style="color: #dc3545;">{{ segments.churn_risk }}</h3>
+                            <p>Churn Risk</p>
+                        </div>
+                        <div class="segment-card" style="border-left-color: #17a2b8;">
+                            <h3 style="color: #17a2b8;">{{ segments.inactive }}</h3>
+                            <p>Inactive (30+ days)</p>
+                        </div>
+                        <div class="segment-card" style="border-left-color: #6f42c1;">
+                            <h3 style="color: #6f42c1;">{{ segments.new }}</h3>
+                            <p>New (7 days)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loyalty Program Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Loyalty Program Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="customer-row">
+                        <span>Total Points Earned</span>
+                        <strong>{{ loyalty_stats.total_points_earned|default:'0' }}</strong>
+                    </div>
+                    <div class="customer-row">
+                        <span>Points Redeemed</span>
+                        <strong>{{ loyalty_stats.total_points_redeemed|default:'0' }}</strong>
+                    </div>
+                    <div class="customer-row">
+                        <span>Redemption Value</span>
+                        <strong>RWF {{ loyalty_stats.total_loyalty_value|floatformat:0|default:'0' }}</strong>
+                    </div>
+                    <div class="customer-row">
+                        <span>Avg Redemption Rate</span>
+                        <strong>{{ loyalty_stats.avg_redemption_rate|floatformat:1|default:'0' }}%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Referral Program Performance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="customer-row">
+                        <span>Total Referrals</span>
+                        <strong>{{ referral_stats.total_referrals|default:'0' }}</strong>
+                    </div>
+                    <div class="customer-row">
+                        <span>Referral Earnings</span>
+                        <strong>RWF {{ referral_stats.total_referral_earnings|floatformat:0|default:'0' }}</strong>
+                    </div>
+                    <div class="customer-row">
+                        <span>Avg Per Customer</span>
+                        <strong>{{ referral_stats.avg_referrals_per_customer|floatformat:1|default:'0' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Customers -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Top 10 Customers (by Lifetime Value)</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for customer in top_customers %}
+                    <div class="customer-row">
+                        <div>
+                            <strong>{{ customer.user.get_full_name|default:customer.user.username }}</strong>
+                            <br>
+                            <small class="text-muted">Orders: {{ customer.total_orders }}</small>
+                            {% if customer.vip_tier_current %}
+                            <span class="customer-badge vip">{{ customer.vip_tier_current }}</span>
+                            {% endif %}
+                        </div>
+                        <div text-align="right">
+                            <strong>RWF {{ customer.lifetime_value|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">No customer data available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- At-Risk Customers -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">At-Risk Customers (Churn Risk)</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for customer in at_risk_customers %}
+                    <div class="customer-row">
+                        <div>
+                            <strong>{{ customer.user.get_full_name|default:customer.user.username }}</strong>
+                            <br>
+                            <small class="text-muted">Days inactive: {{ customer.days_since_last_order }}</small>
+                            <span class="customer-badge risk">CHURN RISK</span>
+                        </div>
+                        <div text-align="right">
+                            <strong>RWF {{ customer.lifetime_value|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center py-4">No at-risk customers</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row">
+        <div class="col-12">
+            <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

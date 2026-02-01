@@ -285,3 +285,17 @@ If you find a security vulnerability:
 - Security issues should be prioritized and fixed promptly
 - Regular security training for developers is recommended
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

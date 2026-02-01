@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Notification - NOURISH LINK{% endblock %}
+{% block title %}Notification - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -22,7 +22,8 @@
                         </small>
                     </div>
                     <div>
-                        <span class="badge bg-{% if notification.notification_type == 'order_status' %}primary{% elif notification.notification_type == 'payment' %}success{% elif notification.notification_type == 'promotion' %}warning{% elif notification.notification_type == 'loyalty' %}info{% else %}secondary{% endif %}">
+                        <span
+                            class="badge bg-{% if notification.notification_type == 'order_status' %}primary{% elif notification.notification_type == 'payment' %}success{% elif notification.notification_type == 'promotion' %}warning{% elif notification.notification_type == 'loyalty' %}info{% else %}secondary{% endif %}">
                             {{ notification.get_notification_type_display }}
                         </span>
                         {% if notification.is_read %}
@@ -41,7 +42,8 @@
                         <p class="mb-1"><strong>Order Number:</strong> {{ notification.order.order_number }}</p>
                         <p class="mb-1"><strong>Status:</strong> {{ notification.order.get_status_display }}</p>
                         <p class="mb-0"><strong>Total:</strong> RWF {{ notification.order.total }}</p>
-                        <a href="{% url 'orders:order_detail' notification.order.id %}" class="btn btn-sm btn-primary mt-2">
+                        <a href="{% url 'orders:order_detail' notification.order.id %}"
+                            class="btn btn-sm btn-primary mt-2">
                             <i class="bi bi-eye"></i> View Order Details
                         </a>
                     </div>
@@ -52,8 +54,10 @@
                         <h6><i class="bi bi-credit-card"></i> Related Payment</h6>
                         <p class="mb-1"><strong>Amount:</strong> RWF {{ notification.payment.amount }}</p>
                         <p class="mb-1"><strong>Status:</strong> {{ notification.payment.get_status_display }}</p>
-                        <p class="mb-0"><strong>Method:</strong> {{ notification.payment.get_payment_method_display }}</p>
-                        <a href="{% url 'payments:payment_detail' notification.payment.id %}" class="btn btn-sm btn-primary mt-2">
+                        <p class="mb-0"><strong>Method:</strong> {{ notification.payment.get_payment_method_display }}
+                        </p>
+                        <a href="{% url 'payments:payment_detail' notification.payment.id %}"
+                            class="btn btn-sm btn-primary mt-2">
                             <i class="bi bi-eye"></i> View Payment Details
                         </a>
                     </div>
@@ -64,6 +68,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

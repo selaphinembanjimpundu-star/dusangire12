@@ -121,7 +121,10 @@ def cart(request):
 
 @login_required
 def checkout(request):
-    """Checkout page with delivery address selection"""
+    """Checkout page with delivery address selection and loyalty integration"""
+    from accounts.validators import validate_user_can_make_payment
+    from .services import OrderCalculationService
+    
     cart = get_or_create_cart(request.user)
     cart_items = cart.items.select_related('menu_item').all()
     
@@ -134,16 +137,49 @@ def checkout(request):
     default_address = delivery_addresses.filter(is_default=True).first()
     
     # Get user profile for default values
-    profile = request.user.profile if hasattr(request.user, 'profile') else None
+    profile = getattr(request.user, 'profile', None)
+    
+    # Get loyalty info for user
+    loyalty_info = OrderCalculationService.get_user_loyalty_info(request.user)
     
     if request.method == 'POST':
-        # Check if using saved address or new address
+        loyalty_points_to_redeem = int(request.POST.get('loyalty_points_redeem', 0))
+        pricing = OrderCalculationService.calculate_order_total(cart, request.user, loyalty_points_to_redeem)
+        
+        payment_method = request.POST.get('payment_method', PaymentMethod.CASH_ON_DELIVERY)
+        phone_number = request.POST.get('phone_number', '').strip()
+        account_number = request.POST.get('account_number', '').strip()
+        
+        validation_result = validate_user_can_make_payment(
+            request.user,
+            payment_method,
+            phone_number if phone_number else None,
+            account_number if account_number else None
+        )
+        
+        for warning in validation_result.get('warnings', []):
+            messages.warning(request, warning)
+        
+        if not validation_result['valid']:
+            for error in validation_result.get('errors', []):
+                messages.error(request, error)
+            
+            context = {
+                'cart': cart,
+                'cart_items': cart_items,
+                'delivery_addresses': delivery_addresses,
+                'default_address': default_address,
+                'profile': profile,
+                'loyalty_info': loyalty_info,
+                'pricing': pricing,
+            }
+            return render(request, 'orders/checkout.html', context)
+        
+        # Determine address
         use_saved_address = request.POST.get('use_saved_address') == 'true'
         saved_address_id = request.POST.get('saved_address_id')
         
-        # Determine if using saved address (either explicitly set or if saved_address_id is provided)
         if use_saved_address or saved_address_id:
-            # Use saved address
             if saved_address_id:
                 try:
                     saved_address = DeliveryAddress.objects.get(id=saved_address_id, user=request.user)
@@ -156,8 +192,6 @@ def checkout(request):
                     messages.error(request, 'Selected address not found')
                     return redirect('orders:checkout')
             else:
-                # If use_saved_address is true but no address_id, try to use default
-                default_address = delivery_addresses.filter(is_default=True).first()
                 if default_address:
                     customer_name = default_address.full_name
                     customer_phone = default_address.phone
@@ -168,244 +202,112 @@ def checkout(request):
                     messages.error(request, 'Please select a delivery address or enter a new one')
                     return redirect('orders:checkout')
         else:
-            # Use new address
             customer_name = request.POST.get('customer_name', request.user.get_full_name() or request.user.username)
             customer_phone = request.POST.get('customer_phone', profile.phone if profile else '')
             delivery_address = request.POST.get('delivery_address', '')
             delivery_instructions = request.POST.get('delivery_instructions', '')
             
-            # Get delivery zone for charge calculation
             zone_id = request.POST.get('delivery_zone')
             if zone_id:
                 try:
                     zone = DeliveryZone.objects.get(id=zone_id, is_active=True)
                     delivery_charge = zone.delivery_charge
                 except DeliveryZone.DoesNotExist:
-                    delivery_charge = Decimal('2000.00')  # Default in RWF
+                    delivery_charge = pricing['delivery_charge']
             else:
-                delivery_charge = Decimal('2000.00')  # Default in RWF
+                delivery_charge = pricing['delivery_charge']
             
-            # Validate required fields
             if not delivery_address:
                 messages.error(request, 'Delivery address is required')
                 return redirect('orders:checkout')
         
-        # Validate cart items are still available and in stock
-        unavailable_items = []
-        for cart_item in cart_items:
-            # Refresh from database to get latest data
-            cart_item.menu_item.refresh_from_db()
-            
-            if not cart_item.menu_item.is_available:
-                unavailable_items.append(cart_item.menu_item.name)
-        
+        # Validate cart items availability
+        unavailable_items = [ci.menu_item.name for ci in cart_items if not ci.menu_item.is_available]
         if unavailable_items:
-            messages.error(
-                request, 
-                f'The following items are no longer available: {", ".join(unavailable_items)}. Please remove them from your cart.'
-            )
+            messages.error(request, f'The following items are no longer available: {", ".join(unavailable_items)}')
             return redirect('orders:cart')
         
-        # Re-verify cart still has items
-        cart_items = cart.items.select_related('menu_item').all()
-        if not cart_items.exists():
-            messages.warning(request, 'Your cart is empty. Please add items before placing an order.')
-            return redirect('orders:cart')
-        
-        # Validate required fields
-        if not customer_name or not customer_name.strip():
-            messages.error(request, 'Customer name is required')
+        if not customer_name.strip() or not customer_phone.strip() or not delivery_address.strip():
+            messages.error(request, 'All customer information fields are required')
             return redirect('orders:checkout')
         
-        if not customer_phone or not customer_phone.strip():
-            messages.error(request, 'Customer phone number is required')
-            return redirect('orders:checkout')
+        subtotal = pricing['subtotal']
+        total = pricing['grand_total']
         
-        if not delivery_address or not delivery_address.strip():
-            messages.error(request, 'Delivery address is required')
-            return redirect('orders:checkout')
-        
-        # Calculate totals (recalculate to ensure accuracy)
-        subtotal = cart.get_total()
-        total = subtotal + delivery_charge
-        
-        # Validate totals are positive
         if subtotal <= 0:
             messages.error(request, 'Cart total must be greater than zero')
             return redirect('orders:cart')
         
-        if total <= 0:
-            messages.error(request, 'Order total must be greater than zero')
-            return redirect('orders:checkout')
-        
-        # Create order
         try:
             with transaction.atomic():
-                # Lock cart items to prevent concurrent modifications
-                cart_items = list(cart.items.select_for_update().select_related('menu_item').all())
+                cart_items_locked = list(cart.items.select_for_update().select_related('menu_item').all())
                 
-                # Double-check availability after lock
-                for cart_item in cart_items:
+                for cart_item in cart_items_locked:
                     cart_item.menu_item.refresh_from_db()
                     if not cart_item.menu_item.is_available:
-                        messages.error(
-                            request, 
-                            f'{cart_item.menu_item.name} is no longer available. Please update your cart.'
-                        )
+                        messages.error(request, f'{cart_item.menu_item.name} is no longer available')
                         return redirect('orders:cart')
                 
-                # Create order
+                # ✅ Corrected: total_amount -> total
                 order = Order.objects.create(
                     user=request.user,
-                    status=OrderStatus.PENDING,
-                    customer_name=customer_name.strip(),
-                    customer_phone=customer_phone.strip(),
-                    delivery_address=delivery_address.strip(),
-                    delivery_instructions=delivery_instructions.strip() if delivery_instructions else '',
-                    subtotal=subtotal,
-                    delivery_charge=delivery_charge,
-                    total=total
+                    customer_name=customer_name,
+                    customer_phone=customer_phone,
+                    delivery_address=delivery_address,
+                    delivery_instructions=delivery_instructions,
+                    payment_method=payment_method,
+                    payment_notes=request.POST.get('payment_notes', '').strip(),
+                    subtotal=pricing['subtotal'],
+                    delivery_charge=pricing['delivery_charge'],
+                    discount_amount=pricing['total_discount'],
+                    loyalty_points_redeemed=pricing['loyalty_points_redeemed'],
+                    loyalty_discount_amount=pricing['loyalty_discount_amount'],
+                    vip_discount_amount=pricing['vip_discount_amount'],
+                    corporate_discount_amount=pricing['corporate_discount_amount'],
+                    referral_discount_amount=pricing['referral_discount_amount'],
+                    total=pricing['grand_total'],  # ✅ Correct field
+                    status='pending'
                 )
                 
-                # Create order items with locked prices
-                order_items_created = []
-                for cart_item in cart_items:
-                    order_item = OrderItem.objects.create(
+                for cart_item in cart_items_locked:
+                    OrderItem.objects.create(
                         order=order,
                         menu_item=cart_item.menu_item,
                         quantity=cart_item.quantity,
-                        price=cart_item.menu_item.price,  # Lock price at order time
+                        price=cart_item.menu_item.price,
                         subtotal=cart_item.get_subtotal()
                     )
-                    order_items_created.append(order_item)
                 
-                # Validate order items were created
-                if not order_items_created:
-                    raise ValueError("No order items were created")
-                
-                # Create payment record
-                payment_method = request.POST.get('payment_method', PaymentMethod.CASH_ON_DELIVERY)
-                
-                # Set appropriate payment status
-                if payment_method == PaymentMethod.CASH_ON_DELIVERY:
-                    payment_status = PaymentStatus.PENDING
-                else:
-                    payment_status = PaymentStatus.PENDING  # Will be updated by gateway
-                
-                payment = Payment.objects.create(
-                    order=order,
-                    payment_method=payment_method,
-                    status=payment_status,
-                    amount=total,
-                    phone_number=request.POST.get('phone_number', '').strip(),
-                    account_number=request.POST.get('account_number', '').strip(),
-                    transaction_id=request.POST.get('transaction_id', '').strip(),
-                    notes=request.POST.get('payment_notes', '').strip()
-                )
-                
-                # Initiate payment with gateway if not cash on delivery
-                if payment_method != PaymentMethod.CASH_ON_DELIVERY:
-                    try:
-                        from payments.gateways import PaymentGatewayService, PaymentGatewayError
-                        
-                        # Prepare gateway parameters
-                        gateway_params = {
-                            'phone_number': payment.phone_number,
-                            'account_number': payment.account_number,
-                        }
-                        
-                        # Initiate payment
-                        gateway_result = PaymentGatewayService.initiate_payment(payment, **gateway_params)
-                        
-                        # Update payment with gateway response
-                        payment.gateway_response = gateway_result
-                        payment.gateway_name = payment_method
-                        
-                        if gateway_result.get('payment_link'):
-                            payment.payment_link = gateway_result['payment_link']
-                            payment.save()
-                            # Redirect to payment gateway
-                            return redirect(gateway_result['payment_link'])
-                        elif gateway_result.get('transaction_id'):
-                            payment.transaction_id = gateway_result['transaction_id']
-                            payment.status = PaymentStatus.PROCESSING
-                            payment.save()
-                            messages.success(
-                                request, 
-                                f'Order {order.order_number} placed! {gateway_result.get("message", "Please complete payment on your phone.")}'
-                            )
-                        else:
-                            payment.save()
-                            messages.success(request, f'Order {order.order_number} placed! Please complete payment.')
-                            
-                    except PaymentGatewayError as e:
-                        # Log error but don't fail the order
-                        import logging
-                        logger = logging.getLogger(__name__)
-                        logger.error(f'Payment gateway error for order {order.order_number}: {str(e)}')
-                        payment.gateway_response = {'error': str(e)}
-                        payment.save()
-                        messages.warning(
-                            request, 
-                            f'Order {order.order_number} placed, but payment initiation failed. Please contact support or complete payment manually.'
-                        )
-                    except Exception as e:
-                        # Log error but don't fail the order
-                        import logging
-                        logger = logging.getLogger(__name__)
-                        logger.error(f'Unexpected payment gateway error: {str(e)}', exc_info=True)
-                        payment.gateway_response = {'error': str(e)}
-                        payment.save()
-                        messages.warning(
-                            request, 
-                            f'Order {order.order_number} placed, but payment initiation encountered an issue. Please contact support.'
-                        )
-                
-                # Clear cart only after successful order creation
                 cart.items.all().delete()
                 
-                if payment_method == PaymentMethod.CASH_ON_DELIVERY:
-                    messages.success(request, f'Order {order.order_number} placed successfully!')
-                
-                return redirect('payments:payment_confirmation', payment_id=payment.id)
-                
-        except ValueError as e:
-            messages.error(request, str(e))
-            return redirect('orders:checkout')
+                messages.success(request, f'Order {order.order_number} placed successfully!')
+                return redirect('orders:order_detail', order_id=order.id)
+        
         except Exception as e:
-            # Log the error for debugging
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f'Error placing order for user {request.user.id}: {str(e)}', exc_info=True)
             messages.error(request, 'An error occurred while placing your order. Please try again or contact support.')
             return redirect('orders:checkout')
     
-    # Calculate delivery charge for display
-    if default_address:
-        delivery_charge = default_address.get_delivery_charge()
-    else:
-        delivery_charge = Decimal('2000.00')  # Default delivery charge in RWF
-    
-    # Get active delivery zones
+    pricing = OrderCalculationService.calculate_order_total(cart, request.user, 0)
     delivery_zones = DeliveryZone.objects.filter(is_active=True)
     
     context = {
         'cart': cart,
         'cart_items': cart_items,
-        'subtotal': cart.get_total(),
-        'delivery_charge': delivery_charge,
-        'total': cart.get_total() + delivery_charge,
         'profile': profile,
         'delivery_addresses': delivery_addresses,
         'default_address': default_address,
         'delivery_zones': delivery_zones,
+        'loyalty_info': loyalty_info,
+        'pricing': pricing,
     }
     return render(request, 'orders/checkout.html', context)
 
 
 @login_required
 def order_detail(request, order_id):
-    """Order detail page"""
     order = get_object_or_404(Order, id=order_id, user=request.user)
     order_items = order.items.select_related('menu_item').all()
     
@@ -418,16 +320,14 @@ def order_detail(request, order_id):
 
 @login_required
 def order_history(request):
-    """Order history page"""
-    orders = Order.objects.filter(user=request.user).select_related('user', 'payment').prefetch_related('items__menu_item').order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).select_related('user').prefetch_related('items__menu_item').order_by('-created_at')
     
-    # Pagination
-    paginator = Paginator(orders, 10)  # 10 orders per page
+    paginator = Paginator(orders, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     context = {
         'page_obj': page_obj,
-        'orders': page_obj,  # For backward compatibility
+        'orders': page_obj,
     }
     return render(request, 'orders/order_history.html', context)

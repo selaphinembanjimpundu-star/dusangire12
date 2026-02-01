@@ -1,0 +1,550 @@
+{% extends 'nutritionist_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Manage Clients - Nutritionist Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- ===== Page Header ===== -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <i class="bi bi-people-fill text-primary me-2"></i> Manage Clients
+                    </h1>
+                    <p class="text-muted">View, manage, and track all your assigned clients</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'nutritionist_dashboard:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" data-view="grid">
+                            <i class="bi bi-grid-3x2"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary active" data-view="list">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Filters & Search ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3" id="filterForm">
+                        <div class="col-lg-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 bg-light" 
+                                       name="search" placeholder="Search by name or email..." value="{{ search_query }}">
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <select class="form-select bg-light" name="status">
+                                <option value="">All Status</option>
+                                <option value="active" {% if current_status == 'active' %}selected{% endif %}>
+                                    <i class="bi bi-check-circle"></i> Active
+                                </option>
+                                <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>
+                                    <i class="bi bi-x-circle"></i> Inactive
+                                </option>
+                                <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>
+                                    <i class="bi bi-clock"></i> Pending
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-lg-3">
+                            <select class="form-select bg-light" name="specialization">
+                                <option value="">All Specializations</option>
+                                <option value="weight_loss" {% if current_spec == 'weight_loss' %}selected{% endif %}>Weight Loss</option>
+                                <option value="athletic" {% if current_spec == 'athletic' %}selected{% endif %}>Athletic Performance</option>
+                                <option value="medical" {% if current_spec == 'medical' %}selected{% endif %}>Medical Nutrition</option>
+                                <option value="wellness" {% if current_spec == 'wellness' %}selected{% endif %}>General Wellness</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-1"></i> Filter
+                            </button>
+                        </div>
+                        <div class="col-lg-2">
+                            <a href="{% url 'nutritionist_dashboard:manage_clients' %}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-x-circle me-1"></i> Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Stats Bar ===== -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary bg-opacity-10">
+                <div class="card-body p-3 text-center">
+                    <h5 class="fw-bold text-primary mb-0">{{ total_clients }}</h5>
+                    <small class="text-muted">Total Clients</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-success bg-opacity-10">
+                <div class="card-body p-3 text-center">
+                    <h5 class="fw-bold text-success mb-0">{{ active_count }}</h5>
+                    <small class="text-muted">Active Now</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning bg-opacity-10">
+                <div class="card-body p-3 text-center">
+                    <h5 class="fw-bold text-warning mb-0">{{ pending_count }}</h5>
+                    <small class="text-muted">Pending Review</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info bg-opacity-10">
+                <div class="card-body p-3 text-center">
+                    <h5 class="fw-bold text-info mb-0">{{ meal_plans_count }}</h5>
+                    <small class="text-muted">Meal Plans</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Clients List/Grid ===== -->
+    <div class="row" id="clientsContainer">
+        {% if clients %}
+            {% for client in clients %}
+            <div class="col-lg-4 col-md-6 client-item" data-status="{{ client.status }}" data-spec="{{ client.specialization }}">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-card">
+                    <div class="card-body p-4">
+                        <!-- Client Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                                <img src="{% static 'img/default-avatar.png' %}" 
+                                     class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-0">{{ client.get_full_name|default:client.username }}</h6>
+                                    <small class="text-muted">{{ client.email }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-{% if client.status == 'active' %}success{% elif client.status == 'pending' %}warning{% else %}secondary{% endif %} bg-opacity-10 text-{% if client.status == 'active' %}success{% elif client.status == 'pending' %}warning{% else %}secondary{% endif %} rounded-pill">
+                                {{ client.get_status_display }}
+                            </span>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- Client Info -->
+                        <div class="mb-3">
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Phone</small>
+                                <small>{{ client.phone_number|default:"Not provided" }}</small>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Assigned Date</small>
+                                <small>{{ client.assignment_date|date:"M d, Y" }}</small>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Specialization</small>
+                                <small>
+                                    {% if client.specialization %}
+                                        <span class="badge bg-info bg-opacity-10 text-info">{{ client.get_specialization_display }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Not assigned</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- Client Stats -->
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded">
+                                    <h6 class="fw-bold mb-0">{{ client.meal_plan_count }}</h6>
+                                    <small class="text-muted">Meal Plans</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded">
+                                    <h6 class="fw-bold mb-0">{{ client.consultation_count }}</h6>
+                                    <small class="text-muted">Consultations</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'nutritionist_dashboard:client_detail' client.id %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-eye me-1"></i> View Details
+                            </a>
+                            <a href="{% url 'nutritionist_dashboard:create_meal_plan' client.id %}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Create Plan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 text-center py-5">
+                    <div class="card-body">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                        <h4 class="mt-3 mb-2">No Clients Found</h4>
+                        <p class="text-muted mb-3">You don't have any clients assigned yet.</p>
+                        <a href="{% url 'nutritionist_dashboard:dashboard' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== Pagination ===== -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+    }
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const view = this.dataset.view;
+            const container = document.getElementById('clientsContainer');
+            const items = container.querySelectorAll('.client-item');
+            
+            if (view === 'grid') {
+                items.forEach(item => {
+                    item.classList.remove('col-lg-4', 'col-md-6');
+                    item.classList.add('col-lg-6', 'col-md-12');
+                });
+            } else {
+                items.forEach(item => {
+                    item.classList.remove('col-lg-6', 'col-md-12');
+                    item.classList.add('col-lg-4', 'col-md-6');
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients Table -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Start Date</th>
+                                    <th>Last Consultation</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if assignment.client.profile.avatar %}
+                                                <img src="{{ assignment.client.profile.avatar.url }}"
+                                                    alt="{{ assignment.client.get_full_name }}" class="rounded-circle"
+                                                    width="40" height="40">
+                                                {% else %}
+                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                                    style="width: 40px; height: 40px;">
+                                                    {{ assignment.client.first_name|first|upper }}{{
+                                                    assignment.client.last_name|first|upper }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{
+                                                    assignment.client.get_full_name|default:assignment.client.username
+                                                    }}</h6>
+                                                <small class="text-muted">ID: {{ assignment.client.id }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="d-block">{{ assignment.client.email }}</small>
+                                        {% if assignment.client.profile.phone %}
+                                        <small class="text-muted">{{ assignment.client.profile.phone }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{% if assignment.status == 'active' %}success{% elif assignment.status == 'paused' %}warning{% else %}secondary{% endif %}">
+                                            {{ assignment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ assignment.created_at|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        {% with assignment.consultations.last as last_consultation %}
+                                        {% if last_consultation %}
+                                        <small>{{ last_consultation.scheduled_at|date:"M d, Y" }}</small>
+                                        {% else %}
+                                        <small class="text-muted">No consultations</small>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'nutritionist_dashboard:client_detail' assignment.id %}"
+                                                class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if assignment.status == 'active' %}
+                                            <button type="button" class="btn btn-sm btn-outline-warning pause-btn"
+                                                data-assignment-id="{{ assignment.id }}">
+                                                <i class="bi bi-pause"></i>
+                                            </button>
+                                            {% elif assignment.status == 'paused' %}
+                                            <button type="button" class="btn btn-sm btn-outline-success resume-btn"
+                                                data-assignment-id="{{ assignment.id }}">
+                                                <i class="bi bi-play"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger terminate-btn"
+                                                data-assignment-id="{{ assignment.id }}"
+                                                data-client-name="{{ assignment.client.get_full_name }}">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if assignments.has_other_pages %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if assignments.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ assignments.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+                                    Previous
+                                </a>
+                            </li>
+                            {% endif %}
+
+                            {% for num in assignments.paginator.page_range %}
+                            {% if assignments.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > assignments.number|add:'-3' and num < assignments.number|add:'3' %} <li
+                                class="page-item">
+                                <a class="page-link"
+                                    href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+                                    {{ num }}
+                                </a>
+                                </li>
+                                {% endif %}
+                                {% endfor %}
+
+                                {% if assignments.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?page={{ assignments.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+                                        Next
+                                    </a>
+                                </li>
+                                {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people display-4 text-muted mb-3"></i>
+                        <h4>No Clients Found</h4>
+                        <p class="text-muted mb-4">
+                            {% if search_query or current_status %}
+                            Try changing your search criteria
+                            {% else %}
+                            You don't have any client assignments yet
+                            {% endif %}
+                        </p>
+                        {% if search_query or current_status %}
+                        <a href="{% url 'nutritionist_dashboard:manage_clients' %}" class="btn btn-primary">
+                            Clear Filters
+                        </a>
+                        {% else %}
+                        <a href="{% url 'nutritionist_dashboard:dashboard' %}" class="btn btn-primary">
+                            Back to Dashboard
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terminate Confirmation Modal -->
+<div class="modal fade" id="terminateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terminate Assignment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to terminate the assignment with <strong id="clientName"></strong>?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="terminateForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Terminate Assignment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block nutritionist_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Pause assignment
+        document.querySelectorAll('.pause-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const assignmentId = this.dataset.assignmentId;
+                if (confirm('Are you sure you want to pause this assignment?')) {
+                    fetch(`/nutritionist-dashboard/clients/${assignmentId}/pause/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        });
+                }
+            });
+        });
+
+        // Resume assignment
+        document.querySelectorAll('.resume-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const assignmentId = this.dataset.assignmentId;
+                fetch(`/nutritionist-dashboard/clients/${assignmentId}/resume/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            });
+        });
+
+        // Terminate assignment
+        document.querySelectorAll('.terminate-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const assignmentId = this.dataset.assignmentId;
+                const clientName = this.dataset.clientName;
+
+                document.getElementById('clientName').textContent = clientName;
+                document.getElementById('terminateForm').action =
+                    `/nutritionist-dashboard/clients/${assignmentId}/terminate/`;
+
+                const modal = new bootstrap.Modal(document.getElementById('terminateModal'));
+                modal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

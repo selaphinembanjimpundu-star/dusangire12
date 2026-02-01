@@ -1,0 +1,87 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Medical Alerts</h2>
+            <p class="text-muted">Ongoing health conditions and medical history tracking</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Current Conditions -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Current Health Conditions</h5>
+                    {% if health_profile.current_conditions %}
+                    <div class="p-4 bg-light rounded-4">
+                        <p class="lead mb-0">{{ health_profile.current_conditions }}</p>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-heart-pulse text-muted opacity-25 display-1 mb-3"></i>
+                        <p class="text-muted">No ongoing health conditions recorded.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Medical History -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Medical History Summary</h5>
+                    {% if health_profile.medical_history %}
+                    <p class="text-muted">{{ health_profile.medical_history }}</p>
+                    {% else %}
+                    <p class="text-muted italic">No medical history summary available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Medications -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 border-top border-5 border-primary">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Current Medications</h5>
+                    {% if health_profile.medications %}
+                    <ul class="list-group list-group-flush">
+                        {% for med in health_profile.medications.split %}
+                        <li class="list-group-item border-0 px-0 py-2 d-flex align-items-center">
+                            <i class="bi bi-capsule text-primary me-3"></i>
+                            {{ med|trim }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted small mb-0">No medications listed.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Blood Type & Vitals -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Quick Vitals</h5>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Blood Type</span>
+                        <span class="badge bg-danger rounded-pill px-3">{{ health_profile.blood_type|default:"Not Set"
+                            }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Weight</span>
+                        <span class="fw-bold">{{ health_profile.weight_kg }} kg</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Height</span>
+                        <span class="fw-bold">{{ health_profile.height_cm }} cm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

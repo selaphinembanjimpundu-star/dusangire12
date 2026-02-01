@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('\n' + '='*60))
-        self.stdout.write(self.style.SUCCESS('NOURISH LINK - Initial Data Seeding'))
+        self.stdout.write(self.style.SUCCESS('Dusangire - Initial Data Seeding'))
         self.stdout.write(self.style.SUCCESS('='*60 + '\n'))
 
         clear_flag = ['--clear'] if options['clear'] else []

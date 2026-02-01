@@ -135,3 +135,17 @@ CACHES = {
 # Session configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db' if os.environ.get('REDIS_URL') else 'django.contrib.sessions.backends.db'
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

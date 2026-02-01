@@ -1,0 +1,100 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Update Health Profile</h2>
+            <p class="text-muted">Keep your health metrics up to date for better nutritional guidance</p>
+        </div>
+        <a href="{% url 'customer_dashboard:health_reports' %}" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-2"></i> Back to Reports
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <!-- Basic Info -->
+                    <div class="col-12">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Basic Information</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_of_birth" class="form-label fw-bold">Date of Birth</label>
+                        <input type="date" class="form-control rounded-pill px-3" id="date_of_birth"
+                            name="date_of_birth" value="{{ health_profile.date_of_birth|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="blood_type" class="form-label fw-bold">Blood Type</label>
+                        <select class="form-select rounded-pill px-3" id="blood_type" name="blood_type">
+                            <option value="">Select Blood Type</option>
+                            {% for type, label in health_profile.BLOOD_TYPE_CHOICES %}
+                            <option value="{{ type }}" {% if health_profile.blood_type == type %}selected{% endif %}>{{
+                                label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="weight_kg" class="form-label fw-bold">Weight (kg)</label>
+                        <input type="number" step="0.1" class="form-control rounded-pill px-3" id="weight_kg"
+                            name="weight_kg" value="{{ health_profile.weight_kg }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="height_cm" class="form-label fw-bold">Height (cm)</label>
+                        <input type="number" step="0.1" class="form-control rounded-pill px-3" id="height_cm"
+                            name="height_cm" value="{{ health_profile.height_cm }}" required>
+                    </div>
+
+                    <!-- Medical Info -->
+                    <div class="col-12 mt-5">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Medical Information</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="medical_history" class="form-label fw-bold">Medical History Summary</label>
+                        <textarea class="form-control rounded-4 px-3" id="medical_history" name="medical_history"
+                            rows="3"
+                            placeholder="Brief summary of past medical conditions...">{{ health_profile.medical_history }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="current_conditions" class="form-label fw-bold">Current Health Conditions</label>
+                        <textarea class="form-control rounded-4 px-3" id="current_conditions" name="current_conditions"
+                            rows="3"
+                            placeholder="List any ongoing health issues...">{{ health_profile.current_conditions }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label for="medications" class="form-label fw-bold">Current Medications</label>
+                        <textarea class="form-control rounded-4 px-3" id="medications" name="medications" rows="2"
+                            placeholder="List medications you are currently taking (comma separated)...">{{ health_profile.medications }}</textarea>
+                    </div>
+
+                    <!-- Dietary Info -->
+                    <div class="col-12 mt-5">
+                        <h5 class="fw-bold mb-3 border-bottom pb-2">Dietary Information</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="allergies" class="form-label fw-bold">Food Allergies</label>
+                        <textarea class="form-control rounded-4 px-3 border-danger border-opacity-25" id="allergies"
+                            name="allergies" rows="3"
+                            placeholder="List all food allergies (comma separated)...">{{ health_profile.allergies }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dietary_restrictions" class="form-label fw-bold">Dietary Restrictions</label>
+                        <textarea class="form-control rounded-4 px-3 border-warning border-opacity-25"
+                            id="dietary_restrictions" name="dietary_restrictions" rows="3"
+                            placeholder="Religious, cultural, or preference-based restrictions...">{{ health_profile.dietary_restrictions }}</textarea>
+                    </div>
+
+                    <div class="col-12 mt-5 text-center">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                            Update Health Profile
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

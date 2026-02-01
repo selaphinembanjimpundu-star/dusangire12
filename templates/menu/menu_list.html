@@ -1,550 +1,512 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Menu - NOURISH LINK{% endblock %}
-
-{% block extra_css %}
-<style>
-    .filter-sidebar {
-        background: #f8f9fa;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        position: sticky;
-        top: 20px;
-    }
-    .menu-card {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .menu-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    }
-    .menu-card img {
-        transition: transform 0.3s;
-    }
-    .menu-card:hover img {
-        transform: scale(1.05);
-    }
-    .dietary-tag-filter {
-        max-height: 200px;
-        overflow-y: auto;
-    }
-    .filter-section {
-        margin-bottom: 1.5rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 1px solid #dee2e6;
-    }
-    .filter-section:last-child {
-        border-bottom: none;
-    }
-</style>
-{% endblock %}
+{% block title %}Menu - Dusangire{% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <!-- Header Section -->
-    <div class="row mb-4">
-        <div class="col-12 text-center">
-            <h1 class="display-4 mb-3">
-                <i class="bi bi-menu-button-wide"></i> Our Menu
-            </h1>
-            <p class="lead text-muted">Healthy, medically-approved meals for your recovery</p>
-        </div>
-    </div>
+<style>
+    /* Professional Search & Filter System */
+    .menu-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0.75rem;
+    }
 
-    <div class="row">
-        <!-- Filter Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="filter-sidebar">
-                <h5 class="mb-3"><i class="bi bi-funnel"></i> Filter Menu</h5>
-                
-                <form method="get" id="filter-form">
-                    <!-- Search -->
-                    <div class="filter-section">
-                        <label for="id_search" class="form-label fw-bold">Search</label>
-                        <input type="text" 
-                               name="search" 
-                               id="id_search" 
-                               class="form-control" 
-                               placeholder="Search menu items..."
-                               value="{{ search_query }}">
-                    </div>
+    .menu-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
 
-                    <!-- Category Filter -->
-                    <div class="filter-section">
-                        <label for="id_category" class="form-label fw-bold">Category</label>
-                        <select name="category" id="id_category" class="form-select">
-                            <option value="">All Categories</option>
-                            {% for cat in categories %}
-                                <option value="{{ cat.id }}" {% if selected_category_id == cat.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ cat.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
+    .menu-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
 
-                    <!-- Dietary Tags Filter -->
-                    <div class="filter-section">
-                        <label class="form-label fw-bold">Dietary Requirements</label>
-                        <div class="dietary-tag-filter">
-                            {% for tag in dietary_tags %}
-                                <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="dietary_tags" 
-                                           value="{{ tag.id }}" 
-                                           id="tag_{{ tag.id }}"
-                                           {% if tag.id in selected_dietary_tags %}checked{% endif %}>
-                                    <label class="form-check-label" for="tag_{{ tag.id }}">
-                                        {{ tag.name }}
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
+    /* Search Bar */
+    .search-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
 
-                    <!-- Price Range -->
-                    <div class="filter-section">
-                        <label class="form-label fw-bold">Price Range</label>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <input type="number" 
-                                       name="min_price" 
-                                       id="id_min_price" 
-                                       class="form-control form-control-sm" 
-                                       placeholder="Min"
-                                       step="0.01"
-                                       min="0">
-                            </div>
-                            <div class="col-6">
-                                <input type="number" 
-                                       name="max_price" 
-                                       id="id_max_price" 
-                                       class="form-control form-control-sm" 
-                                       placeholder="Max"
-                                       step="0.01"
-                                       min="0">
-                            </div>
-                        </div>
-                    </div>
+    .search-input-wrapper {
+        position: relative;
+    }
 
-                    <!-- Filter Buttons -->
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-search"></i> Apply Filters
-                        </button>
-                        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Clear Filters
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
+    .search-input-wrapper input {
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
 
-        <!-- Menu Items -->
-        <div class="col-lg-9">
-            {% if has_active_filters %}
-                <!-- Show filtered results and suggestions when filters are active -->
-                {% if menu_by_category %}
-                    <div class="mb-4">
-                        <h3 class="mb-3">
-                            <i class="bi bi-funnel-fill"></i> Filtered Results
-                            <span class="badge bg-primary ms-2">{{ page_obj.paginator.count }} Item{{ page_obj.paginator.count|pluralize }}</span>
-                        </h3>
-                    </div>
-                    
-                    {% for category, items in menu_by_category.items %}
-                        <div class="mb-5">
-                            <div class="d-flex align-items-center mb-4">
-                                <h4 class="mb-0">{{ category.name }}</h4>
-                                <span class="badge bg-secondary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
-                            </div>
+    .search-input-wrapper input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
-                            <div class="row g-4">
-                                {% for item in items %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card menu-card h-100 shadow-sm">
-                                            {% if item.image %}
-                                                <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                         loading="lazy"
-                                                         class="card-img-top w-100 h-100" 
-                                                         alt="{{ item.name }}"
-                                                         style="object-fit: cover;">
-                                                </div>
-                                            {% else %}
-                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ item.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
-                                                
-                                                {% if item.dietary_tags.all %}
-                                                    <div class="mb-2">
-                                                        {% for tag in item.dietary_tags.all %}
-                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                {% endif %}
+    .search-input-wrapper i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667eea;
+    }
 
-                                                {% if item.calories %}
-                                                    <div class="mb-2">
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-fire"></i> {{ item.calories }} kcal
-                                                        </small>
-                                                    </div>
-                                                {% endif %}
+    /* Filter Sidebar */
+    .filter-panel {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 1rem;
+    }
 
-                                                <div class="mt-auto pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <span class="text-muted small d-block">Price</span>
-                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
-                                                        </div>
-                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                    
-                    <!-- Pagination -->
-                    {% if page_obj.has_other_pages %}
-                        <nav aria-label="Page navigation" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
-                                    </li>
-                                {% endif %}
-                                {% for num in page_obj.paginator.page_range %}
-                                    {% if page_obj.number == num %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="alert alert-warning text-center">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <h5 class="mt-2">No items match your filters</h5>
-                        <p class="mb-3">Try adjusting your search criteria or check out our suggestions below.</p>
-                        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-x-circle"></i> Clear Filters
-                        </a>
-                    </div>
-                {% endif %}
-                
-                <!-- Suggestions Section -->
-                <div class="mt-5">
-                    <h3 class="mb-4">
-                        <i class="bi bi-lightbulb"></i> Suggestions for You
-                    </h3>
-                    
-                    <!-- Recommendations -->
-                    {% if recommendations %}
-                        <div class="mb-5">
-                            <h5 class="mb-3">
-                                <i class="bi bi-star-fill text-warning"></i> Recommended for You
-                            </h5>
-                            <div class="row g-4">
-                                {% for item in recommendations|slice:":6" %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card menu-card h-100 shadow-sm">
-                                            {% if item.image %}
-                                                <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                         loading="lazy"
-                                                         class="card-img-top w-100 h-100" 
-                                                         alt="{{ item.name }}"
-                                                         style="object-fit: cover;">
-                                                </div>
-                                            {% else %}
-                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ item.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
-                                                
-                                                {% if item.dietary_tags.all %}
-                                                    <div class="mb-2">
-                                                        {% for tag in item.dietary_tags.all %}
-                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                {% endif %}
+    .filter-panel h5 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
 
-                                                <div class="mt-auto pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <span class="text-muted small d-block">Price</span>
-                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
-                                                        </div>
-                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Popular Items -->
-                    {% if popular_items %}
-                        <div class="mb-5">
-                            <h5 class="mb-3">
-                                <i class="bi bi-fire text-danger"></i> Popular Items
-                            </h5>
-                            <div class="row g-4">
-                                {% for item in popular_items|slice:":6" %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card menu-card h-100 shadow-sm">
-                                            {% if item.image %}
-                                                <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                         loading="lazy"
-                                                         class="card-img-top w-100 h-100" 
-                                                         alt="{{ item.name }}"
-                                                         style="object-fit: cover;">
-                                                </div>
-                                            {% else %}
-                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ item.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
-                                                
-                                                {% if item.dietary_tags.all %}
-                                                    <div class="mb-2">
-                                                        {% for tag in item.dietary_tags.all %}
-                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                {% endif %}
+    .filter-section {
+        margin-bottom: 1.5rem;
+    }
 
-                                                <div class="mt-auto pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <span class="text-muted small d-block">Price</span>
-                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
-                                                        </div>
-                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                    
-                    <!-- Highly Rated Items -->
-                    {% if highly_rated_items %}
-                        <div class="mb-5">
-                            <h5 class="mb-3">
-                                <i class="bi bi-star-fill text-warning"></i> Highly Rated
-                            </h5>
-                            <div class="row g-4">
-                                {% for item in highly_rated_items|slice:":6" %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card menu-card h-100 shadow-sm">
-                                            {% if item.image %}
-                                                <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                         loading="lazy"
-                                                         class="card-img-top w-100 h-100" 
-                                                         alt="{{ item.name }}"
-                                                         style="object-fit: cover;">
-                                                </div>
-                                            {% else %}
-                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ item.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
-                                                
-                                                {% if item.dietary_tags.all %}
-                                                    <div class="mb-2">
-                                                        {% for tag in item.dietary_tags.all %}
-                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                {% endif %}
+    .filter-section label {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
 
-                                                <div class="mt-auto pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <span class="text-muted small d-block">Price</span>
-                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
-                                                        </div>
-                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            {% else %}
-                <!-- No filters active - show all menu items grouped by category -->
-                {% if menu_by_category %}
-                    {% for category, items in menu_by_category.items %}
-                        <div class="mb-5">
-                            <div class="d-flex align-items-center mb-4">
-                                <h2 class="mb-0">{{ category.name }}</h2>
-                                <span class="badge bg-primary ms-3">{{ items|length }} Item{{ items|length|pluralize }}</span>
-                            </div>
-                            {% if category.description %}
-                                <p class="text-muted mb-4">{{ category.description }}</p>
-                            {% endif %}
+    .filter-select {
+        width: 100%;
+        padding: 0.625rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-                            <div class="row g-4">
-                                {% for item in items %}
-                                    <div class="col-md-6 col-lg-4">
-                                        <div class="card menu-card h-100 shadow-sm">
-                                            {% if item.image %}
-                                                <div class="position-relative overflow-hidden" style="height: 200px;">
-                                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                                         loading="lazy"
-                                                         class="card-img-top w-100 h-100" 
-                                                         alt="{{ item.name }}"
-                                                         style="object-fit: cover;">
-                                                </div>
-                                            {% else %}
-                                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ item.name }}</h5>
-                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
-                                                
-                                                {% if item.dietary_tags.all %}
-                                                    <div class="mb-2">
-                                                        {% for tag in item.dietary_tags.all %}
-                                                            <span class="badge bg-info me-1 mb-1">{{ tag.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                {% endif %}
+    .filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
-                                                {% if item.calories %}
-                                                    <div class="mb-2">
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-fire"></i> {{ item.calories }} kcal
-                                                        </small>
-                                                    </div>
-                                                {% endif %}
+    /* Dietary Tags - Visual Pills */
+    .dietary-filter {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
 
-                                                <div class="mt-auto pt-3 border-top">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <span class="text-muted small d-block">Price</span>
-                                                            <h4 class="text-primary mb-0 fw-bold">RWF {{ item.price }}</h4>
-                                                        </div>
-                                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-primary btn-sm">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                    
-                    <!-- Pagination for all items -->
-                    {% if page_obj.has_other_pages %}
-                        <nav aria-label="Page navigation" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                                    </li>
-                                {% endif %}
-                                {% for num in page_obj.paginator.page_range %}
-                                    {% if page_obj.number == num %}
-                                        <li class="page-item active">
-                                            <span class="page-link">{{ num }}</span>
-                                        </li>
-                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    {% endif %}
-                {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="bi bi-info-circle"></i>
-                        <h5 class="mt-2">No menu items found</h5>
-                        <p class="mb-0">
-                            No menu items available at the moment. Please check back later.
-                        </p>
-                    </div>
-                {% endif %}
-            {% endif %}
-        </div>
+    .dietary-check {
+        display: flex;
+        align-items: center;
+        padding: 0.625rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .dietary-check:hover {
+        background-color: #f9fafb;
+        border-color: #667eea;
+    }
+
+    .dietary-check input[type="checkbox"]:checked + label {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .dietary-check input[type="checkbox"] {
+        cursor: pointer;
+        margin-right: 0.5rem;
+        accent-color: #667eea;
+    }
+
+    .dietary-check label {
+        margin: 0;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .filter-icon {
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    /* Filter Buttons */
+    .filter-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-apply {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-apply:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-clear {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+
+    .btn-clear:hover {
+        background: #f9fafb;
+        border-color: #764ba2;
+        color: #764ba2;
+    }
+
+    /* Active Filters Display */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .filter-tag {
+        background: #dbeafe;
+        color: #0369a1;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-tag .remove {
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    /* Responsive */
+    @media (max-width: 991px) {
+        .filter-panel {
+            position: static;
+            margin-bottom: 2rem;
+        }
+
+        .dietary-filter {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .menu-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .search-section {
+            padding: 1rem;
+        }
+
+        .dietary-filter {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Menu Header -->
+<div class="menu-header">
+    <div class="container">
+        <h1><i class="bi bi-cup-hot"></i> Our Menu</h1>
+        <p>Discover our delicious, nutritionally-balanced meals tailored to your dietary needs</p>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'js/menu.js' %}"></script>
+<!-- Search Bar Section -->
+<div class="container mb-4">
+    <div class="search-section">
+        <form method="get" class="d-flex gap-2">
+            <div class="search-input-wrapper flex-grow-1">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" class="form-control border-0" placeholder="Search meals, ingredients, or descriptions..." value="{{ search_query }}">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+
+        <!-- FILTER SIDEBAR -->
+        <div class="col-lg-3 mb-4">
+            <form method="get" class="filter-panel">
+
+                <h5><i class="bi bi-funnel"></i> Filters</h5>
+
+                <!-- Category Filter -->
+                <div class="filter-section">
+                    <label for="category"><i class="filter-icon bi bi-folder"></i> Category</label>
+                    <select name="category" id="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if selected_category_id == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="filter-section">
+                    <label><i class="filter-icon bi bi-currency-dollar"></i> Price Range</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ min_price }}">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ max_price }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dietary Restrictions Filter -->
+                <div class="filter-section">
+                    <label><i class="filter-icon bi bi-heart-pulse"></i> Dietary</label>
+                    <div class="dietary-filter">
+                        {% for tag in dietary_tags %}
+                        <div class="dietary-check">
+                            <input class="form-check-input" type="checkbox" id="tag_{{ tag.id }}" name="dietary_tags" value="{{ tag.id }}" {% if tag.id in selected_dietary_tags %}checked{% endif %}>
+                            <label for="tag_{{ tag.id }}">{{ tag.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Nutritional Filters -->
+                <div class="filter-section">
+                    <label><i class="filter-icon bi bi-fire"></i> Calories</label>
+                    <input type="number" name="max_calories" class="form-control form-control-sm" placeholder="Max calories" value="{{ max_calories }}">
+                </div>
+
+                <div class="filter-section">
+                    <label><i class="filter-icon bi bi-lightning"></i> Protein (min)</label>
+                    <input type="number" name="min_protein" class="form-control form-control-sm" placeholder="Min grams" value="{{ min_protein }}">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="filter-actions">
+                    <button type="submit" class="btn-apply">
+                        <i class="bi bi-check-circle"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'menu:menu_list' %}" class="btn-clear">
+                        <i class="bi bi-x-circle"></i> Clear All
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+
+        <!-- MENU ITEMS -->
+        <div class="col-lg-9">
+
+            <!-- Results Summary -->
+            {% if has_active_filters %}
+            <div class="alert alert-info mb-4" role="alert">
+                <i class="bi bi-info-circle"></i> 
+                <strong>Filtered Results:</strong> Showing {{ menu_by_category|length }} categories of menu items
+                <a href="{% url 'menu:menu_list' %}" class="alert-link ms-2">Clear filters</a>
+            </div>
+            {% endif %}
+
+            <!-- Menu Items -->
+            {% if menu_by_category %}
+            {% for category, items in menu_by_category.items %}
+            <div class="mb-5">
+
+                <div class="d-flex align-items-center mb-4">
+                    <h3 class="mb-0">
+                        <i class="bi bi-bookmark-fill" style="color: #667eea;"></i>
+                        {{ category.name }}
+                    </h3>
+                    <span class="badge bg-primary ms-2" style="font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+                        {{ items|length }} item{{ items|length|pluralize }}
+                    </span>
+                </div>
+
+                <div class="row g-4">
+                    {% for item in items %}
+                    <div class="col-md-6 col-lg-4">
+                        <a href="{% url 'menu:menu_detail' item.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="card h-100 shadow-sm" style="border: none; border-radius: 1rem; overflow: hidden; transition: all 0.3s ease; cursor: pointer;">
+
+                                <!-- Item Image -->
+                                <div style="position: relative; height: 220px; overflow: hidden; background: #f3f4f6;">
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}" class="card-img-top" style="height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                                    {% else %}
+                                    <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                        <i class="bi bi-image" style="font-size: 3rem; opacity: 0.5;"></i>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Availability Badge -->
+                                    <div style="position: absolute; top: 0.75rem; right: 0.75rem;">
+                                        {% if item.is_available %}
+                                        <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Unavailable</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-body d-flex flex-column" style="padding: 1.25rem;">
+                                    <!-- Item Name & Price -->
+                                    <div class="mb-2">
+                                        <h5 style="margin: 0; font-weight: 600; color: #1f2937;">{{ item.name }}</h5>
+                                        <p style="margin: 0.25rem 0 0 0; color: #667eea; font-weight: 700; font-size: 1.25rem;">
+                                            RWF {{ item.price|floatformat:0 }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 1rem; flex-grow: 1;">
+                                        {{ item.description|truncatewords:15 }}
+                                    </p>
+
+                                    <!-- Dietary Tags -->
+                                    {% if item.dietary_tags.all %}
+                                    <div class="mb-3" style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                                        {% for tag in item.dietary_tags.all %}
+                                        <span class="badge" style="background-color: #dbeafe; color: #0369a1; font-size: 0.75rem; padding: 0.35rem 0.6rem;">
+                                            <i class="bi bi-check-circle"></i> {{ tag.name }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Nutrition Info -->
+                                    {% if item.calories or item.protein %}
+                                    <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-around; text-align: center;">
+                                            {% if item.calories %}
+                                            <div>
+                                                <div style="color: #667eea; font-weight: 600;">{{ item.calories|floatformat:0 }}</div>
+                                                <div style="color: #6b7280; font-size: 0.75rem;">Cal</div>
+                                            </div>
+                                            {% endif %}
+                                            {% if item.protein %}
+                                            <div>
+                                                <div style="color: #667eea; font-weight: 600;">{{ item.protein|floatformat:1 }}</div>
+                                                <div style="color: #6b7280; font-size: 0.75rem;">Protein</div>
+                                            </div>
+                                            {% endif %}
+                                            {% if item.carbs %}
+                                            <div>
+                                                <div style="color: #667eea; font-weight: 600;">{{ item.carbs|floatformat:1 }}</div>
+                                                <div style="color: #6b7280; font-size: 0.75rem;">Carbs</div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="bi bi-search" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="mt-3">No menu items found</h5>
+                <p class="text-muted">Try adjusting your search or filter criteria</p>
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary mt-2">
+                    <i class="bi bi-arrow-left"></i> Back to Menu
+                </a>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Pagination (if implemented in view) -->
+{% if page_obj %}
+<nav aria-label="Page navigation" class="d-flex justify-content-center my-4">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

@@ -1,68 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="NOURISH LINK - Hospital E-Commerce Restaurant. Healthy, medically-approved meals for faster recovery and better health. Order nutritious meals delivered to your hospital room or home."
-    />
-    <meta
-      name="keywords"
-      content="hospital restaurant, healthy meals, hospital food, dietary meals, recovery meals, medical nutrition, hospital e-commerce, patient meals, NOURISH LINK"
-    />
-    <meta name="author" content="NOURISH LINK" />
-    <meta name="robots" content="index, follow" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="NOURISH LINK - Hospital E-Commerce Restaurant" />
-    <meta property="og:description" content="Healthy, medically-approved meals for faster recovery and better health" />
-    <meta property="og:site_name" content="NOURISH LINK" />
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="NOURISH LINK - Hospital E-Commerce Restaurant" />
-    <meta name="twitter:description" content="Healthy, medically-approved meals for faster recovery and better health" />
-    
-    <title>
-      {% block title %}NOURISH LINK - Hospital E-Commerce Restaurant{% endblock %}
-    </title>
 
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Dusangire - Hospital E-Commerce Restaurant. Healthy, medically-approved meals for faster recovery and better health. Order nutritious meals delivered to your hospital room or home." />
+  <meta name="keywords"
+    content="hospital restaurant, healthy meals, hospital food, dietary meals, recovery meals, medical nutrition, hospital e-commerce, patient meals, Dusangire" />
+  <meta name="author" content="Dusangire" />
+  <meta name="robots" content="index, follow" />
 
-    <!-- Google Fonts - Inter -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Dusangire - Hospital E-Commerce Restaurant" />
+  <meta property="og:description" content="Healthy, medically-approved meals for faster recovery and better health" />
+  <meta property="og:site_name" content="Dusangire" />
 
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-      crossorigin="anonymous"
-    />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dusangire - Hospital E-Commerce Restaurant" />
+  <meta name="twitter:description" content="Healthy, medically-approved meals for faster recovery and better health" />
 
-    <!-- Bootstrap Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-    />
+  <title>{% block title %}Dusangire - CHUB, Butare, Rwanda{% endblock %}</title>
 
-    <!-- Custom CSS -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    
-    <!-- Structured Data (JSON-LD) for SEO -->
-    <script type="application/ld+json">
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+
+  <!-- Custom CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
+  <!-- Structured Data (JSON-LD) for SEO -->
+  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Restaurant",
-      "name": "NOURISH LINK",
+      "name": "Dusangire",
       "description": "Hospital E-Commerce Restaurant providing healthy, medically-approved meals for faster recovery and better health",
       "url": "{{ request.scheme }}://{{ request.get_host }}",
       "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}",
@@ -82,95 +68,280 @@
     }
     </script>
 
-    {% block extra_css %}{% endblock %}
-  </head>
-  <body>
-    {% include 'navbar.html' %}
+  {% block extra_css %}{% endblock %}
 
-    <main style="padding-top: 80px">
-      {% if messages %}
-      <div class="container mt-3">
-        {% for message in messages %}
-        <div
-          class="alert alert-{{ message.tags }} alert-dismissible fade show animate-fade-in-up"
-          role="alert"
-        >
-          <i
-            class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"
-          ></i>
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"
-          ></button>
-        </div>
-        {% endfor %}
+  <!-- Dashboard Redirect CSS -->
+  <style>
+    .dashboard-redirect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+      transition: opacity 0.3s ease;
+    }
+
+    .dashboard-spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .dashboard-redirect-text {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .dashboard-role-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* Role-specific colors */
+    .role-admin {
+      background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    }
+
+    .role-nutritionist {
+      background: linear-gradient(135deg, #20c997 0%, #198754 100%);
+    }
+
+    .role-kitchen-staff {
+      background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
+    }
+
+    .role-delivery-person {
+      background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+
+    .role-customer {
+      background: linear-gradient(135deg, #6f42c1 0%, #6610f2 100%);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Dashboard Redirect Overlay (hidden by default) -->
+  <div id="dashboardRedirectOverlay" class="dashboard-redirect-overlay" style="display: none;">
+    <div class="dashboard-spinner"></div>
+    <div class="dashboard-redirect-text">Redirecting to your dashboard...</div>
+    <div id="userRoleBadge" class="dashboard-role-badge"></div>
+  </div>
+
+  {% include 'navbar.html' %}
+
+  <main style="padding-top: 80px">
+    {% if messages %}
+    <div class="container mt-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show animate-fade-in-up" role="alert">
+        <i
+          class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
-      {% endif %} {% block content %}{% endblock %}
-    </main>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}
+    {% endblock %}
+  </main>
 
-    {% include 'footer.html' %}
+  {% include 'footer.html' %}
 
-    <!-- Scroll to Top Button -->
-    <button
-      id="scrollToTop"
-      class="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow-lg"
-      style="
+  <!-- Scroll to Top Button -->
+  <button id="scrollToTop" class="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow-lg" style="
         width: 50px;
         height: 50px;
         display: none;
         z-index: 1000;
         border: none;
-      "
-      aria-label="Scroll to top"
-    >
-      <i class="bi bi-arrow-up"></i>
-    </button>
+      " aria-label="Scroll to top">
+    <i class="bi bi-arrow-up"></i>
+  </button>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
 
-    <!-- Custom JS -->
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/cart.js' %}"></script>
-    <script src="{% static 'js/lazy-load.js' %}"></script>
+  <!-- Custom JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/cart.js' %}"></script>
 
-    <!-- Scroll to Top Functionality -->
-    <script>
-      // Scroll to top button
-      const scrollToTopBtn = document.getElementById("scrollToTop");
-      if (scrollToTopBtn) {
-        window.addEventListener("scroll", function () {
-          if (window.pageYOffset > 300) {
-            scrollToTopBtn.style.display = "block";
-            scrollToTopBtn.style.opacity = "0";
-            setTimeout(() => {
-              scrollToTopBtn.style.transition = "opacity 0.3s";
-              scrollToTopBtn.style.opacity = "1";
-            }, 10);
-          } else {
-            scrollToTopBtn.style.opacity = "0";
-            setTimeout(() => {
-              scrollToTopBtn.style.display = "none";
-            }, 300);
-          }
-        });
+  <!-- Role-based Dashboard Redirection -->
+  <script>
+    // Function to get user role and redirect to appropriate dashboard
+    function redirectToDashboard() {
+      const overlay = document.getElementById('dashboardRedirectOverlay');
+      const roleBadge = document.getElementById('userRoleBadge');
 
-        scrollToTopBtn.addEventListener("click", function () {
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-          });
-        });
+      // Show loading overlay
+      overlay.style.display = 'flex';
+
+      // Get user role from Django template context
+      let userRole = 'customer'; // Default role
+
+      // Get role from template context (this will be set by Django)
+      {% if user.is_authenticated and user.profile.role %}
+      // Map Django role values to frontend role names
+      const roleMap = {
+        'ADMIN': 'admin',
+        'NUTRITIONIST': 'nutritionist',
+        'KITCHEN_STAFF': 'kitchen_staff',
+        'DELIVERY_PERSON': 'delivery_person',
+        'CUSTOMER': 'customer'
+      };
+
+      const djangoRole = '{{ user.profile.role }}';
+      userRole = roleMap[djangoRole] || 'customer';
+      {% endif %}
+
+      // Update role badge with appropriate class
+      roleBadge.textContent = userRole.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      roleBadge.className = 'dashboard-role-badge role-' + userRole;
+
+      // Define dashboard URLs - using direct URLs to avoid template errors
+      const dashboardUrls = {
+        'admin': '/admin-dashboard/',
+        'kitchen_staff': '/admin-dashboard/kitchen/',
+        'nutritionist': '/nutritionist-dashboard/',
+        'delivery_person': '/admin-dashboard/orders/',
+        'customer': '/customer-dashboard/',
+      };
+
+      // Get the redirect URL
+      const redirectUrl = dashboardUrls[userRole] || dashboardUrls['customer'];
+
+      // Redirect after 1.5 seconds (showing the role)
+      setTimeout(function () {
+        window.location.href = redirectUrl;
+      }, 1500);
+    }
+
+    // Check if we should auto-redirect on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      // Check if there's a URL parameter indicating dashboard redirect
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoRedirect = urlParams.get('redirect_to_dashboard');
+
+      // Also check if we're on a specific page that should redirect
+      const currentPath = window.location.pathname;
+      const shouldAutoRedirect = currentPath === '/' ||
+        currentPath.includes('login') ||
+        currentPath.includes('register');
+
+      // Only auto-redirect if user is logged in and on home/login/register pages
+      {% if user.is_authenticated %}
+      if (autoRedirect === 'true' || (shouldAutoRedirect && !currentPath.includes('dashboard'))) {
+        redirectToDashboard();
       }
-    </script>
+      {% endif %}
 
-    {% block extra_js %}{% endblock %}
-  </body>
+      // Initialize cart count
+      updateCartCount();
+    });
+
+    // Add global function to manually trigger dashboard redirect
+    window.goToDashboard = function () {
+      redirectToDashboard();
+      return false; // Prevent default if used in links
+    };
+
+    // Function to update cart count (placeholder - replace with actual cart logic)
+    function updateCartCount() {
+      // This should be replaced with your actual cart logic
+      // For now, we'll set it to 0 or get from localStorage
+      let cartCount = 0;
+      try {
+        const cartData = localStorage.getItem('nourishlink_cart');
+        if (cartData) {
+          const cart = JSON.parse(cartData);
+          cartCount = cart.items ? cart.items.length : 0;
+        }
+      } catch (e) {
+        console.error('Error loading cart:', e);
+      }
+
+      const cartBadges = document.querySelectorAll('.cart-count');
+      cartBadges.forEach(badge => {
+        badge.textContent = cartCount;
+        badge.style.display = cartCount > 0 ? 'inline' : 'none';
+      });
+    }
+
+    // Expose updateCartCount globally
+    window.updateCartCount = updateCartCount;
+
+    // Safe URL resolver function
+    window.getDashboardUrl = function (role) {
+      const urls = {
+        'admin': '/admin-dashboard/',
+        'kitchen_staff': '/admin-dashboard/kitchen/',
+        'nutritionist': '/nutritionist-dashboard/',
+        'delivery_person': '/admin-dashboard/orders/',
+        'customer': '/customer-dashboard/',
+      };
+      return urls[role] || urls['customer'];
+    };
+  </script>
+
+  <!-- Scroll to Top Functionality -->
+  <script>
+    // Scroll to top button
+    const scrollToTopBtn = document.getElementById("scrollToTop");
+    if (scrollToTopBtn) {
+      window.addEventListener("scroll", function () {
+        if (window.pageYOffset > 300) {
+          scrollToTopBtn.style.display = "block";
+          scrollToTopBtn.style.opacity = "0";
+          setTimeout(() => {
+            scrollToTopBtn.style.transition = "opacity 0.3s";
+            scrollToTopBtn.style.opacity = "1";
+          }, 10);
+        } else {
+          scrollToTopBtn.style.opacity = "0";
+          setTimeout(() => {
+            scrollToTopBtn.style.display = "none";
+          }, 300);
+        }
+      });
+
+      scrollToTopBtn.addEventListener("click", function () {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      });
+    }
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+
 </html>

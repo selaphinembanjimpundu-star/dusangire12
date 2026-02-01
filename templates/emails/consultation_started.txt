@@ -1,0 +1,13 @@
+{% autoescape off %}
+Dear {{ patient_name }},
+
+Your consultation with {{ consultant_name }} has started.
+
+Check Type: {{ check_type }}
+Check ID: #{{ check_id }}
+
+We'll have you connected shortly. Thank you for your patience!
+
+Best regards,
+{{ site_name }} Team
+{% endautoescape %}

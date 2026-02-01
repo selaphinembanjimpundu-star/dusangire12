@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Subscribe to {{ plan.name }} - NOURISH LINK{% endblock %}
+{% block title %}Subscribe to {{ plan.name }} - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -15,57 +15,59 @@
                     <div class="alert alert-info mb-4">
                         <h5>Plan Details</h5>
                         <p class="mb-1"><strong>Type:</strong> {{ plan.get_plan_type_display }}</p>
-                        <p class="mb-1"><strong>Price:</strong> RWF {{ plan.price }} per {{ plan.get_plan_type_display|lower }}</p>
+                        <p class="mb-1"><strong>Price:</strong> RWF {{ plan.price }} per {{
+                            plan.get_plan_type_display|lower }}</p>
                         <p class="mb-1"><strong>Meals:</strong> {{ plan.meals_per_cycle }} meal(s) per cycle</p>
                         <p class="mb-0"><strong>Duration:</strong> {{ plan.duration_days }} days</p>
                     </div>
-                    
+
                     <form method="post">
                         {% csrf_token %}
-                        
+
                         <div class="mb-3">
                             <label for="id_delivery_address" class="form-label">Delivery Address *</label>
                             {{ form.delivery_address }}
                             {% if form.delivery_address.errors %}
-                                <div class="text-danger small">{{ form.delivery_address.errors }}</div>
+                            <div class="text-danger small">{{ form.delivery_address.errors }}</div>
                             {% endif %}
                             <div class="form-text">
                                 <a href="{% url 'delivery:address_create' %}" target="_blank">Add new address</a>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="id_preferred_delivery_time" class="form-label">Preferred Delivery Time</label>
                             {{ form.preferred_delivery_time }}
                             {% if form.preferred_delivery_time.errors %}
-                                <div class="text-danger small">{{ form.preferred_delivery_time.errors }}</div>
+                            <div class="text-danger small">{{ form.preferred_delivery_time.errors }}</div>
                             {% endif %}
                             <div class="form-text">Optional: Set your preferred delivery time</div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="id_dietary_preferences" class="form-label">Dietary Preferences</label>
                             {{ form.dietary_preferences }}
                             {% if form.dietary_preferences.errors %}
-                                <div class="text-danger small">{{ form.dietary_preferences.errors }}</div>
+                            <div class="text-danger small">{{ form.dietary_preferences.errors }}</div>
                             {% endif %}
                             <div class="form-text">Any dietary restrictions or preferences for meal selection</div>
                         </div>
-                        
+
                         <div class="form-check mb-3">
                             {{ form.auto_order_enabled }}
                             <label class="form-check-label" for="id_auto_order_enabled">
                                 Enable automatic order generation
                             </label>
-                            <div class="form-text">Orders will be automatically created based on your subscription schedule</div>
+                            <div class="form-text">Orders will be automatically created based on your subscription
+                                schedule</div>
                         </div>
-                        
+
                         {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
                         {% endif %}
-                        
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'subscriptions:plans' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle"></i> Cancel
@@ -81,6 +83,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

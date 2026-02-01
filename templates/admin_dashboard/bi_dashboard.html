@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Dusangire{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bi-card {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+
+    .progress-custom {
+        height: 12px;
+        border-radius: 10px;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-5 fw-bold mb-0">Business Intelligence</h1>
+            <p class="text-muted lead">Advanced analytics and growth metrics</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary p-2 px-3 rounded-pill">Live Data</span>
+        </div>
+    </div>
+
+    <!-- Top Metrics Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card bi-card h-100 p-4 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="text-muted text-uppercase fw-bold small">Avg Order Value (AOV)</h6>
+                        <div class="bg-light p-2 rounded-circle">
+                            <i class="bi bi-cart-check text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value text-dark mb-2">RWF {{ aov|floatformat:0 }}</div>
+                    <p class="text-success small mb-0">
+                        <i class="bi bi-arrow-up"></i> 5.2% vs last month
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bi-card h-100 p-4 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="text-muted text-uppercase fw-bold small">Retention Rate</h6>
+                        <div class="bg-light p-2 rounded-circle">
+                            <i class="bi bi-people text-success"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value text-dark mb-2">{{ retention_rate|floatformat:1 }}%</div>
+                    <div class="progress progress-custom mb-2">
+                        <div class="progress-bar bg-success" style="width: {{ retention_rate }}%"></div>
+                    </div>
+                    <p class="text-muted small mb-0">Target: 85%</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bi-card h-100 p-4 bg-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="text-muted text-uppercase fw-bold small">Customer Lifetime Value</h6>
+                        <div class="bg-light p-2 rounded-circle">
+                            <i class="bi bi-gem text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value text-dark mb-2">RWF {{ clv|floatformat:0 }}</div>
+                    <p class="text-muted small mb-0">Based on current purchase frequency</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue vs Target -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card bi-card p-4 bg-dark text-white">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Monthly Revenue vs Target</h5>
+                    <div class="d-flex justify-content-between align-items-end mb-2">
+                        <div>
+                            <span class="display-6 fw-bold">RWF {{ monthly_revenue|floatformat:0 }}</span>
+                            <span class="opacity-50 ms-2">/ RWF {{ revenue_target|floatformat:0 }}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="h4 fw-bold text-primary">{{ target_achievement|floatformat:1 }}%</span>
+                        </div>
+                    </div>
+                    <div class="progress progress-custom mb-4" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                            style="width: {{ target_achievement }}%"></div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="small opacity-50">Daily Avg</div>
+                            <div class="fw-bold">RWF {{ monthly_revenue|divisibleby:30|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-4 border-start border-secondary">
+                            <div class="small opacity-50">Churn Rate</div>
+                            <div class="fw-bold text-danger">{{ churn_rate|floatformat:1 }}%</div>
+                        </div>
+                        <div class="col-4 border-start border-secondary">
+                            <div class="small opacity-50">Status</div>
+                            <div class="fw-bold text-success">On Track</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card bi-card h-100 p-4 bg-white">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Revenue by Category</h5>
+                    <div class="list-group list-group-flush">
+                        {% for cat in category_revenue %}
+                        <div class="list-group-item border-0 px-0 d-flex justify-content-between align-items-center">
+                            <span class="text-muted">{{ cat.menu_item__category__name }}</span>
+                            <span class="fw-bold">RWF {{ cat.revenue|floatformat:0 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

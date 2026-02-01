@@ -1,4 +1,4 @@
-# NOURISH LINK - Initial Data Seeding Guide
+# Dusangire - Initial Data Seeding Guide
 
 ## Overview
 This guide explains how to seed the database with initial data for production launch, including menu items, subscription plans, delivery zones, and other essential data.
@@ -499,3 +499,17 @@ Initial data seeding provides:
 - **Base Configuration**: Ready-to-use system
 
 Use the seeding commands to quickly set up your production environment, then customize as needed through the admin panel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

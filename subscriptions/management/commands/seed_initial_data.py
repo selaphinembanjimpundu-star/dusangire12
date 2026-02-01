@@ -31,33 +31,33 @@ class Command(BaseCommand):
         self.stdout.write('\nCreating delivery zones...')
         zones_data = [
             {
-                'name': 'Inside Hospital',
-                'description': 'Delivery to patients and staff within the hospital premises',
+                'name': 'CHUB Internal (Wards)',
+                'description': 'Direct delivery to patients and staff within CHUB hospital wards',
                 'delivery_charge': Decimal('0.00'),
                 'is_active': True,
             },
             {
-                'name': 'Hospital Grounds',
-                'description': 'Delivery to areas within hospital grounds (parking, nearby buildings)',
+                'name': 'CHUB Campus',
+                'description': 'Delivery within CHUB hospital grounds, parking, and administrative buildings',
+                'delivery_charge': Decimal('500.00'),
+                'is_active': True,
+            },
+            {
+                'name': 'Butare Central (0-2km)',
+                'description': 'Delivery within the central Butare area near CHUB',
                 'delivery_charge': Decimal('1000.00'),
                 'is_active': True,
             },
             {
-                'name': 'Nearby Area (0-5km)',
-                'description': 'Delivery within 5km radius of the hospital',
+                'name': 'Butare Suburban (2-5km)',
+                'description': 'Delivery to suburban areas of Butare, Rwanda',
                 'delivery_charge': Decimal('2000.00'),
                 'is_active': True,
             },
             {
-                'name': 'Extended Area (5-10km)',
-                'description': 'Delivery within 5-10km radius of the hospital',
+                'name': 'Outside Butare',
+                'description': 'Extended delivery services beyond Butare city limits',
                 'delivery_charge': Decimal('3500.00'),
-                'is_active': True,
-            },
-            {
-                'name': 'Far Area (10km+)',
-                'description': 'Delivery beyond 10km from the hospital',
-                'delivery_charge': Decimal('5000.00'),
                 'is_active': True,
             },
         ]

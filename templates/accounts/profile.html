@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}My Profile - NOURISH LINK{% endblock %}
+{% block title %}My Profile - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -35,9 +35,9 @@
                                 {{ u_form.last_name }}
                             </div>
                         </div>
-                        
+
                         <hr>
-                        
+
                         <h5 class="mb-3">Profile Information</h5>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -46,15 +46,17 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Role</label>
-                                <input type="text" class="form-control" value="{{ user.profile.get_role_display }}" disabled>
+                                <input type="text" class="form-control" value="{{ user.profile.get_role_display }}"
+                                    disabled>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_dietary_preferences" class="form-label">Dietary Preferences</label>
                             {{ p_form.dietary_preferences }}
-                            <div class="form-text">Enter any dietary restrictions or preferences (e.g., vegetarian, diabetic, low-sodium)</div>
+                            <div class="form-text">Enter any dietary restrictions or preferences (e.g., vegetarian,
+                                diabetic, low-sodium)</div>
                         </div>
-                        
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'delivery:address_list' %}" class="btn btn-outline-primary">
                                 <i class="bi bi-geo-alt"></i> Manage Addresses
@@ -70,4 +72,3 @@
     </div>
 </div>
 {% endblock %}
-

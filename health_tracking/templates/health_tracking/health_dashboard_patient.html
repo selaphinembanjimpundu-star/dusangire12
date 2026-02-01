@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Health Dashboard - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="h3 mb-0">My Health Dashboard</h1>
+            <p class="text-muted">Track your health metrics and progress toward your goals</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{% url 'health_tracking:metrics_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Metric
+            </a>
+        </div>
+    </div>
+
+    <!-- Health Score Card -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="health-score-ring" style="position: relative; width: 150px; height: 150px; margin: 0 auto;">
+                                <svg width="150" height="150" style="transform: rotate(-90deg);">
+                                    <circle cx="75" cy="75" r="70" fill="none" stroke="#e0e0e0" stroke-width="8"/>
+                                    <circle cx="75" cy="75" r="70" fill="none" stroke="#28a745" stroke-width="8" 
+                                            stroke-dasharray="{{ health_score|floatformat:0 }} 100"
+                                            stroke-linecap="round"/>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <div class="h3 mb-0">{{ health_score|floatformat:0 }}</div>
+                                    <small class="text-muted">Health Score</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted d-block">Active Goals</small>
+                                            <h5 class="mb-0">{{ active_goals.count }}</h5>
+                                        </div>
+                                        <div class="text-primary fs-3">
+                                            <i class="fas fa-bullseye"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted d-block">Recent Metrics</small>
+                                            <h5 class="mb-0">{{ recent_metrics|length }}</h5>
+                                        </div>
+                                        <div class="text-success fs-3">
+                                            <i class="fas fa-heartbeat"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted d-block">Meal Reviews</small>
+                                            <h5 class="mb-0">{{ recent_meals|length }}</h5>
+                                        </div>
+                                        <div class="text-info fs-3">
+                                            <i class="fas fa-utensils"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted d-block">Pending Alerts</small>
+                                            <h5 class="mb-0">{{ alerts|length }}</h5>
+                                        </div>
+                                        <div class="text-warning fs-3">
+                                            <i class="fas fa-bell"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Goals -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Active Health Goals</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_goals %}
+                        <div class="space-y-3">
+                            {% for goal in active_goals %}
+                                <div class="border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <h6 class="mb-1">{{ goal.goal_name }}</h6>
+                                            <small class="text-muted">{{ goal.description|truncatewords:15 }}</small>
+                                        </div>
+                                        <span class="badge bg-info">{{ goal.get_goal_type_display }}</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ goal.progress_percentage }}%;" 
+                                             aria-valuenow="{{ goal.progress_percentage }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ goal.progress_percentage|floatformat:0 }}%
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">
+                                            Target: {{ goal.target_value }} {{ goal.metric_type.unit }}
+                                        </small>
+                                        <small class="text-muted">
+                                            {{ goal.days_remaining }} days remaining
+                                        </small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <p class="mb-0">No active goals. <a href="{% url 'admin:health_tracking_patienthealthgoal_add' %}">Create one now</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Health Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% if alerts %}
+                        <div class="space-y-2">
+                            {% for alert in alerts %}
+                                <div class="alert alert-{{ alert.get_severity_display|lower }} alert-dismissible fade show" role="alert">
+                                    <strong>{{ alert.title }}</strong>
+                                    <br>
+                                    <small>{{ alert.message|truncatewords:15 }}</small>
+                                    <button type="button" class="btn-close" 
+                                            data-acknowledge-alert="{{ alert.id }}"
+                                            data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success mb-0">
+                            <p class="mb-0">No pending alerts. Keep up the great work!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Metrics and Meals -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Recent Metrics</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_metrics %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Value</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for metric in recent_metrics %}
+                                        <tr>
+                                            <td>{{ metric.metric_type.metric_name }}</td>
+                                            <td>
+                                                {{ metric.value }} {{ metric.metric_type.unit }}
+                                                {% if metric.is_in_alert_range %}
+                                                    <span class="badge bg-danger">Alert</span>
+                                                {% endif %}
+                                            </td>
+                                            <td><small class="text-muted">{{ metric.recorded_date }}</small></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No metrics recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Recent Meal Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_meals %}
+                        <div class="space-y-3">
+                            {% for meal in recent_meals %}
+                                <div class="border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">{{ meal.meal.name }}</h6>
+                                        <div class="text-warning">
+                                            {% for i in "x"|rjust:meal.overall_rating %}⭐{% endfor %}
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ meal.date_consumed }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No meal reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+        <div class="row mt-4">
+            <div class="col-lg-12">
+                <div class="card border-0 shadow-sm border-left-warning">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="card-title mb-0">Health Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="space-y-3">
+                            {% for rec in recommendations %}
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="flex-center h-10 w-10 rounded-full bg-warning bg-opacity-10">
+                                            <i class="fas fa-lightbulb text-warning"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">{{ rec.suggestion }}</h6>
+                                        <small class="text-muted">{{ rec.issue }}</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.querySelectorAll('[data-acknowledge-alert]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const alertId = this.dataset.acknowledgeAlert;
+        fetch(`/health-tracking/alerts/${alertId}/acknowledge/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

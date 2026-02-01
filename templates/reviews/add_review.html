@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write a Review - Dusangire{% endblock %}
+
+{% block extra_css %}
+<style>
+  .rating-stars {
+    color: #ffc107;
+    font-size: 2rem;
+    cursor: pointer;
+  }
+
+  .rating-star {
+    transition: transform 0.2s ease;
+  }
+
+  .rating-star:hover {
+    transform: scale(1.2);
+  }
+
+  .star-input {
+    display: none;
+  }
+
+  .review-card {
+    border-radius: 0.75rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .guideline-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+
+  .guideline-icon {
+    color: #667eea;
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'menu:menu_list' %}" class="text-decoration-none">Menu</a></li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'menu:menu_detail' menu_item.id %}" class="text-decoration-none">{{ menu_item.name }}</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'reviews:item_reviews' menu_item.id %}" class="text-decoration-none">Reviews</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Write Review</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <!-- Review Form -->
+    <div class="col-lg-8">
+      <div class="card review-card mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center mb-4">
+            {% if menu_item.image %}
+            <img src="{{ menu_item.image.url }}" alt="{{ menu_item.name }}" class="rounded me-3"
+              style="width: 80px; height: 80px; object-fit: cover;">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center me-3"
+              style="width: 80px; height: 80px;">
+              <i class="bi bi-egg-fried text-muted display-6"></i>
+            </div>
+            {% endif %}
+            <div>
+              <h1 class="h4 fw-bold mb-1">Write a Review</h1>
+              <p class="text-muted mb-0">{{ menu_item.name }}</p>
+            </div>
+          </div>
+
+          <form method="post" id="reviewForm">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Rating -->
+            <div class="mb-4">
+              <label class="form-label fw-bold mb-3">Rating</label>
+              <div class="rating-stars mb-2" id="ratingStars">
+                {% for i in "12345" %}
+                <i class="bi bi-star rating-star" data-value="{{ i }}"></i>
+                {% endfor %}
+              </div>
+              <input type="hidden" name="rating" id="ratingInput"
+                value="{% if form.rating.value %}{{ form.rating.value }}{% else %}5{% endif %}">
+              {{ form.rating.errors }}
+              <div class="text-muted small">Click stars to rate from 1 to 5</div>
+            </div>
+
+            <!-- Title -->
+            <div class="mb-4">
+              <label for="id_title" class="form-label fw-bold">Review Title (Optional)</label>
+              <input type="text" name="title" id="id_title" class="form-control"
+                placeholder="Summarize your experience in a few words" value="{{ form.title.value|default:'' }}">
+              {{ form.title.errors }}
+            </div>
+
+            <!-- Comment -->
+            <div class="mb-4">
+              <label for="id_comment" class="form-label fw-bold">Your Review</label>
+              <textarea name="comment" id="id_comment" class="form-control" rows="6"
+                placeholder="Share details of your experience with this item...">{{ form.comment.value|default:'' }}</textarea>
+              {{ form.comment.errors }}
+              <div class="text-muted small mt-2">Minimum 10 characters</div>
+            </div>
+
+            <!-- Order Selection (if available) -->
+            {% if user_orders and user_orders.count > 0 %}
+            <div class="mb-4">
+              <label for="order-select" class="form-label fw-bold">
+                Associate with Order <span class="text-muted small">(Optional)</span>
+              </label>
+              <div class="form-text mb-2">
+                <i class="bi bi-patch-check text-primary"></i>
+                Select an order to mark this as a "Verified Purchase"
+              </div>
+              <select id="order-select" name="order_id" class="form-select">
+                <option value="">-- No specific order --</option>
+                {% for o in user_orders %}
+                {% with order_id=o.id|stringformat:"s" %}
+                <option value="{{ o.id }}" {% if existing_review_order_id == order_id %}selected{% endif %}>
+                  Order #{{ o.id }} — {{ o.created_at|date:"F d, Y" }} — RWF {{ o.total_amount }}
+                </option>
+                {% endwith %}
+                {% endfor %}
+              </select>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="d-flex gap-3 mt-5">
+              <button type="submit" class="btn btn-primary px-4 py-2 flex-grow-1">
+                <i class="bi bi-send me-2"></i>
+                {% if existing_review %}Update Review{% else %}Submit Review{% endif %}
+              </button>
+              <a href="{% url 'reviews:item_reviews' menu_item.id %}" class="btn btn-outline-secondary px-4 py-2">
+                <i class="bi bi-x-lg me-2"></i>Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guidelines Sidebar -->
+    <div class="col-lg-4">
+      <div class="card review-card sticky-top" style="top: 20px;">
+        <div class="card-body p-4">
+          <h5 class="card-title fw-bold mb-4">
+            <i class="bi bi-info-circle text-primary me-2"></i>Review Guidelines
+          </h5>
+
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="bi bi-chat-left-text"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold small mb-1">Be Specific</h6>
+              <p class="text-muted small mb-0">Describe taste, quality, portion size, and preparation.</p>
+            </div>
+          </div>
+
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="bi bi-star"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold small mb-1">Rate Honestly</h6>
+              <p class="text-muted small mb-0">Your rating should reflect your actual experience.</p>
+            </div>
+          </div>
+
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="bi bi-heart"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold small mb-1">Be Respectful</h6>
+              <p class="text-muted small mb-0">Share constructive feedback that helps others decide.</p>
+            </div>
+          </div>
+
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold small mb-1">Verified Purchase</h6>
+              <p class="text-muted small mb-0">Reviews from actual purchases are marked as verified.</p>
+            </div>
+          </div>
+
+          {% if existing_review %}
+          <div class="alert alert-info mt-4">
+            <div class="d-flex">
+              <i class="bi bi-exclamation-circle me-3"></i>
+              <div>
+                <h6 class="alert-heading mb-2">Existing Review Found</h6>
+                <p class="mb-0 small">You have already reviewed this item. Submitting will update your existing review.
+                </p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Character Counter -->
+          <div class="mt-4 pt-3 border-top">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">Review length</span>
+              <span id="charCount" class="small">0 characters</span>
+            </div>
+            <div class="progress mt-2" style="height: 4px;">
+              <div id="charProgress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Star rating functionality
+  document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('#ratingStars .rating-star');
+    const ratingInput = document.getElementById('ratingInput');
+
+    // Set initial rating
+    const initialRating = parseInt(ratingInput.value) || 5;
+    updateStars(initialRating);
+
+    // Add click event to stars
+    stars.forEach(star => {
+      star.addEventListener('click', function () {
+        const value = parseInt(this.getAttribute('data-value'));
+        ratingInput.value = value;
+        updateStars(value);
+      });
+
+      star.addEventListener('mouseover', function () {
+        const value = parseInt(this.getAttribute('data-value'));
+        highlightStars(value);
+      });
+    });
+
+    // Reset stars on mouse leave
+    document.getElementById('ratingStars').addEventListener('mouseleave', function () {
+      const currentValue = parseInt(ratingInput.value) || 5;
+      updateStars(currentValue);
+    });
+
+    function updateStars(rating) {
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('bi-star');
+          star.classList.add('bi-star-fill');
+        } else {
+          star.classList.remove('bi-star-fill');
+          star.classList.add('bi-star');
+        }
+      });
+    }
+
+    function highlightStars(rating) {
+      stars.forEach((star, index) => {
+        if (index < rating) {
+          star.classList.remove('bi-star');
+          star.classList.add('bi-star-fill');
+        } else {
+          star.classList.remove('bi-star-fill');
+          star.classList.add('bi-star');
+        }
+      });
+    }
+
+    // Character counter for comment
+    const commentTextarea = document.getElementById('id_comment');
+    const charCount = document.getElementById('charCount');
+    const charProgress = document.getElementById('charProgress');
+
+    if (commentTextarea) {
+      commentTextarea.addEventListener('input', function () {
+        const length = this.value.length;
+        charCount.textContent = length + ' characters';
+
+        // Update progress bar
+        const progress = Math.min((length / 2000) * 100, 100);
+        charProgress.style.width = progress + '%';
+
+        // Change color based on length
+        if (length < 10) {
+          charProgress.className = 'progress-bar bg-danger';
+        } else if (length < 50) {
+          charProgress.className = 'progress-bar bg-warning';
+        } else {
+          charProgress.className = 'progress-bar bg-success';
+        }
+      });
+
+      // Trigger initial count
+      commentTextarea.dispatchEvent(new Event('input'));
+    }
+
+    // Form validation
+    const reviewForm = document.getElementById('reviewForm');
+    if (reviewForm) {
+      reviewForm.addEventListener('submit', function (e) {
+        const comment = document.getElementById('id_comment').value.trim();
+        if (comment.length < 10) {
+          e.preventDefault();
+          alert('Please write a review of at least 10 characters.');
+          document.getElementById('id_comment').focus();
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

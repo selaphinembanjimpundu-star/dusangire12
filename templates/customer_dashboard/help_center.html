@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Help Center - Dusangire{% endblock %}
+
+{% block content %}
+<style>
+    /* Help Center Styling */
+    .help-header {
+        background: linear-gradient(135deg, #FF8C42 0%, #FF6B6B 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0.75rem;
+    }
+
+    .help-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .help-header p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    /* Search Box */
+    .help-search {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .help-search input {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .help-search input:focus {
+        outline: none;
+        border-color: #FF8C42;
+        box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.1);
+    }
+
+    /* Category Grid */
+    .help-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .help-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 4px solid #FF8C42;
+    }
+
+    .help-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        border-left-color: #FF6B6B;
+    }
+
+    .help-card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .help-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.75rem;
+    }
+
+    .help-card p {
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .faq-section h2 {
+        color: #1f2937;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .faq-item {
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .faq-question {
+        padding: 1.25rem;
+        background: #f9fafb;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 500;
+        color: #1f2937;
+        transition: all 0.3s ease;
+    }
+
+    .faq-question:hover {
+        background: #f3f4f6;
+        color: #667eea;
+    }
+
+    .faq-icon {
+        font-size: 1.25rem;
+        transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-question {
+        background: #FFF4E6;
+        color: #FF8C42;
+    }
+
+    .faq-item.active .faq-icon {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        display: none;
+        padding: 1.25rem;
+        background: white;
+        color: #4b5563;
+        line-height: 1.6;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+
+    /* Contact Section */
+    .contact-section {
+        background: linear-gradient(135deg, #4ECDC4 0%, #44B7B3 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 1rem;
+        margin-top: 3rem;
+        text-align: center;
+    }
+
+    .contact-section h2 {
+        margin-bottom: 1rem;
+        font-size: 1.75rem;
+    }
+
+    .contact-section p {
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+        opacity: 0.95;
+    }
+
+    .contact-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .contact-method {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .contact-method-icon {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .contact-method h4 {
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-method p {
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    /* Button Styles */
+    .btn-help {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: #4ECDC4;
+        border: none;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-help:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .help-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .help-categories {
+            grid-template-columns: 1fr;
+        }
+
+        .contact-methods {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="help-header">
+        <div class="container">
+            <h1><i class="bi bi-question-circle"></i> Help Center</h1>
+            <p>Find answers to your questions and get support when you need it</p>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="help-search">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+                <i class="bi bi-search" style="color: #FF8C42;"></i>
+            </span>
+            <input type="text" class="form-control border-0" id="helpSearch" placeholder="Search help articles...">
+        </div>
+    </div>
+
+    <!-- Help Categories -->
+    <div class="help-categories">
+        <!-- Orders & Delivery -->
+        <div class="help-card" data-category="orders">
+            <div class="help-card-icon">📦</div>
+            <h3>Orders & Delivery</h3>
+            <p>Questions about placing orders, tracking deliveries, and managing your meals</p>
+        </div>
+
+        <!-- Subscriptions -->
+        <div class="help-card" data-category="subscriptions">
+            <div class="help-card-icon">📅</div>
+            <h3>Subscriptions</h3>
+            <p>Information about meal plans, pricing, and subscription management</p>
+        </div>
+
+        <!-- Payments -->
+        <div class="help-card" data-category="payments">
+            <div class="help-card-icon">💳</div>
+            <h3>Payments & Billing</h3>
+            <p>Help with payment methods, invoices, and billing issues</p>
+        </div>
+
+        <!-- Account -->
+        <div class="help-card" data-category="account">
+            <div class="help-card-icon">👤</div>
+            <h3>Account Settings</h3>
+            <p>Manage your profile, preferences, and account security</p>
+        </div>
+
+        <!-- Health & Diet -->
+        <div class="help-card" data-category="health">
+            <div class="help-card-icon">🥗</div>
+            <h3>Health & Dietary</h3>
+            <p>Information about dietary options and health tracking features</p>
+        </div>
+
+        <!-- Technical Issues -->
+        <div class="help-card" data-category="technical">
+            <div class="help-card-icon">🛠️</div>
+            <h3>Technical Support</h3>
+            <p>Help with app issues and technical problems</p>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+        <h2><i class="bi bi-chat-dots"></i> Frequently Asked Questions</h2>
+
+        <!-- Orders & Delivery FAQs -->
+        <div class="faq-category" data-category="orders">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I place an order?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Simply browse our menu, select the meals you want, and add them to your cart. Then proceed to checkout and enter your delivery details. You can place one-time orders or set up a subscription for regular deliveries.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How long does delivery take?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Standard delivery takes 2-4 hours depending on your location. You'll receive a notification with a tracking link once your order is being prepared. Peak hours (11am-2pm, 5pm-8pm) may take slightly longer.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I modify my order after placing it?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>You can modify orders within the first 30 minutes. After that, contact our support team. For subscription meals, you can adjust upcoming meal selections in your account at least 24 hours before delivery.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscriptions FAQs -->
+        <div class="faq-category" data-category="subscriptions" style="display: none;">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What subscription plans do you offer?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We offer Daily, Weekly, and Monthly meal subscription plans. Each plan comes in various dietary categories including General, Detox, Keto, Diabetic-Friendly, Vegan, and Athlete/Performance plans. You can customize your selection based on your preferences.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I pause or cancel my subscription?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! You can pause your subscription for up to 30 days anytime from your account dashboard. To cancel, go to Subscriptions > Manage and click Cancel. There are no early termination fees.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I change my meal selection?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Absolutely! You can change your meals for the upcoming week at least 24 hours before your next delivery. Visit your subscription details to modify meals, dietary preferences, or upgrade/downgrade your plan.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments FAQs -->
+        <div class="faq-category" data-category="payments" style="display: none;">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What payment methods do you accept?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We accept credit/debit cards (Visa, MasterCard), mobile money (MTN MoMo, Airtel Money), bank transfers, and Flutterwave payments. For subscriptions, payments are automatically processed on your billing cycle.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Is my payment information secure?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, all payments are encrypted using industry-standard SSL technology. We never store full credit card details on our servers. All transactions are processed through secure payment gateways.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I get an invoice?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>You can download invoices from your Payment History in the Account section. Invoices are automatically generated for all orders and subscriptions and include itemization and tax information.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account FAQs -->
+        <div class="faq-category" data-category="account" style="display: none;">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I reset my password?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Click "Forgot Password" on the login page. Enter your email address and we'll send you a password reset link. Click the link and create a new password. The link expires in 24 hours for security.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I update my delivery address?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Go to Account Settings > Addresses and click "Add New Address" or edit existing ones. You can save multiple addresses for convenience. Changes take effect on the next order.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I delete my account?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Go to Account Settings > Security > Delete Account. Note that this action cannot be undone. All your data will be permanently deleted. Active subscriptions must be cancelled first.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health & Dietary FAQs -->
+        <div class="faq-category" data-category="health" style="display: none;">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Do you offer dietary-specific meals?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! We offer specialized meals for: Vegetarian, Vegan, Diabetic-Friendly, High-Protein, Low-Sodium, Post-Surgery recovery, Keto, Detox, and more. Filter by dietary type on the menu or during subscription setup.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can you accommodate allergies?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Absolutely. During registration and checkout, you can specify allergies and dietary restrictions. Our team reviews all special requests and confirms before preparing your meals. Contact support for severe allergies.</p>
+                </div>
+            </item>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I track my nutrition?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Each meal displays complete nutritional information (calories, protein, carbs, fat). Your dashboard shows cumulative daily/weekly nutrition tracking. You can also link your health profile to set dietary goals.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical FAQs -->
+        <div class="faq-category" data-category="technical" style="display: none;">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>The app won't load on my phone</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Try clearing your browser cache and cookies. Make sure you have a stable internet connection. If problems persist, try accessing from a different browser or device. Contact support with your device details.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>I'm having trouble logging in</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Clear your browser cookies and cache. Try logging in using your email instead of username. If you still can't access your account, use "Forgot Password" to reset. Contact support if issues continue.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Where do I report a bug?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Contact our support team with details about the issue (what you were doing, what happened, which device/browser). Screenshots are helpful. You can also use the feedback form in the app Settings.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+        <h2>Still Need Help?</h2>
+        <p>Our support team is here to help you 24/7</p>
+
+        <div class="contact-methods">
+            <div class="contact-method">
+                <div class="contact-method-icon">📧</div>
+                <h4>Email</h4>
+                <p><a href="mailto:support@dusangire.com" style="color: white; text-decoration: none; font-weight: 500;">support@dusangire.com</a></p>
+            </div>
+
+            <div class="contact-method">
+                <div class="contact-method-icon">💬</div>
+                <h4>Live Chat</h4>
+                <p><a href="#" onclick="openLiveChat()" style="color: white; text-decoration: none; font-weight: 500;">Start Chat Now</a></p>
+            </div>
+
+            <div class="contact-method">
+                <div class="contact-method-icon">📱</div>
+                <h4>WhatsApp</h4>
+                <p><a href="https://wa.me/250792392072" target="_blank" style="color: white; text-decoration: none; font-weight: 500;">+250 792 392 072</a></p>
+            </div>
+
+            <div class="contact-method">
+                <div class="contact-method-icon">🐦</div>
+                <h4>Social Media</h4>
+                <p><a href="#" style="color: white; text-decoration: none; font-weight: 500;">@DusangireOfficial</a></p>
+            </div>
+        </div>
+
+        <a href="/support/" class="btn-help mt-3">
+            <i class="bi bi-envelope"></i> Contact Support
+        </a>
+    </div>
+
+</div>
+
+<script>
+    // Open Live Chat
+    function openLiveChat() {
+        // You can integrate with a live chat service like Intercom, Drift, etc.
+        alert('Live chat will be integrated with your support platform. Coming soon!');
+    }
+
+    // Search functionality
+    document.getElementById('helpSearch').addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const categories = document.querySelectorAll('.help-categories .help-card');
+        
+        categories.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
+
+    // Category filtering
+    document.querySelectorAll('.help-categories .help-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const category = this.dataset.category;
+            
+            // Hide all categories
+            document.querySelectorAll('.faq-category').forEach(cat => {
+                cat.style.display = 'none';
+            });
+            
+            // Show selected category
+            document.querySelectorAll(`[data-category="${category}"]`).forEach(cat => {
+                if (cat.classList.contains('faq-category')) {
+                    cat.style.display = 'block';
+                }
+            });
+            
+            // Scroll to FAQ section
+            document.querySelector('.faq-section').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-question').forEach(question => {
+        question.addEventListener('click', function() {
+            const faqItem = this.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all other items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

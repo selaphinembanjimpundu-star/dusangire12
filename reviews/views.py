@@ -71,11 +71,13 @@ def add_review(request, item_id):
         'menu_item': menu_item,
         'form': form,
         'existing_review': existing_review,
+        'existing_review_order_id': str(existing_review.order_id) if existing_review and existing_review.order_id else "",
         'user_orders': user_orders,
     }
     return render(request, 'reviews/add_review.html', context)
 
 
+# reviews/views.py - Update the item_reviews function
 def item_reviews(request, item_id):
     """Display reviews for a menu item"""
     menu_item = get_object_or_404(MenuItem, id=item_id)
@@ -86,22 +88,33 @@ def item_reviews(request, item_id):
         is_approved=True
     ).select_related('user').order_by('-created_at')
     
-    # Filtering
-    rating_filter = request.GET.get('rating', '')
-    if rating_filter:
-        reviews = reviews.filter(rating=int(rating_filter))
+    # Get helpful votes for the current user
+    helpful_review_ids = []
+    if request.user.is_authenticated:
+        helpful_review_ids = list(
+            ReviewHelpful.objects.filter(
+                user=request.user,
+                is_helpful=True,
+                review__in=reviews
+            ).values_list('review_id', flat=True)
+        )
+    
+    # Statistics
+    stats = reviews.aggregate(
+        average_rating=Avg('rating'),
+        total_reviews=Count('id')
+    )
+    
+    # Calculate rating distribution
+    rating_distribution = {}
+    for rating in range(1, 6):
+        count = reviews.filter(rating=rating).count()
+        rating_distribution[str(rating)] = count
     
     # Pagination
     paginator = Paginator(reviews, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
-    # Statistics
-    stats = {
-        'total_reviews': reviews.count(),
-        'average_rating': reviews.aggregate(Avg('rating'))['rating__avg'] or 0,
-        'rating_distribution': reviews.values('rating').annotate(count=Count('id')).order_by('-rating'),
-    }
     
     # Check if user has reviewed
     user_review = None
@@ -110,10 +123,12 @@ def item_reviews(request, item_id):
     
     context = {
         'menu_item': menu_item,
+        'reviews': page_obj,
         'page_obj': page_obj,
         'stats': stats,
         'user_review': user_review,
-        'current_rating_filter': rating_filter,
+        'helpful_review_ids': helpful_review_ids,
+        'rating_distribution': rating_distribution,  # Add this
     }
     return render(request, 'reviews/item_reviews.html', context)
 
@@ -157,10 +172,33 @@ def mark_helpful(request, review_id):
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
-            'success': True,
-            'is_helpful': helpful_vote.is_helpful,
+            'status': 'success',
+            'action': 'added' if helpful_vote.is_helpful else 'removed',
             'helpful_count': helpful_count
         })
     
     messages.success(request, f"Review marked as {'helpful' if helpful_vote.is_helpful else 'not helpful'}.")
     return redirect('reviews:item_reviews', item_id=review.menu_item.id)
+
+# reviews/views.py - Add this function
+@login_required
+def edit_review(request, review_id):
+    """Edit an existing review"""
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your review has been updated!")
+            return redirect('reviews:item_reviews', item_id=review.menu_item.id)
+    else:
+        form = ReviewForm(instance=review)
+    
+    context = {
+        'menu_item': review.menu_item,
+        'form': form,
+        'existing_review': review,
+        'existing_review_order_id': str(review.order_id) if review.order_id else "",
+    }
+    return render(request, 'reviews/add_review.html', context)

@@ -1,0 +1,201 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div>
+    <!-- ===== BREADCRUMB ===== -->
+    <nav class="breadcrumb" style="margin-bottom: 1.5rem;">
+        <span class="breadcrumb-item active">
+            <i class="bi bi-house-door me-2"></i> Dashboard
+        </span>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-speedometer2"></i> Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+            Here's an overview of your account, orders, and upcoming deliveries
+        </p>
+    </div>
+
+    <!-- ===== DELIVERY STATUS WIDGET (IF PENDING ORDERS) ===== -->
+    {% if pending_orders %}
+    <div class="delivery-widget">
+        <h3>
+            <i class="bi bi-box-seam"></i> Your Deliveries
+        </h3>
+        <div class="delivery-info-grid">
+            {% for order in pending_orders|slice:":3" %}
+            <div class="delivery-info-item">
+                <div class="label">Order #{{ order.id }}</div>
+                <div class="value">{{ order.get_status_display }}</div>
+                <div class="label" style="margin-top: 0.8rem;">Estimated</div>
+                <div class="value">{{ order.estimated_delivery|date:"M d, Y" }}</div>
+                <a href="{% url 'customer_dashboard:my_orders' %}" style="color: white; text-decoration: none; margin-top: 0.8rem; display: block; font-weight: 600;">
+                    Track Order <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ===== STATS CARDS GRID ===== -->
+    <div class="dashboard-grid">
+        <!-- Total Orders Card -->
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3>Total Orders</h3>
+                    <div class="value">{{ total_orders }}</div>
+                    <div class="change" style="margin-top: 0.8rem;">
+                        <a href="{% url 'customer_dashboard:my_orders' %}" class="btn-custom btn-secondary-custom" style="display: inline-flex;">
+                            <i class="bi bi-eye"></i> View All
+                        </a>
+                    </div>
+                </div>
+                <i class="bi bi-bag-check" style="font-size: 2.5rem; color: #667eea; opacity: 0.2;"></i>
+            </div>
+        </div>
+
+        <!-- Active Subscriptions Card -->
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3>Subscriptions</h3>
+                    <div class="value">{{ active_subscriptions_count }}</div>
+                    <div class="change" style="margin-top: 0.8rem;">
+                        {% if active_subscriptions_count > 0 %}
+                        <a href="{% url 'customer_dashboard:my_subscriptions' %}" class="btn-custom btn-secondary-custom" style="display: inline-flex;">
+                            <i class="bi bi-pencil"></i> Manage
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn-custom btn-primary-custom" style="display: inline-flex;">
+                            <i class="bi bi-plus-circle"></i> Subscribe
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <i class="bi bi-calendar-check" style="font-size: 2.5rem; color: #48bb78; opacity: 0.2;"></i>
+            </div>
+        </div>
+
+        <!-- Meal Plans Card -->
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3>Meal Plans</h3>
+                    <div class="value">{{ meal_plans_count }}</div>
+                    <div class="change" style="margin-top: 0.8rem;">
+                        <a href="{% url 'customer_dashboard:my_meal_plans' %}" class="btn-custom btn-secondary-custom" style="display: inline-flex;">
+                            <i class="bi bi-arrow-right"></i> View
+                        </a>
+                    </div>
+                </div>
+                <i class="bi bi-journal-text" style="font-size: 2.5rem; color: #4299e1; opacity: 0.2;"></i>
+            </div>
+        </div>
+
+        <!-- Loyalty Points Card -->
+        <div class="stat-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3>Loyalty Points</h3>
+                    <div class="value">{{ loyalty_points|default:0 }}</div>
+                    <div class="change" style="margin-top: 0.8rem;">
+                        <a href="{% url 'customer_dashboard:loyalty' %}" class="btn-custom btn-secondary-custom" style="display: inline-flex;">
+                            <i class="bi bi-gift"></i> Redeem
+                        </a>
+                    </div>
+                </div>
+                <i class="bi bi-star" style="font-size: 2.5rem; color: #ed8936; opacity: 0.2;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RECENT ORDERS TABLE ===== -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-bag-check"></i> Recent Orders</h2>
+            <a href="{% url 'customer_dashboard:my_orders' %}" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-eye"></i> View All Orders
+            </a>
+        </div>
+
+        {% if recent_orders %}
+        <div style="overflow-x: auto;">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Delivery</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders|slice:":5" %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        <td class="fw-bold">RWF {{ order.total_amount|floatformat:0 }}</td>
+                        <td>
+                            <span class="badge-custom badge-{% if order.status == 'delivered' %}success{% elif order.status == 'shipped' %}info{% elif order.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.estimated_delivery %}
+                            {{ order.estimated_delivery|date:"M d" }}
+                            {% else %}
+                            <span class="text-muted">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'customer_dashboard:my_orders' %}" class="btn-custom btn-secondary-custom" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem; color: #718096;">
+            <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 1rem;"></i>
+            <p>No orders yet. <a href="{% url 'menu:menu_list' %}">Start shopping now!</a></p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== QUICK ACTIONS GRID ===== -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+        <a href="{% url 'customer_dashboard:my_consultations' %}" class="dashboard-card" style="text-decoration: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;">
+            <i class="bi bi-chat-dots" style="font-size: 2rem; color: #667eea; margin-bottom: 1rem;"></i>
+            <h5 style="color: #2d3748; margin: 0;">Book Consultation</h5>
+            <small style="color: #718096; margin-top: 0.5rem;">Schedule with nutritionist</small>
+        </a>
+
+        <a href="{% url 'customer_dashboard:health_reports' %}" class="dashboard-card" style="text-decoration: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;">
+            <i class="bi bi-heart-pulse" style="font-size: 2rem; color: #48bb78; margin-bottom: 1rem;"></i>
+            <h5 style="color: #2d3748; margin: 0;">Health Reports</h5>
+            <small style="color: #718096; margin-top: 0.5rem;">View health data</small>
+        </a>
+
+        <a href="{% url 'customer_dashboard:my_profile' %}" class="dashboard-card" style="text-decoration: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;">
+            <i class="bi bi-person-circle" style="font-size: 2rem; color: #4299e1; margin-bottom: 1rem;"></i>
+            <h5 style="color: #2d3748; margin: 0;">My Profile</h5>
+            <small style="color: #718096; margin-top: 0.5rem;">Edit profile details</small>
+        </a>
+
+        <a href="{% url 'customer_dashboard:loyalty' %}" class="dashboard-card" style="text-decoration: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px;">
+            <i class="bi bi-gift" style="font-size: 2rem; color: #ed8936; margin-bottom: 1rem;"></i>
+            <h5 style="color: #2d3748; margin: 0;">Rewards</h5>
+            <small style="color: #718096; margin-top: 0.5rem;">View rewards & offers</small>
+        </a>
+    </div>
+</div>
+{% endblock %}

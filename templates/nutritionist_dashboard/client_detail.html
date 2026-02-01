@@ -1,0 +1,527 @@
+{% extends 'nutritionist_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- ===== Breadcrumb & Header ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'nutritionist_dashboard:dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'nutritionist_dashboard:manage_clients' %}" class="text-decoration-none">Clients</a></li>
+                    <li class="breadcrumb-item active">{{ client.get_full_name|default:client.username }}</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold mb-2">
+                        <i class="bi bi-person-circle text-primary me-2"></i> {{ client.get_full_name|default:client.username }}
+                    </h1>
+                    <p class="text-muted">Client profile and management</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'nutritionist_dashboard:manage_clients' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                    <a href="{% url 'nutritionist_dashboard:create_meal_plan' client.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i> New Meal Plan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Main Content Grid ===== -->
+    <div class="row g-4 mb-4">
+        <!-- ===== Left Column: Profile & Health ===== -->
+        <div class="col-lg-4">
+            <!-- Profile Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-body text-center p-4">
+                    <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle mb-3" 
+                         style="width: 80px; height: 80px; object-fit: cover;">
+                    <h4 class="fw-bold mb-1">{{ client.get_full_name|default:client.username }}</h4>
+                    <p class="text-muted small mb-3">{{ client.email }}</p>
+                    <div class="d-flex gap-2 justify-content-center mb-3">
+                        <span class="badge bg-{% if assignment.is_active %}success{% else %}secondary{% endif %} bg-opacity-10 text-{% if assignment.is_active %}success{% else %}secondary{% endif %} rounded-pill">
+                            {{ assignment.get_status_display }}
+                        </span>
+                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill">
+                            Assigned {{ assignment.created_at|timesince }} ago
+                        </span>
+                    </div>
+                </div>
+                <hr class="my-0">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">Contact Information</h6>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Email</small>
+                        <small><i class="bi bi-envelope me-2"></i>{{ client.email }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Phone</small>
+                        <small><i class="bi bi-telephone me-2"></i>{{ client.profile.phone_number|default:"Not provided" }}</small>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Address</small>
+                        <small><i class="bi bi-geo-alt me-2"></i>{{ client.profile.location|default:"Not provided" }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Snapshot Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <h5 class="mb-0"><i class="bi bi-heart-pulse text-danger me-2"></i> Health Snapshot</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if health_profile %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">BMI</small>
+                                <small class="fw-bold">{{ health_profile.calculate_bmi|default:"--" }}</small>
+                            </div>
+                            <small class="text-muted">Weight: {{ health_profile.weight }}kg | Height: {{ health_profile.height }}cm</small>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-2">Dietary Restrictions</small>
+                            {% if health_profile.dietary_restrictions %}
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for restriction in health_profile.dietary_restrictions %}
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">{{ restriction }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="text-muted">None specified</small>
+                            {% endif %}
+                        </div>
+                        <hr>
+                        <div>
+                            <small class="text-muted d-block mb-2">Medical Conditions</small>
+                            {% if health_profile.medical_conditions %}
+                                <small>{{ health_profile.medical_conditions }}</small>
+                            {% else %}
+                                <small class="text-muted">None specified</small>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                            <p class="mt-2 mb-0 small">Health profile not completed</p>
+                            <a href="#" class="btn btn-sm btn-outline-primary mt-2">Complete Profile</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">Quick Stats</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted">Active Meal Plans</small>
+                            <h6 class="fw-bold mb-0">{{ active_meal_plans_count }}</h6>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted">Consultations</small>
+                            <h6 class="fw-bold mb-0">{{ consultations_count }}</h6>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Completion Rate</small>
+                            <h6 class="fw-bold mb-0">{{ completion_rate }}%</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Right Column: Meal Plans & Activity ===== -->
+        <div class="col-lg-8">
+            <!-- Active Meal Plans Section -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-light border-bottom-0 p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-check text-success me-2"></i> Active Meal Plans</h5>
+                    <a href="{% url 'nutritionist_dashboard:create_meal_plan' client.id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> New Plan
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    {% if active_meal_plans %}
+                        <div class="list-group list-group-flush">
+                            {% for meal_plan in active_meal_plans %}
+                            <a href="#" class="list-group-item list-group-item-action p-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ meal_plan.title }}</h6>
+                                        <small class="text-muted">{{ meal_plan.description|truncatewords:15 }}</small>
+                                    </div>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill">{{ meal_plan.get_status_display }}</span>
+                                </div>
+                                <div class="row g-2 mt-2">
+                                    <div class="col-auto">
+                                        <small class="text-muted"><i class="bi bi-calendar"></i> {{ meal_plan.start_date|date:"M d" }}</small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <small class="text-muted"><i class="bi bi-calendar-check"></i> {{ meal_plan.end_date|date:"M d" }}</small>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
+                            <p class="mt-2 text-muted">No active meal plans</p>
+                            <a href="{% url 'nutritionist_dashboard:create_meal_plan' client.id %}" class="btn btn-sm btn-primary">
+                                Create First Plan
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Consultations Section -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-light border-bottom-0 p-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event text-warning me-2"></i> Consultations</h5>
+                    <a href="{% url 'nutritionist_dashboard:schedule_consultation' client.id %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> Schedule
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    {% if consultations %}
+                        <div class="list-group list-group-flush">
+                            {% for consultation in consultations %}
+                            <div class="list-group-item p-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-1">{{ consultation.title }}</h6>
+                                    <span class="badge bg-{% if consultation.status == 'completed' %}success{% elif consultation.status == 'scheduled' %}warning{% else %}secondary{% endif %} bg-opacity-10 text-{% if consultation.status == 'completed' %}success{% elif consultation.status == 'scheduled' %}warning{% else %}secondary{% endif %} rounded-pill">
+                                        {{ consultation.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="row g-2 text-muted small">
+                                    <div class="col-auto"><i class="bi bi-calendar"></i> {{ consultation.scheduled_date|date:"M d, Y" }}</div>
+                                    <div class="col-auto"><i class="bi bi-clock"></i> {{ consultation.scheduled_time|time:"H:i" }}</div>
+                                    <div class="col-auto"><i class="bi bi-hourglass-split"></i> {{ consultation.duration }} min</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x" style="font-size: 2rem; color: #ccc;"></i>
+                            <p class="mt-2 text-muted">No consultations scheduled</p>
+                            <a href="{% url 'nutritionist_dashboard:schedule_consultation' client.id %}" class="btn btn-sm btn-primary">
+                                Schedule Consultation
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Progress Tracking Section -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <h5 class="mb-0"><i class="bi bi-graph-up text-info me-2"></i> Progress Tracking</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="fw-bold">Plan Adherence</small>
+                            <small class="text-muted">85%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="fw-bold">Goal Progress</small>
+                            <small class="text-muted">72%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: 72%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="fw-bold">Consultation Attendance</small>
+                            <small class="text-muted">100%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Action Buttons ===== -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'nutritionist_dashboard:create_meal_plan' client.id %}" class="btn btn-primary px-4">
+                    <i class="bi bi-plus-circle me-2"></i> Create Meal Plan
+                </a>
+                <a href="{% url 'nutritionist_dashboard:schedule_consultation' client.id %}" class="btn btn-outline-primary px-4">
+                    <i class="bi bi-calendar-plus me-2"></i> Schedule Consultation
+                </a>
+                <button class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-download me-2"></i> Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Weight</span>
+                        <span class="fw-bold">{{ health_profile.weight_kg }} kg</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Height</span>
+                        <span class="fw-bold">{{ health_profile.height_cm }} cm</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="text-muted">Blood Type</span>
+                        <span class="badge bg-danger rounded-pill px-3">{{ health_profile.blood_type|default:"--"
+                            }}</span>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Allergies</h6>
+                    <p class="small text-danger mb-3">{{ health_profile.allergies|default:"None recorded" }}</p>
+
+                    <h6 class="fw-bold mb-2">Medical Alerts</h6>
+                    <p class="small text-muted mb-0">{{ health_profile.current_conditions|default:"No active alerts" }}
+                    </p>
+                    {% else %}
+                    <p class="text-muted small mb-0">No health profile available for this client.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs for History & Plans -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 p-0">
+                    <ul class="nav nav-tabs nav-fill border-0" id="clientTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active py-3 fw-bold border-0" id="nutrition-tab"
+                                data-bs-toggle="tab" data-bs-target="#nutrition" type="button" role="tab">Nutrition
+                                History</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-3 fw-bold border-0" id="plans-tab" data-bs-toggle="tab"
+                                data-bs-target="#plans" type="button" role="tab">Meal Plans</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-3 fw-bold border-0" id="orders-tab" data-bs-toggle="tab"
+                                data-bs-target="#orders" type="button" role="tab">Recent Orders</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-3 fw-bold border-0" id="recovery-tab" data-bs-toggle="tab"
+                                data-bs-target="#recovery" type="button" role="tab">Recovery</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-3 fw-bold border-0" id="prescriptions-tab" data-bs-toggle="tab"
+                                data-bs-target="#prescriptions" type="button" role="tab">Prescriptions</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="clientTabContent">
+                        <!-- Nutrition History -->
+                        <div class="tab-pane fade show active" id="nutrition" role="tabpanel">
+                            <h5 class="fw-bold mb-4">Assessment History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Weight</th>
+                                            <th>MUAC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for assessment in nutrition_history %}
+                                        <tr>
+                                            <td>{{ assessment.assessment_date|date:"M d, Y" }}</td>
+                                            <td>{{ assessment.get_assessment_type_display }}</td>
+                                            <td>
+                                                <span
+                                                    class="badge rounded-pill bg-{% if assessment.status == 'NORMAL' %}success{% elif assessment.status == 'AT_RISK' %}warning{% else %}danger{% endif %}">
+                                                    {{ assessment.status }}
+                                                </span>
+                                            </td>
+                                            <td>{{ assessment.weight_kg }} kg</td>
+                                            <td>{{ assessment.muac_cm|default:"--" }} cm</td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">No assessments recorded.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Meal Plans -->
+                        <div class="tab-pane fade" id="plans" role="tabpanel">
+                            <h5 class="fw-bold mb-4">Meal Plans</h5>
+                            {% for plan in meal_plans %}
+                            <div class="card border shadow-none rounded-4 mb-3">
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ plan.title }}</h6>
+                                        <p class="text-muted small mb-0">Created on {{ plan.created_at|date:"M d, Y" }}
+                                            • Status: {{ plan.get_status_display }}</p>
+                                    </div>
+                                    <a href="{% url 'nutritionist_dashboard:meal_plan_detail' plan.id %}"
+                                        class="btn btn-sm btn-outline-primary rounded-pill px-3">View</a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-4">No meal plans created for this client.</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Recent Orders -->
+                        <div class="tab-pane fade" id="orders" role="tabpanel">
+                            <h5 class="fw-bold mb-4">Recent Orders</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Date</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in recent_orders %}
+                                        <tr>
+                                            <td class="fw-bold">#{{ order.id }}</td>
+                                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                            <td>RWF {{ order.total_amount|floatformat:0 }}</td>
+                                            <td>
+                                                <span
+                                                    class="badge rounded-pill bg-{% if order.status == 'delivered' %}success{% elif order.status == 'pending' %}warning{% else %}info{% endif %}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">No orders found.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Recovery Metrics -->
+                        <div class="tab-pane fade" id="recovery" role="tabpanel">
+                            <h5 class="fw-bold mb-4">Recovery Progress</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Admission Date</th>
+                                            <th>Reason</th>
+                                            <th>Stay Duration</th>
+                                            <th>Outcome</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for metric in recovery_metrics %}
+                                        <tr>
+                                            <td>{{ metric.hospital_admission_date|date:"M d, Y" }}</td>
+                                            <td>{{ metric.admission_reason|truncatechars:50 }}</td>
+                                            <td>{{ metric.hospital_stay_days }} days</td>
+                                            <td>
+                                                <span class="badge rounded-pill bg-info">{{
+                                                    metric.get_current_outcome_display }}</span>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">No recovery metrics
+                                                recorded.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Prescriptions -->
+                        <div class="tab-pane fade" id="prescriptions" role="tabpanel">
+                            <h5 class="fw-bold mb-4">Medical Prescriptions</h5>
+                            {% for prescription in prescriptions %}
+                            <div class="card border shadow-none rounded-4 mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Dr. {{ prescription.doctor_name }}</h6>
+                                            <p class="text-muted small mb-0">Prescribed on {{
+                                                prescription.prescription_date|date:"M d, Y" }}</p>
+                                        </div>
+                                        <span
+                                            class="badge rounded-pill bg-{% if prescription.status == 'ACTIVE' %}success{% else %}secondary{% endif %}">
+                                            {{ prescription.status }}
+                                        </span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="small fw-bold text-muted mb-1">Meal Requirements</h6>
+                                        <p class="small mb-0">{{ prescription.meal_requirements }}</p>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <h6 class="small fw-bold text-muted mb-1">Calorie Target</h6>
+                                            <p class="small mb-0">{{ prescription.calorie_target|default:"--" }} kcal
+                                            </p>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <h6 class="small fw-bold text-muted mb-1">Protein Target</h6>
+                                            <p class="small mb-0">{{ prescription.protein_target_grams|default:"--" }} g
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-4">No prescriptions recorded for this client.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border-bottom: 2px solid transparent !important;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd !important;
+        background: transparent;
+    }
+</style>
+{% endblock %}

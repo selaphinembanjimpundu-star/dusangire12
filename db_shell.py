@@ -109,3 +109,17 @@ SQLite commands:
 finally:
     conn.close()
     print("\nDatabase connection closed.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+

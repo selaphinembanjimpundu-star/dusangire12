@@ -1,110 +1,247 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Register - NOURISH LINK{% endblock %}
+{% block title %}Create Account - Dusangire{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <h2 class="card-title text-center mb-4">
-                        <i class="bi bi-person-plus"></i> Create Account
-                    </h2>
-                    <form method="post" action="{% url 'accounts:register' %}">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_username" class="form-label">Username *</label>
-                                {{ form.username }}
-                                {% if form.username.errors %}
-                                    <div class="text-danger small">{{ form.username.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="id_email" class="form-label">Email *</label>
-                                {{ form.email }}
-                                {% if form.email.errors %}
-                                    <div class="text-danger small">{{ form.email.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_first_name" class="form-label">First Name *</label>
-                                {{ form.first_name }}
-                                {% if form.first_name.errors %}
-                                    <div class="text-danger small">{{ form.first_name.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="id_last_name" class="form-label">Last Name *</label>
-                                {{ form.last_name }}
-                                {% if form.last_name.errors %}
-                                    <div class="text-danger small">{{ form.last_name.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_phone" class="form-label">Phone</label>
-                                {{ form.phone }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div class="form-check">
-                                    {{ form.no_light_confirmation }}
-                                    <label class="form-check-label" for="id_no_light_confirmation">
-                                        {{ form.no_light_confirmation.label }} *
-                                    </label>
-                                    {% if form.no_light_confirmation.help_text %}
-                                        <div class="form-text text-muted">{{ form.no_light_confirmation.help_text }}</div>
-                                    {% endif %}
-                                    {% if form.no_light_confirmation.errors %}
-                                        <div class="text-danger small">{{ form.no_light_confirmation.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="id_password1" class="form-label">Password *</label>
-                                {{ form.password1 }}
-                                {% if form.password1.errors %}
-                                    <div class="text-danger small">{{ form.password1.errors }}</div>
-                                {% endif %}
-                                {% if form.password1.help_text %}
-                                    <div class="form-text">{{ form.password1.help_text }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="id_password2" class="form-label">Confirm Password *</label>
-                                {{ form.password2 }}
-                                {% if form.password2.errors %}
-                                    <div class="text-danger small">{{ form.password2.errors }}</div>
-                                {% endif %}
-                                {% if form.password2.help_text %}
-                                    <div class="form-text">{{ form.password2.help_text }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-person-plus"></i> Register
-                            </button>
-                        </div>
-                    </form>
-                    <hr>
-                    <p class="text-center mb-0">
-                        Already have an account? 
-                        <a href="{% url 'accounts:login' %}" class="text-decoration-none">Login here</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --primary-gradient: linear-gradient(135deg, #2D7A7A 0%, #4ECDC4 100%);
+  }
+
+  body {
+    background: #f8f9fa;
+    overflow-x: hidden;
+  }
+
+  /* Animated Mesh Gradient Background */
+  .bg-mesh {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-color: #f8f9fa;
+    background-image:
+      radial-gradient(at 0% 0%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 50%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 50%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+      radial-gradient(at 50% 100%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(180, 46%, 33%, 1) 0, transparent 50%);
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: meshMove 20s ease infinite alternate;
+  }
+
+  @keyframes meshMove {
+    0% {
+      transform: scale(1) translate(0, 0);
+    }
+
+    100% {
+      transform: scale(1.1) translate(-2%, -2%);
+    }
+  }
+
+  /* Glassmorphism Card */
+  .register-container {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    width: 100%;
+    max-width: 700px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+
+  .card-header-premium {
+    background: var(--primary-gradient);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    color: white;
+    position: relative;
+  }
+
+  .card-header-premium i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .card-body-premium {
+    padding: 2.5rem;
+  }
+
+  /* Premium Form Controls */
+  .form-control-premium {
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    border: 1.5px solid #eee;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .form-control-premium:focus {
+    border-color: #2D7A7A;
+    box-shadow: 0 0 0 4px rgba(45, 122, 122, 0.1);
+    background: white;
+  }
+
+  /* Button Styling */
+  .btn-premium-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    padding: 0.8rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(45, 122, 122, 0.3);
+  }
+
+  .btn-premium-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 122, 122, 0.4);
+    filter: brightness(1.1);
+  }
+
+  .form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #555;
+    margin-left: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+</style>
 {% endblock %}
 
+{% block content %}
+<div class="bg-mesh"></div>
+
+<div class="container register-container">
+  <div class="glass-card animate-fade-in-up">
+    <div class="card-header-premium">
+      <i class="bi bi-person-plus-fill"></i>
+      <h2 class="h3 mb-1">Join Dusangire</h2>
+      <p class="mb-0 opacity-75">Start your journey to better health</p>
+    </div>
+
+    <div class="card-body-premium">
+      <form method="post" action="{% url 'accounts:register' %}" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <label for="id_username" class="form-label">Username *</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6 mb-4">
+            <label for="id_email" class="form-label">Email *</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <label for="id_first_name" class="form-label">First Name *</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6 mb-4">
+            <label for="id_last_name" class="form-label">Last Name *</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <label for="id_phone" class="form-label">Phone</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6 mb-4 d-flex align-items-center">
+            <div class="form-check mt-3">
+              {{ form.no_light_confirmation }}
+              <label class="form-check-label small" for="id_no_light_confirmation">
+                {{ form.no_light_confirmation.label }} *
+              </label>
+              {% if form.no_light_confirmation.errors %}
+              <div class="text-danger small mt-1">{{ form.no_light_confirmation.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <label for="id_password1" class="form-label">Password *</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors }}</div>{% endif %}
+          </div>
+          <div class="col-md-6 mb-4">
+            <label for="id_password2" class="form-label">Confirm Password *</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="d-grid mt-2">
+          <button type="submit" class="btn btn-premium-primary">
+            Create Account <i class="bi bi-check2-circle ms-2"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card-footer bg-light border-0 py-3 text-center">
+      <p class="mb-0 small text-muted">
+        Already have an account? <a href="{% url 'accounts:login' %}"
+          class="fw-bold text-primary text-decoration-none">Sign In instead</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Apply premium classes to form widgets
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputs = document.querySelectorAll('input:not([type="checkbox"])');
+    inputs.forEach(input => {
+      input.classList.add('form-control', 'form-control-premium');
+    });
+
+    // Form validation
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  });
+</script>
+{% endblock %}

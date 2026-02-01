@@ -1,0 +1,1467 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <div class="user-info">
+            <span class="role-badge">{{ user.profile.get_role_display }}</span>
+            {% if user.profile.status %}
+            <span class="status-badge status-{{ user.profile.status }}">{{ user.profile.get_status_display }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Role-Specific Content -->
+    
+    <!-- PATIENT Dashboard -->
+    {% if user.profile.role == 'patient' %}
+    <div class="dashboard-content patient-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Meal Plans</h3>
+                    <a href="{% url 'view_meal_plans' %}" class="btn-small">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if meal_plans %}
+                        <ul class="list-items">
+                            {% for plan in meal_plans|slice:":3" %}
+                            <li>
+                                <strong>{{ plan.title }}</strong>
+                                <p>{{ plan.description|truncatewords:10 }}</p>
+                                <small>Created: {{ plan.created_at|date:"M d, Y" }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">No meal plans yet</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Orders</h3>
+                    <a href="{% url 'patient_orders' %}" class="btn-small">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if orders %}
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <span class="stat-value">{{ active_orders_count }}</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">{{ completed_orders_count }}</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">{{ pending_orders_count }}</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="empty-state">No orders yet</p>
+                        <a href="{% url 'order_meal' %}" class="btn btn-primary">Place Order</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Subscriptions</h3>
+                    <a href="{% url 'my_subscriptions' %}" class="btn-small">Manage</a>
+                </div>
+                <div class="card-body">
+                    {% if subscriptions %}
+                        <ul class="list-items">
+                            {% for sub in subscriptions %}
+                            <li>
+                                <strong>{{ sub.plan_name }}</strong>
+                                <p>Status: <span class="badge badge-{{ sub.status }}">{{ sub.get_status_display }}</span></p>
+                                <small>Renews: {{ sub.renewal_date|date:"M d, Y" }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="empty-state">No active subscriptions</p>
+                        <a href="{% url 'subscribe' %}" class="btn btn-primary">Subscribe Now</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Health Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="health-info">
+                        {% if user.profile.dietary_preferences %}
+                        <p><strong>Dietary Preferences:</strong> {{ user.profile.dietary_preferences }}</p>
+                        {% endif %}
+                        {% if user.profile.medical_alerts %}
+                        <p><strong>Medical Alerts:</strong> {{ user.profile.medical_alerts }}</p>
+                        {% endif %}
+                        <p>
+                            <strong>Accessibility:</strong>
+                            {% if user.profile.has_light %}
+                            Light meals required
+                            {% else %}
+                            Standard meals
+                            {% endif %}
+                        </p>
+                    </div>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Update Profile</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Activity</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="activity-list">
+                        {% if recent_activity %}
+                            {% for activity in recent_activity|slice:":5" %}
+                            <li>
+                                <span class="activity-action">{{ activity.action }}</span>
+                                <span class="activity-date">{{ activity.created_at|timesince }} ago</span>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-state">No recent activity</p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'order_meals' in user_permissions %}
+                    <a href="{% url 'order_meal' %}" class="action-link">
+                        <span class="icon">🛒</span>
+                        <span>Order Meal</span>
+                    </a>
+                    {% endif %}
+                    {% if 'book_consultations' in user_permissions %}
+                    <a href="{% url 'book_consultation' %}" class="action-link">
+                        <span class="icon">📅</span>
+                        <span>Book Consultation</span>
+                    </a>
+                    {% endif %}
+                    {% if 'contact_support' in user_permissions %}
+                    <a href="{% url 'contact_support' %}" class="action-link">
+                        <span class="icon">💬</span>
+                        <span>Contact Support</span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'view_invoices' %}" class="action-link">
+                        <span class="icon">📄</span>
+                        <span>View Invoices</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CAREGIVER Dashboard -->
+    {% if user.profile.role == 'caregiver' %}
+    <div class="dashboard-content caregiver-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Assigned Patient</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.assigned_patient %}
+                    <div class="patient-info">
+                        <h4>{{ user.profile.assigned_patient.get_full_name }}</h4>
+                        <p><strong>Relationship:</strong> {{ user.profile.patient_relationship }}</p>
+                        <p><strong>Contact:</strong> {{ user.profile.assigned_patient.email }}</p>
+                        <a href="{% url 'view_patient_health' %}" class="btn btn-primary">View Health</a>
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No patient assigned yet</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Patient Meal Plans</h3>
+                </div>
+                <div class="card-body">
+                    {% if patient_meal_plans %}
+                    <ul class="list-items">
+                        {% for plan in patient_meal_plans %}
+                        <li>
+                            <strong>{{ plan.title }}</strong>
+                            <p>{{ plan.description|truncatewords:15 }}</p>
+                            <small>Created: {{ plan.created_at|date:"M d, Y" }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No meal plans for patient</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Patient Orders</h3>
+                </div>
+                <div class="card-body">
+                    {% if patient_orders %}
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ patient_orders|length }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ patient_active_orders|length }}</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No orders placed yet</p>
+                    <a href="{% url 'place_order_for_patient' %}" class="btn btn-primary">Place Order</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'place_orders_for_patient' in user_permissions %}
+                    <a href="{% url 'place_order_for_patient' %}" class="action-link">
+                        <span class="icon">🛒</span>
+                        <span>Place Order</span>
+                    </a>
+                    {% endif %}
+                    {% if 'coordinate_with_patient' in user_permissions %}
+                    <a href="{% url 'coordinate_patient' %}" class="action-link">
+                        <span class="icon">📞</span>
+                        <span>Coordinate</span>
+                    </a>
+                    {% endif %}
+                    {% if 'contact_support' in user_permissions %}
+                    <a href="{% url 'contact_support' %}" class="action-link">
+                        <span class="icon">💬</span>
+                        <span>Contact Support</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- NUTRITIONIST Dashboard -->
+    {% if user.profile.role == 'nutritionist' %}
+    <div class="dashboard-content nutritionist-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Patients</h3>
+                    <a href="{% url 'manage_patients' %}" class="btn-small">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if managed_patients %}
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ managed_patients|length }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ active_patients|length }}</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No patients assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Meal Plans Created</h3>
+                    <a href="{% url 'create_meal_plan' %}" class="btn-small">New Plan</a>
+                </div>
+                <div class="card-body">
+                    {% if meal_plans_created %}
+                    <ul class="list-items">
+                        {% for plan in meal_plans_created|slice:":5" %}
+                        <li>
+                            <strong>{{ plan.title }}</strong>
+                            <p>Patient: {{ plan.patient.get_full_name }}</p>
+                            <small>Created: {{ plan.created_at|date:"M d, Y" }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No meal plans created</p>
+                    <a href="{% url 'create_meal_plan' %}" class="btn btn-primary">Create Plan</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Upcoming Consultations</h3>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_consultations %}
+                    <ul class="list-items">
+                        {% for consultation in upcoming_consultations %}
+                        <li>
+                            <strong>{{ consultation.patient.get_full_name }}</strong>
+                            <p>{{ consultation.scheduled_time|date:"M d, Y H:i" }}</p>
+                            <small>Topic: {{ consultation.topic }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No consultations scheduled</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'create_meal_plans' in user_permissions %}
+                    <a href="{% url 'create_meal_plan' %}" class="action-link">
+                        <span class="icon">📋</span>
+                        <span>Create Plan</span>
+                    </a>
+                    {% endif %}
+                    {% if 'manage_patients' in user_permissions %}
+                    <a href="{% url 'manage_patients' %}" class="action-link">
+                        <span class="icon">👥</span>
+                        <span>Manage Patients</span>
+                    </a>
+                    {% endif %}
+                    {% if 'create_consultations' in user_permissions %}
+                    <a href="{% url 'create_consultation' %}" class="action-link">
+                        <span class="icon">📅</span>
+                        <span>Schedule Consultation</span>
+                    </a>
+                    {% endif %}
+                    {% if 'generate_reports' in user_permissions %}
+                    <a href="{% url 'generate_reports' %}" class="action-link">
+                        <span class="icon">📊</span>
+                        <span>Generate Reports</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Patient Progress</h3>
+                </div>
+                <div class="card-body">
+                    <div class="progress-list">
+                        {% if patient_progress %}
+                            {% for progress in patient_progress|slice:":3" %}
+                            <div class="progress-item">
+                                <p><strong>{{ progress.patient.get_full_name }}</strong></p>
+                                <p>Progress: {{ progress.progress_percentage }}%</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ progress.progress_percentage }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-state">No progress data</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- MEDICAL_STAFF Dashboard -->
+    {% if user.profile.role == 'medical_staff' %}
+    <div class="dashboard-content medical-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Hospital Patients</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ total_patients }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ active_patients }}</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ discharged_patients }}</span>
+                            <span class="stat-label">Discharged</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Meal Plan Prescriptions</h3>
+                </div>
+                <div class="card-body">
+                    {% if prescribed_plans %}
+                    <ul class="list-items">
+                        {% for plan in prescribed_plans|slice:":5" %}
+                        <li>
+                            <strong>{{ plan.patient.get_full_name }}</strong>
+                            <p>{{ plan.description|truncatewords:10 }}</p>
+                            <small>Prescribed: {{ plan.created_at|date:"M d, Y" }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No prescriptions</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Patient Health Profiles</h3>
+                </div>
+                <div class="card-body">
+                    {% if 'view_patient_health' in user_permissions %}
+                    <a href="{% url 'view_health_profiles' %}" class="btn btn-primary">View All Profiles</a>
+                    {% else %}
+                    <p class="empty-state">Access denied</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'prescribe_meal_plans' in user_permissions %}
+                    <a href="{% url 'prescribe_meal_plan' %}" class="action-link">
+                        <span class="icon">📝</span>
+                        <span>Prescribe Plan</span>
+                    </a>
+                    {% endif %}
+                    {% if 'coordinate_nutrition' in user_permissions %}
+                    <a href="{% url 'coordinate_nutrition' %}" class="action-link">
+                        <span class="icon">🤝</span>
+                        <span>Coordinate</span>
+                    </a>
+                    {% endif %}
+                    {% if 'generate_medical_reports' in user_permissions %}
+                    <a href="{% url 'generate_medical_reports' %}" class="action-link">
+                        <span class="icon">📊</span>
+                        <span>Generate Report</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CHEF Dashboard -->
+    {% if user.profile.role == 'chef' %}
+    <div class="dashboard-content chef-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Daily Orders</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ todays_orders_count }}</span>
+                            <span class="stat-label">Today</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ pending_preparation }}</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ in_preparation }}</span>
+                            <span class="stat-label">In Progress</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Menu Management</h3>
+                    <a href="{% url 'manage_menu' %}" class="btn-small">Edit Menu</a>
+                </div>
+                <div class="card-body">
+                    {% if menu_items %}
+                    <p><strong>Total Items:</strong> {{ menu_items|length }}</p>
+                    <p><strong>Available Today:</strong> {{ available_today|length }}</p>
+                    <a href="{% url 'manage_menu' %}" class="btn btn-secondary">Manage Items</a>
+                    {% else %}
+                    <p class="empty-state">No menu items</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Kitchen Staff</h3>
+                </div>
+                <div class="card-body">
+                    {% if kitchen_staff %}
+                    <ul class="list-items">
+                        {% for staff in kitchen_staff %}
+                        <li>
+                            <strong>{{ staff.user.get_full_name }}</strong>
+                            <p>Status: <span class="badge">{{ staff.get_status_display }}</span></p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No kitchen staff</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'manage_menu' in user_permissions %}
+                    <a href="{% url 'manage_menu' %}" class="action-link">
+                        <span class="icon">📋</span>
+                        <span>Manage Menu</span>
+                    </a>
+                    {% endif %}
+                    {% if 'view_daily_orders' in user_permissions %}
+                    <a href="{% url 'daily_orders' %}" class="action-link">
+                        <span class="icon">📦</span>
+                        <span>Daily Orders</span>
+                    </a>
+                    {% endif %}
+                    {% if 'manage_kitchen_staff' in user_permissions %}
+                    <a href="{% url 'manage_kitchen_staff' %}" class="action-link">
+                        <span class="icon">👥</span>
+                        <span>Manage Staff</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Inventory</h3>
+                </div>
+                <div class="card-body">
+                    {% if 'track_ingredients' in user_permissions %}
+                    <a href="{% url 'track_ingredients' %}" class="btn btn-primary">View Inventory</a>
+                    {% else %}
+                    <p class="empty-state">Access denied</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- KITCHEN_STAFF Dashboard -->
+    {% if user.profile.role == 'kitchen_staff' %}
+    <div class="dashboard-content kitchen-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Today's Orders</h3>
+                </div>
+                <div class="card-body">
+                    {% if todays_orders %}
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ todays_orders|length }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ pending_count }}</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ completed_count }}</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No orders for today</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Active Preparations</h3>
+                </div>
+                <div class="card-body">
+                    {% if active_preparations %}
+                    <ul class="list-items">
+                        {% for prep in active_preparations %}
+                        <li>
+                            <strong>{{ prep.meal_name }}</strong>
+                            <p>Order #{{ prep.order_id }} - Qty: {{ prep.quantity }}</p>
+                            <small>Started: {{ prep.started_at|timesince }} ago</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No active preparations</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recipes</h3>
+                </div>
+                <div class="card-body">
+                    {% if recipes %}
+                    <a href="{% url 'view_recipes' %}" class="btn btn-primary">View All Recipes</a>
+                    {% else %}
+                    <p class="empty-state">No recipes available</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'view_daily_orders' in user_permissions %}
+                    <a href="{% url 'daily_orders' %}" class="action-link">
+                        <span class="icon">📦</span>
+                        <span>View Orders</span>
+                    </a>
+                    {% endif %}
+                    {% if 'prepare_meals' in user_permissions %}
+                    <a href="{% url 'start_preparation' %}" class="action-link">
+                        <span class="icon">👨‍🍳</span>
+                        <span>Start Prep</span>
+                    </a>
+                    {% endif %}
+                    {% if 'report_issues' in user_permissions %}
+                    <a href="{% url 'report_issue' %}" class="action-link">
+                        <span class="icon">⚠️</span>
+                        <span>Report Issue</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DELIVERY_PERSON Dashboard -->
+    {% if user.profile.role == 'delivery_person' %}
+    <div class="dashboard-content delivery-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Assigned Deliveries</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ total_deliveries }}</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ pending_deliveries }}</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ completed_today }}</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Today's Route</h3>
+                </div>
+                <div class="card-body">
+                    {% if todays_route %}
+                    <ul class="list-items">
+                        {% for delivery in todays_route|slice:":5" %}
+                        <li>
+                            <strong>{{ delivery.customer_name }}</strong>
+                            <p>📍 {{ delivery.address }}</p>
+                            <small>Time: {{ delivery.scheduled_time|date:"H:i" }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No deliveries scheduled</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Delivery Zones</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.delivery_zones %}
+                    <p><strong>Zones:</strong> {{ user.profile.delivery_zones }}</p>
+                    {% endif %}
+                    <p><strong>Availability:</strong> 
+                        {% if user.profile.is_available_for_delivery %}
+                        <span class="badge badge-active">Available</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Not Available</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'view_assigned_deliveries' in user_permissions %}
+                    <a href="{% url 'assigned_deliveries' %}" class="action-link">
+                        <span class="icon">📦</span>
+                        <span>View All</span>
+                    </a>
+                    {% endif %}
+                    {% if 'update_delivery_status' in user_permissions %}
+                    <a href="{% url 'update_delivery_status' %}" class="action-link">
+                        <span class="icon">✅</span>
+                        <span>Update Status</span>
+                    </a>
+                    {% endif %}
+                    {% if 'manage_delivery_route' in user_permissions %}
+                    <a href="{% url 'manage_route' %}" class="action-link">
+                        <span class="icon">🗺️</span>
+                        <span>Manage Route</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Statistics</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Deliveries (Month):</strong> {{ total_month_deliveries }}</p>
+                    <p><strong>Success Rate:</strong> {{ success_rate }}%</p>
+                    <p><strong>Avg Rating:</strong> ⭐ {{ avg_rating }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SUPPORT_STAFF Dashboard -->
+    {% if user.profile.role == 'support_staff' %}
+    <div class="dashboard-content support-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Support Tickets</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ open_tickets }}</span>
+                            <span class="stat-label">Open</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ in_progress_tickets }}</span>
+                            <span class="stat-label">In Progress</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ resolved_today }}</span>
+                            <span class="stat-label">Resolved</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Tickets</h3>
+                    <a href="{% url 'all_tickets' %}" class="btn-small">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_tickets %}
+                    <ul class="list-items">
+                        {% for ticket in recent_tickets|slice:":5" %}
+                        <li>
+                            <strong>Ticket #{{ ticket.id }}</strong>
+                            <p>{{ ticket.subject|truncatewords:10 }}</p>
+                            <small>Status: {{ ticket.get_status_display }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="empty-state">No tickets</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Customer Complaints</h3>
+                </div>
+                <div class="card-body">
+                    {% if pending_complaints %}
+                    <p><strong>Pending:</strong> {{ pending_complaints|length }}</p>
+                    <a href="{% url 'complaints' %}" class="btn btn-secondary">Manage</a>
+                    {% else %}
+                    <p class="empty-state">No pending complaints</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'handle_support_tickets' in user_permissions %}
+                    <a href="{% url 'new_ticket' %}" class="action-link">
+                        <span class="icon">🎫</span>
+                        <span>New Ticket</span>
+                    </a>
+                    {% endif %}
+                    {% if 'process_complaints' in user_permissions %}
+                    <a href="{% url 'complaints' %}" class="action-link">
+                        <span class="icon">📋</span>
+                        <span>Complaints</span>
+                    </a>
+                    {% endif %}
+                    {% if 'manage_refunds' in user_permissions %}
+                    <a href="{% url 'manage_refunds' %}" class="action-link">
+                        <span class="icon">💰</span>
+                        <span>Refunds</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Performance</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Avg Response Time:</strong> {{ avg_response_time }}</p>
+                    <p><strong>Resolution Rate:</strong> {{ resolution_rate }}%</p>
+                    <p><strong>Customer Rating:</strong> ⭐ {{ customer_rating }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- HOSPITAL_MANAGER Dashboard -->
+    {% if user.profile.role == 'hospital_manager' %}
+    <div class="dashboard-content manager-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Operations Overview</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ total_users }}</span>
+                            <span class="stat-label">Total Users</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ active_patients }}</span>
+                            <span class="stat-label">Patients</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ staff_count }}</span>
+                            <span class="stat-label">Staff</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Financial Reports</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">${{ total_revenue }}</span>
+                            <span class="stat-label">Revenue (Month)</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">${{ pending_payments }}</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ transaction_count }}</span>
+                            <span class="stat-label">Transactions</span>
+                        </div>
+                    </div>
+                    <a href="{% url 'financial_reports' %}" class="btn btn-secondary">View Details</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Staff Management</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Staff:</strong> {{ staff_count }}</p>
+                    <p><strong>Active:</strong> {{ active_staff }}</p>
+                    <p><strong>Inactive:</strong> {{ inactive_staff }}</p>
+                    <a href="{% url 'manage_staff' %}" class="btn btn-secondary">Manage</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Department Coordination</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-items">
+                        {% for dept in departments %}
+                        <li>
+                            <strong>{{ dept.name }}</strong>
+                            <p>Staff: {{ dept.staff_count }} | Status: {{ dept.status }}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Analytics</h3>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'analytics' %}" class="btn btn-primary">View Analytics</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'manage_staff' in user_permissions %}
+                    <a href="{% url 'manage_staff' %}" class="action-link">
+                        <span class="icon">👥</span>
+                        <span>Manage Staff</span>
+                    </a>
+                    {% endif %}
+                    {% if 'manage_partnerships' in user_permissions %}
+                    <a href="{% url 'manage_partnerships' %}" class="action-link">
+                        <span class="icon">🤝</span>
+                        <span>Partnerships</span>
+                    </a>
+                    {% endif %}
+                    {% if 'generate_reports' in user_permissions %}
+                    <a href="{% url 'generate_reports' %}" class="action-link">
+                        <span class="icon">📊</span>
+                        <span>Reports</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADMIN Dashboard -->
+    {% if user.profile.role == 'admin' %}
+    <div class="dashboard-content admin-dashboard">
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <h3>System Overview</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <span class="stat-value">{{ total_users }}</span>
+                            <span class="stat-label">Total Users</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ active_users }}</span>
+                            <span class="stat-label">Active</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">{{ admin_count }}</span>
+                            <span class="stat-label">Admins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>User Management</h3>
+                </div>
+                <div class="card-body">
+                    {% if 'manage_all_users' in user_permissions %}
+                    <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-primary">Manage Users</a>
+                    {% else %}
+                    <p class="empty-state">Access denied</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>System Settings</h3>
+                </div>
+                <div class="card-body">
+                    {% if 'manage_system_settings' in user_permissions %}
+                    <a href="{% url 'system_settings' %}" class="btn btn-primary">Configure</a>
+                    {% else %}
+                    <p class="empty-state">Access denied</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>System Health</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Database:</strong> <span class="badge badge-active">✓ Active</span></p>
+                    <p><strong>Cache:</strong> <span class="badge badge-active">✓ Active</span></p>
+                    <p><strong>API:</strong> <span class="badge badge-active">✓ Active</span></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="card-body quick-actions">
+                    {% if 'manage_all_users' in user_permissions %}
+                    <a href="{% url 'admin:index' %}" class="action-link">
+                        <span class="icon">⚙️</span>
+                        <span>Admin Panel</span>
+                    </a>
+                    {% endif %}
+                    {% if 'view_all_data' in user_permissions %}
+                    <a href="{% url 'admin:index' %}" class="action-link">
+                        <span class="icon">📊</span>
+                        <span>View Data</span>
+                    </a>
+                    {% endif %}
+                    {% if 'generate_system_reports' in user_permissions %}
+                    <a href="{% url 'system_reports' %}" class="action-link">
+                        <span class="icon">📈</span>
+                        <span>Reports</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Security</h3>
+                </div>
+                <div class="card-body">
+                    {% if 'security_management' in user_permissions %}
+                    <a href="{% url 'security_settings' %}" class="btn btn-primary">Security Settings</a>
+                    {% else %}
+                    <p class="empty-state">Access denied</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No matching role -->
+    {% if not user.profile.role %}
+    <div class="alert alert-warning">
+        <p>Your role is not configured. Please contact an administrator.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+.dashboard-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+}
+
+.dashboard-header h1 {
+    margin: 0;
+    color: #333;
+    font-size: 32px;
+}
+
+.user-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.role-badge {
+    background: #667eea;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-suspended {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-pending_verification {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.btn-small {
+    font-size: 12px;
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.btn-small:hover {
+    background: #5568d3;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.list-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-items li {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.list-items li:last-child {
+    border-bottom: none;
+}
+
+.list-items strong {
+    color: #333;
+}
+
+.list-items p {
+    margin: 4px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.list-items small {
+    color: #999;
+    font-size: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+}
+
+.stat {
+    text-align: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.action-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.action-link:hover {
+    background: #667eea;
+    color: white;
+}
+
+.action-link .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.action-link span:last-child {
+    font-size: 12px;
+    text-align: center;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.progress-item {
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+
+.progress-item p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.activity-list li:last-child {
+    border-bottom: none;
+}
+
+.activity-action {
+    color: #333;
+    font-weight: 500;
+}
+
+.activity-date {
+    color: #999;
+}
+
+.alert {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}My Subscriptions - NOURISH LINK{% endblock %}
+{% block title %}My Subscriptions - Dusangire{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -13,6 +13,7 @@
         margin-bottom: 2rem;
         box-shadow: 0 0.5rem 1.5rem rgba(102, 126, 234, 0.3);
     }
+
     .subscription-card {
         border-radius: 1rem;
         overflow: hidden;
@@ -21,36 +22,45 @@
         box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.08);
         height: 100%;
     }
+
     .subscription-card:hover {
         transform: translateY(-8px);
         box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
     }
+
     .subscription-card.active {
         border-left: 5px solid #28a745;
         box-shadow: 0 0.5rem 1.5rem rgba(40, 167, 69, 0.2);
     }
+
     .subscription-card.paused {
         border-left: 5px solid #ffc107;
     }
+
     .subscription-card.cancelled {
         border-left: 5px solid #6c757d;
         opacity: 0.85;
     }
+
     .subscription-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 2rem 1.5rem;
         position: relative;
     }
+
     .subscription-header.active {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     }
+
     .subscription-header.paused {
         background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
     }
+
     .subscription-header.cancelled {
         background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     }
+
     .status-badge {
         position: absolute;
         top: 1rem;
@@ -62,12 +72,14 @@
         background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
     }
+
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 1rem;
         margin: 1.5rem 0;
     }
+
     .stat-card {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 0.75rem;
@@ -76,16 +88,19 @@
         border: 1px solid #e0e0e0;
         transition: all 0.3s ease;
     }
+
     .stat-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
     }
+
     .stat-value {
         font-size: 1.75rem;
         font-weight: 700;
         color: #0d6efd;
         margin-bottom: 0.25rem;
     }
+
     .stat-label {
         font-size: 0.875rem;
         color: #6c757d;
@@ -93,26 +108,31 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+
     .info-section {
         background: #f8f9fa;
         border-radius: 0.75rem;
         padding: 1.5rem;
         margin-top: 1.5rem;
     }
+
     .info-item {
         display: flex;
         align-items: center;
         padding: 0.75rem 0;
         border-bottom: 1px solid #e9ecef;
     }
+
     .info-item:last-child {
         border-bottom: none;
     }
+
     .info-item i {
         width: 24px;
         color: #0d6efd;
         margin-right: 0.75rem;
     }
+
     .progress-container {
         background: white;
         border-radius: 1rem;
@@ -120,43 +140,52 @@
         text-align: center;
         box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.08);
     }
+
     .progress-ring {
         width: 120px;
         height: 120px;
         margin: 0 auto 1rem;
     }
+
     .progress-ring svg {
         transform: rotate(-90deg);
     }
+
     .progress-ring circle {
         fill: none;
         stroke-width: 10;
         transition: stroke-dashoffset 0.5s ease;
     }
+
     .progress-ring .background {
         stroke: #e9ecef;
     }
+
     .progress-ring .progress {
         stroke: #28a745;
         stroke-dasharray: 345;
         stroke-linecap: round;
     }
+
     .action-buttons {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 0.75rem;
         margin-top: 1.5rem;
     }
+
     .btn-action {
         border-radius: 0.5rem;
         font-weight: 600;
         padding: 0.75rem 1rem;
         transition: all 0.3s ease;
     }
+
     .btn-action:hover {
         transform: translateY(-2px);
         box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
     }
+
     .section-title {
         font-size: 1.5rem;
         font-weight: 700;
@@ -165,17 +194,20 @@
         padding-bottom: 0.75rem;
         border-bottom: 3px solid #0d6efd;
     }
+
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 1rem;
     }
+
     .empty-state i {
         font-size: 5rem;
         color: #dee2e6;
         margin-bottom: 1.5rem;
     }
+
     .plan-type-badge {
         display: inline-block;
         padding: 0.25rem 0.75rem;
@@ -199,255 +231,275 @@
             </h1>
             <p class="text-muted mb-0" style="font-size: 1.1rem;">Manage your meal plan subscriptions</p>
         </div>
-        <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary btn-lg" style="border-radius: 0.5rem; font-weight: 600; padding: 0.75rem 2rem;">
+        <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary btn-lg"
+            style="border-radius: 0.5rem; font-weight: 600; padding: 0.75rem 2rem;">
             <i class="bi bi-plus-circle-fill"></i> Subscribe to Plan
         </a>
     </div>
 
     {% if active_subscription %}
-        <!-- Active Subscription Hero Card -->
-        <div class="subscription-hero">
-            <div class="row align-items-center">
+    <!-- Active Subscription Hero Card -->
+    <div class="subscription-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center mb-3">
+                    <h2 class="mb-0 me-3" style="font-weight: 700;">{{ active_subscription.plan.name }}</h2>
+                    <span class="status-badge">
+                        <i class="bi bi-check-circle-fill"></i> Active
+                    </span>
+                </div>
+                <p class="mb-0 opacity-90" style="font-size: 1.1rem;">
+                    <span class="plan-type-badge">{{ active_subscription.plan.get_plan_type_display }} Plan</span>
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'subscriptions:subscription_detail' active_subscription.id %}"
+                    class="btn btn-light btn-lg" style="border-radius: 0.5rem; font-weight: 600;">
+                    <i class="bi bi-eye-fill"></i> View Details
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Subscription Details Card -->
+    <div class="card subscription-card active mb-4">
+        <div class="card-body p-4">
+            <div class="row">
                 <div class="col-lg-8">
-                    <div class="d-flex align-items-center mb-3">
-                        <h2 class="mb-0 me-3" style="font-weight: 700;">{{ active_subscription.plan.name }}</h2>
-                        <span class="status-badge">
-                            <i class="bi bi-check-circle-fill"></i> Active
-                        </span>
+                    <!-- Statistics Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ active_subscription.days_remaining }}</div>
+                            <div class="stat-label">Days Remaining</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">RWF {{ active_subscription.plan.get_discounted_price|floatformat:0
+                                }}</div>
+                            <div class="stat-label">Per {{ active_subscription.plan.get_plan_type_display|lower }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ active_subscription.plan.meals_per_cycle }}</div>
+                            <div class="stat-label">Meals per Cycle</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">
+                                {% if active_subscription.auto_order_enabled %}
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+                                {% else %}
+                                <i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="stat-label">Auto-Order</div>
+                        </div>
                     </div>
-                    <p class="mb-0 opacity-90" style="font-size: 1.1rem;">
-                        <span class="plan-type-badge">{{ active_subscription.plan.get_plan_type_display }} Plan</span>
-                    </p>
+
+                    <!-- Information Section -->
+                    <div class="info-section">
+                        <div class="info-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <div>
+                                <strong>Start Date:</strong> {{ active_subscription.start_date|date:"F d, Y" }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="bi bi-calendar-x"></i>
+                            <div>
+                                <strong>End Date:</strong> {{ active_subscription.end_date|date:"F d, Y" }}
+                            </div>
+                        </div>
+                        {% if active_subscription.preferred_delivery_time %}
+                        <div class="info-item">
+                            <i class="bi bi-clock"></i>
+                            <div>
+                                <strong>Preferred Delivery Time:</strong> {{
+                                active_subscription.preferred_delivery_time|time:"H:i" }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if active_subscription.dietary_preferences %}
+                        <div class="info-item">
+                            <i class="bi bi-heart"></i>
+                            <div>
+                                <strong>Dietary Preferences:</strong> {{
+                                active_subscription.dietary_preferences|truncatewords:15 }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                    <a href="{% url 'subscriptions:subscription_detail' active_subscription.id %}" class="btn btn-light btn-lg" style="border-radius: 0.5rem; font-weight: 600;">
-                        <i class="bi bi-eye-fill"></i> View Details
-                    </a>
+                <div class="col-lg-4 mt-4 mt-lg-0">
+                    <!-- Progress Ring -->
+                    <div class="progress-container">
+                        <h5 class="mb-3" style="font-weight: 600;">Subscription Progress</h5>
+                        <div class="progress-ring">
+                            <svg width="120" height="120">
+                                <circle class="background" cx="60" cy="60" r="55"></circle>
+                                <circle class="progress" cx="60" cy="60" r="55"
+                                    style="stroke-dashoffset: {{ active_subscription.days_remaining|floatformat:0|add:'0' }}">
+                                </circle>
+                            </svg>
+                        </div>
+                        <div class="mt-3">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">
+                                {{ active_subscription.days_remaining }}
+                            </div>
+                            <div style="color: #6c757d; font-size: 0.875rem;">
+                                of {{ active_subscription.plan.duration_days }} days remaining
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Active Subscription Details Card -->
-        <div class="card subscription-card active mb-4">
-            <div class="card-body p-4">
-                <div class="row">
-                    <div class="col-lg-8">
-                        <!-- Statistics Grid -->
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-value">{{ active_subscription.days_remaining }}</div>
-                                <div class="stat-label">Days Remaining</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">RWF {{ active_subscription.plan.get_discounted_price|floatformat:0 }}</div>
-                                <div class="stat-label">Per {{ active_subscription.plan.get_plan_type_display|lower }}</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">{{ active_subscription.plan.meals_per_cycle }}</div>
-                                <div class="stat-label">Meals per Cycle</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">
-                                    {% if active_subscription.auto_order_enabled %}
-                                        <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
-                                    {% else %}
-                                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>
-                                    {% endif %}
-                                </div>
-                                <div class="stat-label">Auto-Order</div>
-                            </div>
-                        </div>
-
-                        <!-- Information Section -->
-                        <div class="info-section">
-                            <div class="info-item">
-                                <i class="bi bi-calendar-event"></i>
-                                <div>
-                                    <strong>Start Date:</strong> {{ active_subscription.start_date|date:"F d, Y" }}
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <i class="bi bi-calendar-x"></i>
-                                <div>
-                                    <strong>End Date:</strong> {{ active_subscription.end_date|date:"F d, Y" }}
-                                </div>
-                            </div>
-                            {% if active_subscription.preferred_delivery_time %}
-                                <div class="info-item">
-                                    <i class="bi bi-clock"></i>
-                                    <div>
-                                        <strong>Preferred Delivery Time:</strong> {{ active_subscription.preferred_delivery_time|time:"H:i" }}
-                                    </div>
-                                </div>
-                            {% endif %}
-                            {% if active_subscription.dietary_preferences %}
-                                <div class="info-item">
-                                    <i class="bi bi-heart"></i>
-                                    <div>
-                                        <strong>Dietary Preferences:</strong> {{ active_subscription.dietary_preferences|truncatewords:15 }}
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mt-4 mt-lg-0">
-                        <!-- Progress Ring -->
-                        <div class="progress-container">
-                            <h5 class="mb-3" style="font-weight: 600;">Subscription Progress</h5>
-                            <div class="progress-ring">
-                                <svg width="120" height="120">
-                                    <circle class="background" cx="60" cy="60" r="55"></circle>
-                                    <circle class="progress" cx="60" cy="60" r="55" 
-                                            style="stroke-dashoffset: {{ active_subscription.days_remaining|floatformat:0|add:'0' }}"></circle>
-                                </svg>
-                            </div>
-                            <div class="mt-3">
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">
-                                    {{ active_subscription.days_remaining }}
-                                </div>
-                                <div style="color: #6c757d; font-size: 0.875rem;">
-                                    of {{ active_subscription.plan.duration_days }} days remaining
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <a href="{% url 'subscriptions:subscription_detail' active_subscription.id %}" class="btn btn-primary btn-action">
-                        <i class="bi bi-eye-fill"></i> View Details
-                    </a>
-                    <a href="{% url 'subscriptions:update' active_subscription.id %}" class="btn btn-outline-secondary btn-action">
-                        <i class="bi bi-pencil-fill"></i> Update Preferences
-                    </a>
-                    <a href="{% url 'subscriptions:pause' active_subscription.id %}" class="btn btn-outline-warning btn-action">
-                        <i class="bi bi-pause-circle-fill"></i> Pause Subscription
-                    </a>
-                    <a href="{% url 'subscriptions:cancel' active_subscription.id %}" class="btn btn-outline-danger btn-action">
-                        <i class="bi bi-x-circle-fill"></i> Cancel Subscription
-                    </a>
-                </div>
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="{% url 'subscriptions:subscription_detail' active_subscription.id %}"
+                    class="btn btn-primary btn-action">
+                    <i class="bi bi-eye-fill"></i> View Details
+                </a>
+                <a href="{% url 'subscriptions:update' active_subscription.id %}"
+                    class="btn btn-outline-secondary btn-action">
+                    <i class="bi bi-pencil-fill"></i> Update Preferences
+                </a>
+                <a href="{% url 'subscriptions:pause' active_subscription.id %}"
+                    class="btn btn-outline-warning btn-action">
+                    <i class="bi bi-pause-circle-fill"></i> Pause Subscription
+                </a>
+                <a href="{% url 'subscriptions:cancel' active_subscription.id %}"
+                    class="btn btn-outline-danger btn-action">
+                    <i class="bi bi-x-circle-fill"></i> Cancel Subscription
+                </a>
             </div>
         </div>
+    </div>
     {% endif %}
 
     <!-- Subscription History -->
     {% if subscriptions %}
-        <h3 class="section-title">
-            <i class="bi bi-clock-history"></i> Subscription History
-        </h3>
-        <div class="row g-4">
-            {% for subscription in subscriptions %}
-                {% if subscription != active_subscription %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card subscription-card h-100 {% if subscription.status == 'active' %}active{% elif subscription.status == 'paused' %}paused{% else %}cancelled{% endif %}">
-                            <div class="subscription-header {% if subscription.status == 'active' %}active{% elif subscription.status == 'paused' %}paused{% else %}cancelled{% endif %}">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div style="flex: 1;">
-                                        <h5 class="mb-2" style="font-weight: 700;">{{ subscription.plan.name }}</h5>
-                                        <p class="mb-0 opacity-90">
-                                            <span class="plan-type-badge">{{ subscription.plan.get_plan_type_display }} Plan</span>
-                                        </p>
-                                    </div>
-                                    <span class="status-badge">
-                                        {{ subscription.get_status_display }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">Price:</span>
-                                        <strong>RWF {{ subscription.plan.get_discounted_price|floatformat:0 }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">Start Date:</span>
-                                        <span>{{ subscription.start_date|date:"M d, Y" }}</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="text-muted">End Date:</span>
-                                        <span>{{ subscription.end_date|date:"M d, Y" }}</span>
-                                    </div>
-                                    
-                                    {% if subscription.is_active %}
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-muted">Days Remaining:</span>
-                                            <span class="badge bg-info">{{ subscription.days_remaining }} days</span>
-                                        </div>
-                                    {% endif %}
-                                    
-                                    {% if subscription.preferred_delivery_time %}
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="text-muted">Preferred Time:</span>
-                                            <span>{{ subscription.preferred_delivery_time|time:"H:i" }}</span>
-                                        </div>
-                                    {% endif %}
-                                    
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">Auto-Order:</span>
-                                        {% if subscription.auto_order_enabled %}
-                                            <span class="badge bg-success">Enabled</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Disabled</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="d-grid gap-2 mt-3">
-                                    <a href="{% url 'subscriptions:subscription_detail' subscription.id %}" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-eye"></i> View Details
-                                    </a>
-                                    
-                                    {% if subscription.status == 'active' %}
-                                        <div class="d-grid gap-2">
-                                            <a href="{% url 'subscriptions:update' subscription.id %}" class="btn btn-outline-secondary btn-sm">
-                                                <i class="bi bi-pencil"></i> Update
-                                            </a>
-                                            <div class="btn-group">
-                                                <a href="{% url 'subscriptions:pause' subscription.id %}" class="btn btn-outline-warning btn-sm">
-                                                    <i class="bi bi-pause-circle"></i> Pause
-                                                </a>
-                                                <a href="{% url 'subscriptions:cancel' subscription.id %}" class="btn btn-outline-danger btn-sm">
-                                                    <i class="bi bi-x-circle"></i> Cancel
-                                                </a>
-                                            </div>
-                                        </div>
-                                    {% elif subscription.status == 'paused' %}
-                                        <div class="btn-group">
-                                            <a href="{% url 'subscriptions:resume' subscription.id %}" class="btn btn-outline-success btn-sm">
-                                                <i class="bi bi-play-circle"></i> Resume
-                                            </a>
-                                            <a href="{% url 'subscriptions:cancel' subscription.id %}" class="btn btn-outline-danger btn-sm">
-                                                <i class="bi bi-x-circle"></i> Cancel
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
+    <h3 class="section-title">
+        <i class="bi bi-clock-history"></i> Subscription History
+    </h3>
+    <div class="row g-4">
+        {% for subscription in subscriptions %}
+        {% if subscription != active_subscription %}
+        <div class="col-md-6 col-lg-4">
+            <div
+                class="card subscription-card h-100 {% if subscription.status == 'active' %}active{% elif subscription.status == 'paused' %}paused{% else %}cancelled{% endif %}">
+                <div
+                    class="subscription-header {% if subscription.status == 'active' %}active{% elif subscription.status == 'paused' %}paused{% else %}cancelled{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div style="flex: 1;">
+                            <h5 class="mb-2" style="font-weight: 700;">{{ subscription.plan.name }}</h5>
+                            <p class="mb-0 opacity-90">
+                                <span class="plan-type-badge">{{ subscription.plan.get_plan_type_display }} Plan</span>
+                            </p>
+                        </div>
+                        <span class="status-badge">
+                            {{ subscription.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Price:</span>
+                            <strong>RWF {{ subscription.plan.get_discounted_price|floatformat:0 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Start Date:</span>
+                            <span>{{ subscription.start_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">End Date:</span>
+                            <span>{{ subscription.end_date|date:"M d, Y" }}</span>
+                        </div>
+
+                        {% if subscription.is_active %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Days Remaining:</span>
+                            <span class="badge bg-info">{{ subscription.days_remaining }} days</span>
+                        </div>
+                        {% endif %}
+
+                        {% if subscription.preferred_delivery_time %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Preferred Time:</span>
+                            <span>{{ subscription.preferred_delivery_time|time:"H:i" }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Auto-Order:</span>
+                            {% if subscription.auto_order_enabled %}
+                            <span class="badge bg-success">Enabled</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Disabled</span>
+                            {% endif %}
                         </div>
                     </div>
-                {% endif %}
-            {% endfor %}
+
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="{% url 'subscriptions:subscription_detail' subscription.id %}"
+                            class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+
+                        {% if subscription.status == 'active' %}
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'subscriptions:update' subscription.id %}"
+                                class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i> Update
+                            </a>
+                            <div class="btn-group">
+                                <a href="{% url 'subscriptions:pause' subscription.id %}"
+                                    class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-pause-circle"></i> Pause
+                                </a>
+                                <a href="{% url 'subscriptions:cancel' subscription.id %}"
+                                    class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </div>
+                        {% elif subscription.status == 'paused' %}
+                        <div class="btn-group">
+                            <a href="{% url 'subscriptions:resume' subscription.id %}"
+                                class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-play-circle"></i> Resume
+                            </a>
+                            <a href="{% url 'subscriptions:cancel' subscription.id %}"
+                                class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
+        {% endif %}
+        {% endfor %}
+    </div>
     {% elif not active_subscription %}
-        <div class="empty-state">
-            <i class="bi bi-calendar-x"></i>
-            <h3 style="font-weight: 700; color: #212529;">No Active Subscriptions</h3>
-            <p class="text-muted mb-4" style="font-size: 1.1rem;">Subscribe to a meal plan to get regular deliveries and save money!</p>
-            <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary btn-lg" style="border-radius: 0.5rem; font-weight: 600; padding: 0.75rem 2rem;">
-                <i class="bi bi-plus-circle-fill"></i> Browse Plans
-            </a>
-        </div>
+    <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <h3 style="font-weight: 700; color: #212529;">No Active Subscriptions</h3>
+        <p class="text-muted mb-4" style="font-size: 1.1rem;">Subscribe to a meal plan to get regular deliveries and
+            save money!</p>
+        <a href="{% url 'subscriptions:plans' %}" class="btn btn-primary btn-lg"
+            style="border-radius: 0.5rem; font-weight: 600; padding: 0.75rem 2rem;">
+            <i class="bi bi-plus-circle-fill"></i> Browse Plans
+        </a>
+    </div>
     {% endif %}
 </div>
 
 {% block extra_js %}
 <script>
     // Calculate progress ring animation
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const progressRings = document.querySelectorAll('.progress-ring .progress');
-        progressRings.forEach(function(ring) {
+        progressRings.forEach(function (ring) {
             const totalDays = parseInt(ring.getAttribute('data-total') || '30');
             const remainingDays = parseInt(ring.getAttribute('data-remaining') || '0');
             const circumference = 2 * Math.PI * 55;

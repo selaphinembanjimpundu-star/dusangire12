@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dusangire - Healthcare Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f5f5;
+}
+
+.navbar-wrapper {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-wrapper {
+    display: flex;
+    flex: 1;
+    width: 100%;
+}
+
+.sidebar {
+    width: 250px;
+    background: white;
+    border-right: 1px solid #eee;
+    padding: 20px 0;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+.sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-menu li {
+    margin: 0;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #666;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-menu-link:hover {
+    background: #f9f9f9;
+    color: #667eea;
+    border-left-color: #667eea;
+}
+
+.sidebar-menu-link.active {
+    background: #f0f0f0;
+    color: #667eea;
+    border-left-color: #667eea;
+    font-weight: 600;
+}
+
+.sidebar-menu-icon {
+    font-size: 18px;
+}
+
+.content-area {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 28px;
+    color: #333;
+}
+
+.page-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.page-action-btn {
+    padding: 10px 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-action-btn:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.footer-wrapper {
+    background: white;
+    border-top: 1px solid #eee;
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    font-size: 12px;
+    margin-top: auto;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+        padding: 15px 0;
+    }
+
+    .sidebar-menu-link {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+
+    .content-area {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+        display: none;
+    }
+
+    .sidebar.show {
+        display: block;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .sidebar-menu li {
+        flex-shrink: 0;
+    }
+
+    .sidebar-menu-link {
+        padding: 10px 15px;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+    }
+
+    .sidebar-menu-link.active {
+        border-left: none;
+        border-bottom-color: #667eea;
+    }
+
+    .content-area {
+        padding: 20px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .page-actions {
+        width: 100%;
+    }
+
+    .page-action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="navbar-wrapper">
+    {% include 'navbar_rbac.html' %}
+</div>
+
+<div class="main-wrapper">
+    <!-- Sidebar Navigation -->
+    {% if show_sidebar %}
+    <aside class="sidebar">
+        <ul class="sidebar-menu">
+            {% if user.profile.role == 'patient' %}
+            <li><a href="{% url 'dashboard' %}" class="sidebar-menu-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+                <span class="sidebar-menu-icon">📊</span>
+                Dashboard
+            </a></li>
+            <li><a href="{% url 'meal_plans' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">🍽️</span>
+                Meal Plans
+            </a></li>
+            <li><a href="{% url 'orders' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">📦</span>
+                My Orders
+            </a></li>
+            <li><a href="{% url 'subscriptions' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">💳</span>
+                Subscriptions
+            </a></li>
+            {% elif user.profile.role == 'nutritionist' %}
+            <li><a href="{% url 'dashboard' %}" class="sidebar-menu-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+                <span class="sidebar-menu-icon">📊</span>
+                Dashboard
+            </a></li>
+            <li><a href="{% url 'my_patients' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">👥</span>
+                My Patients
+            </a></li>
+            <li><a href="{% url 'meal_plans' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">📋</span>
+                Meal Plans
+            </a></li>
+            <li><a href="{% url 'consultations' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">🗓️</span>
+                Consultations
+            </a></li>
+            {% elif user.profile.role == 'chef' %}
+            <li><a href="{% url 'dashboard' %}" class="sidebar-menu-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+                <span class="sidebar-menu-icon">📊</span>
+                Dashboard
+            </a></li>
+            <li><a href="{% url 'daily_orders' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">📋</span>
+                Daily Orders
+            </a></li>
+            <li><a href="{% url 'menu_management' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">🍽️</span>
+                Menu
+            </a></li>
+            <li><a href="{% url 'kitchen_staff' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">👨‍🍳</span>
+                Kitchen Staff
+            </a></li>
+            {% elif user.profile.role == 'delivery_person' %}
+            <li><a href="{% url 'dashboard' %}" class="sidebar-menu-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+                <span class="sidebar-menu-icon">📊</span>
+                Dashboard
+            </a></li>
+            <li><a href="{% url 'my_deliveries' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">🚗</span>
+                My Deliveries
+            </a></li>
+            <li><a href="{% url 'delivery_route' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">📍</span>
+                My Route
+            </a></li>
+            <li><a href="{% url 'delivery_stats' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">📈</span>
+                Statistics
+            </a></li>
+            {% elif user.profile.role == 'admin' %}
+            <li><a href="{% url 'dashboard' %}" class="sidebar-menu-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">
+                <span class="sidebar-menu-icon">📊</span>
+                Dashboard
+            </a></li>
+            <li><a href="/admin/" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">⚙️</span>
+                Admin Panel
+            </a></li>
+            <li><a href="{% url 'user_management' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">👥</span>
+                Users
+            </a></li>
+            <li><a href="{% url 'system_settings' %}" class="sidebar-menu-link">
+                <span class="sidebar-menu-icon">⚙️</span>
+                Settings
+            </a></li>
+            {% endif %}
+        </ul>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="content-area">
+        {% include 'utils/alerts.html' %}
+        
+        {% if page_title %}
+        <div class="page-header">
+            <h1 class="page-title">{{ page_title }}</h1>
+            {% if page_actions %}
+            <div class="page-actions">
+                {% for action in page_actions %}
+                <a href="{{ action.url }}" class="page-action-btn">
+                    <span>{{ action.label }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% block page_content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </div>
+</div>
+
+<footer class="footer-wrapper">
+    <p>&copy; 2024 Dusangire Healthcare Management System. All rights reserved.</p>
+</footer>
+{% endblock %}

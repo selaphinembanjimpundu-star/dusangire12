@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('\n' + '='*70))
-        self.stdout.write(self.style.SUCCESS('NOURISH LINK - Pre-Launch Checklist'))
+        self.stdout.write(self.style.SUCCESS('Dusangire - Pre-Launch Checklist'))
         self.stdout.write(self.style.SUCCESS('='*70 + '\n'))
 
         errors = []
@@ -248,3 +248,17 @@ class Command(BaseCommand):
             sys.exit(1)
         
         self.stdout.write('\n')
+
+
+
+
+
+
+
+
+
+
+
+
+
+

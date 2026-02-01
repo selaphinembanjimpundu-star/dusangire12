@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Join Nourish Link - Pro Signup{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.82);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --primary-gradient: linear-gradient(135deg, #0575E6 0%, #021B79 100%);
+        --success-pro: #00b09b;
+        --error-pro: #ff416c;
+        --muted-pro: #95a5a6;
+    }
+
+    body {
+        background: #f0f2f5;
+        overflow-x: hidden;
+    }
+
+    /* Animated Mesh Gradient Background */
+    .bg-mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: #f8f9fa;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(210, 100%, 23%, 1) 0, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(210, 100%, 50%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(180, 100%, 50%, 0.2) 0, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(180, 100%, 50%, 0.2) 0, transparent 50%),
+            radial-gradient(at 50% 50%, hsla(210, 100%, 50%, 0.1) 0, transparent 50%),
+            radial-gradient(at 100% 50%, hsla(210, 100%, 23%, 0.2) 0, transparent 50%),
+            radial-gradient(at 0% 100%, hsla(210, 100%, 23%, 0.1) 0, transparent 50%),
+            radial-gradient(at 50% 100%, hsla(210, 100%, 50%, 0.1) 0, transparent 50%),
+            radial-gradient(at 100% 100%, hsla(180, 100%, 50%, 0.2) 0, transparent 50%);
+        filter: blur(60px);
+        opacity: 0.12;
+        animation: meshMove 25s ease infinite alternate;
+    }
+
+    @keyframes meshMove {
+        0% {
+            transform: scale(1) translate(0, 0);
+        }
+
+        100% {
+            transform: scale(1.15) translate(-3%, -3%);
+        }
+    }
+
+    .register-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1.5rem;
+    }
+
+    .glass-pro-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        width: 100%;
+        max-width: 580px;
+        overflow: hidden;
+    }
+
+    .card-header-pro {
+        padding: 2.5rem 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .logo-badge {
+        width: 64px;
+        height: 64px;
+        background: var(--primary-gradient);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 10px 20px rgba(5, 117, 230, 0.3);
+    }
+
+    /* Pro Form Styling */
+    .form-group-pro {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label-pro {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-control-pro {
+        border-radius: 16px !important;
+        padding: 0.9rem 1.25rem !important;
+        border: 2px solid #edf2f7 !important;
+        background: #f8fafc !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-size: 0.95rem !important;
+    }
+
+    .form-control-pro:focus {
+        border-color: #0575E6 !important;
+        box-shadow: 0 0 0 5px rgba(5, 117, 230, 0.1) !important;
+        background: white !important;
+        transform: translateY(-1px);
+    }
+
+    /* Password Validation Hints Styling */
+    .password-hints-pro {
+        background: #f1f5f9;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-top: 1rem;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .hint-item {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        color: var(--muted-pro);
+    }
+
+    .hint-item i {
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    /* This is what makes it look "not filled" or "met" */
+    .hint-unmet {
+        color: #e74c3c;
+        font-weight: 500;
+    }
+
+    .hint-met {
+        color: #27ae60;
+        font-weight: 600;
+    }
+
+    .hint-item.inactive {
+        opacity: 0.6;
+    }
+
+    /* Button CTA */
+    .btn-pro-primary {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 16px;
+        padding: 1rem;
+        font-weight: 700;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(5, 117, 230, 0.3);
+        letter-spacing: 0.5px;
+    }
+
+    .btn-pro-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(5, 117, 230, 0.4);
+        filter: brightness(1.1);
+    }
+
+    .btn-pro-primary:active {
+        transform: translateY(0);
+    }
+
+    /* Crispy Form Overrides */
+    .invalid-feedback {
+        font-size: 0.75rem;
+        margin-left: 1rem;
+        font-weight: 600;
+    }
+
+    .help-block {
+        display: none !important;
+        /* We use our custom hints container */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-mesh"></div>
+
+<div class="container register-container">
+    <div class="glass-pro-card animate-fade-in-up">
+        <div class="card-header-pro">
+            <div class="logo-badge">
+                <i class="bi bi-activity"></i>
+            </div>
+            <h2 class="h3 fw-bold mb-1">Join Nourish Link</h2>
+            <p class="text-muted small">Start your journey to better health today</p>
+        </div>
+
+        <div class="card-body px-5 pb-5 pt-2">
+            <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}" novalidate>
+                {% csrf_token %}
+
+                <div class="form-group-pro">
+                    <label class="form-label-pro"><i class="bi bi-envelope"></i> Email Address*</label>
+                    <input type="email" name="email" placeholder="you@example.com"
+                        class="form-control form-control-pro {% if form.email.errors %}is-invalid{% endif %}" required
+                        value="{{ form.email.value|default:'' }}">
+                    {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group-pro">
+                    <label class="form-label-pro"><i class="bi bi-shield-lock"></i> Create Password*</label>
+                    <input type="password" name="password1" id="id_password1" placeholder="Minimum 8 characters"
+                        class="form-control form-control-pro {% if form.password1.errors %}is-invalid{% endif %}"
+                        required>
+
+                    <div class="password-hints-pro" id="password_hints">
+                        <div class="hint-item" id="hint_similarity">
+                            <i class="bi bi-circle"></i> Can't be too similar to personal info
+                        </div>
+                        <div class="hint-item" id="hint_length">
+                            <i class="bi bi-circle"></i> At least 8 characters
+                        </div>
+                        <div class="hint-item" id="hint_common">
+                            <i class="bi bi-circle"></i> Can't be a commonly used password
+                        </div>
+                        <div class="hint-item" id="hint_numeric">
+                            <i class="bi bi-circle"></i> Can't be entirely numeric
+                        </div>
+                    </div>
+                    {% for error in form.password1.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group-pro">
+                    <label class="form-label-pro"><i class="bi bi-check-circle"></i> Confirm Password*</label>
+                    <input type="password" name="password2" placeholder="Repeat your password"
+                        class="form-control form-control-pro {% if form.password2.errors %}is-invalid{% endif %}"
+                        required>
+                    {% for error in form.password2.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                </div>
+
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+
+                <div class="d-grid mt-4 pt-2">
+                    <button type="submit" class="btn btn-pro-primary">
+                        Create Pro Account <i class="bi bi-arrow-right-circle ms-2"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="mb-0 small text-muted">
+                    Already have an account? <a href="{{ login_url }}"
+                        class="fw-bold text-primary text-decoration-none hover-underline">Sign In instead</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.getElementById('id_password1');
+        const hints = {
+            length: document.getElementById('hint_length'),
+            numeric: document.getElementById('hint_numeric'),
+            // Note: similarity and common are hard to check client-side without the list, 
+            // but we can simulate the "filling" feel for the ones we can check.
+        };
+
+        passwordInput.addEventListener('input', function () {
+            const val = this.value;
+
+            // Length check
+            if (val.length >= 8) {
+                hints.length.classList.add('hint-met');
+                hints.length.querySelector('i').className = 'bi bi-check-circle-fill';
+            } else {
+                hints.length.classList.remove('hint-met');
+                hints.length.querySelector('i').className = 'bi bi-circle';
+            }
+
+            // Entirely numeric check
+            if (val.length > 0 && /^\d+$/.test(val)) {
+                hints.numeric.classList.add('hint-unmet');
+                hints.numeric.querySelector('i').className = 'bi bi-x-circle-fill';
+            } else if (val.length > 0) {
+                hints.numeric.classList.add('hint-met');
+                hints.numeric.classList.remove('hint-unmet');
+                hints.numeric.querySelector('i').className = 'bi bi-check-circle-fill';
+            } else {
+                hints.numeric.classList.remove('hint-met', 'hint-unmet');
+                hints.numeric.querySelector('i').className = 'bi bi-circle';
+            }
+        });
+    });
+</script>
+{% endblock %}

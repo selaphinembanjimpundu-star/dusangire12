@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Sign In Via Google - Dusangire{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.82);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --google-gradient: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
+    }
+
+    body {
+        background: #f0f2f5;
+        overflow-x: hidden;
+    }
+
+    /* Animated Mesh Gradient Background */
+    .bg-mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: #f8f9fa;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(217, 89%, 61%, 0.1) 0, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(145, 63%, 42%, 0.1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(45, 100%, 51%, 0.1) 0, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(4, 90%, 58%, 0.1) 0, transparent 50%);
+        filter: blur(80px);
+        opacity: 0.15;
+    }
+
+    .social-login-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .glass-pro-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+    }
+
+    .google-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: -40px auto 1.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+    }
+
+    .btn-pro-google {
+        background: #4285F4;
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 2rem;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(66, 133, 244, 0.3);
+        width: 100%;
+    }
+
+    .btn-pro-google:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(66, 133, 244, 0.4);
+        background: #357ae8;
+        color: white;
+    }
+
+    .btn-outline-pro {
+        border-radius: 16px;
+        padding: 0.8rem;
+        font-weight: 600;
+        color: #555;
+        border: 2px solid #eee;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-pro:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-mesh"></div>
+
+<div class="container social-login-container">
+    <div class="glass-pro-card animate-fade-in-up mt-5">
+        <div class="google-icon-wrapper">
+            <svg width="40" height="40" viewBox="0 0 24 24">
+                <path
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    fill="#4285F4" />
+                <path
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    fill="#34A853" />
+                <path
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                    fill="#FBBC05" />
+                <path
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    fill="#EA4335" />
+            </svg>
+        </div>
+
+        <div class="p-5 pt-0">
+            <h2 class="h3 fw-bold mb-3">Sign In Via Google</h2>
+
+            <p class="text-muted mb-4 px-3">
+                You are about to sign in using your <strong>Google account</strong>.
+                This will provide secure and instant access to Dusangire.
+            </p>
+
+            <form method="post" action="{% url 'google_login' %}">
+                {% csrf_token %}
+                <div class="d-grid gap-3">
+                    <button type="submit" class="btn btn-pro-google">
+                        {% trans "Continue with Google" %} <i class="bi bi-arrow-right-short ms-1"></i>
+                    </button>
+                    <a href="{% url 'account_login' %}" class="btn btn-outline-pro">
+                        Go Back
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-footer bg-light border-0 py-3 rounded-bottom-4">
+            <p class="mb-0 x-small text-muted">
+                Secure 256-bit encrypted authentication
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,112 +1,369 @@
-{% extends 'base.html' %} {% load crispy_forms_tags %} {% block title %}Login -
-NOURISH LINK{% endblock %} {% block content %}
-<div class="container mt-5 mb-5">
-  <div class="row justify-content-center align-items-center min-vh-50">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-lg border-0 animate-fade-in-up">
-        <div class="card-body p-5">
-          <div class="text-center mb-4">
-            <div class="mb-3">
-              <i
-                class="bi bi-hospital"
-                style="font-size: 3rem; color: var(--primary-color)"
-              ></i>
-            </div>
-            <h2 class="card-title mb-2">Welcome Back</h2>
-            <p class="text-muted">
-              Sign in to continue to NOURISH LINK
-            </p>
-          </div>
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load socialaccount %}
 
-          <form method="post" action="{% url 'accounts:login' %}" class="needs-validation" novalidate>
-            {% csrf_token %}
-            <div class="mb-4">
-              <label for="id_username" class="form-label">
-                <i class="bi bi-person me-2"></i>Username
-              </label>
-              <input
-                type="text"
-                name="username"
-                class="form-control form-control-lg"
-                id="id_username"
-                required
-                autofocus
-                placeholder="Enter your username"
-              />
-              <div class="invalid-feedback">
-                Please provide a valid username.
-              </div>
-            </div>
-            <div class="mb-4">
-              <label for="id_password" class="form-label">
-                <i class="bi bi-lock me-2"></i>Password
-              </label>
-              <div class="input-group">
-                <input
-                  type="password"
-                  name="password"
-                  class="form-control form-control-lg"
-                  id="id_password"
-                  required
-                  placeholder="Enter your password"
-                />
-                <button
-                  class="btn btn-outline-secondary"
-                  type="button"
-                  id="togglePassword"
-                  style="border-left: none"
-                >
-                  <i class="bi bi-eye" id="togglePasswordIcon"></i>
-                </button>
-              </div>
-              <div class="invalid-feedback">Please provide your password.</div>
-            </div>
-            <div class="mb-4 form-check">
-              <input type="checkbox" class="form-check-input" id="rememberMe" />
-              <label class="form-check-label" for="rememberMe">
-                Remember me
-              </label>
-            </div>
-            <div class="d-grid mb-3">
-              <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
-              </button>
-            </div>
-          </form>
+{% block title %}Login - Dusangire{% endblock %}
 
-          <hr class="my-4" />
-          <div class="text-center">
-            <p class="mb-2 text-muted">Don't have an account?</p>
-            <a
-              href="{% url 'accounts:register' %}"
-              class="btn btn-outline-primary"
-            >
-              <i class="bi bi-person-plus me-2"></i>Create Account
-            </a>
-          </div>
+{% block extra_css %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.75);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --primary-gradient: linear-gradient(135deg, #2D7A7A 0%, #4ECDC4 100%);
+    }
+
+    body {
+        background: #f8f9fa;
+        overflow-x: hidden;
+    }
+
+    /* Animated Mesh Gradient Background */
+    .bg-mesh {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: #f8f9fa;
+        background-image:
+            radial-gradient(at 0% 0%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+            radial-gradient(at 50% 0%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 0%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+            radial-gradient(at 50% 50%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 50%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+            radial-gradient(at 0% 100%, hsla(180, 46%, 33%, 1) 0, transparent 50%),
+            radial-gradient(at 50% 100%, hsla(176, 51%, 44%, 1) 0, transparent 50%),
+            radial-gradient(at 100% 100%, hsla(180, 46%, 33%, 1) 0, transparent 50%);
+        filter: blur(80px);
+        opacity: 0.15;
+        animation: meshMove 20s ease infinite alternate;
+    }
+
+    @keyframes meshMove {
+        0% {
+            transform: scale(1) translate(0, 0);
+        }
+
+        100% {
+            transform: scale(1.1) translate(-2%, -2%);
+        }
+    }
+
+    /* Glassmorphism Card */
+    .login-container {
+        min-height: calc(100vh - 80px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        width: 100%;
+        max-width: 450px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header-premium {
+        background: var(--primary-gradient);
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+
+    .card-header-premium i {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        display: block;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .card-body-premium {
+        padding: 2.5rem;
+    }
+
+    /* Premium Form Controls */
+    .form-control-premium {
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        border: 1.5px solid #eee;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-control-premium:focus {
+        border-color: #2D7A7A;
+        box-shadow: 0 0 0 4px rgba(45, 122, 122, 0.1);
+        background: white;
+    }
+
+    .input-group-premium .btn {
+        border-radius: 0 12px 12px 0;
+        border: 1.5px solid #eee;
+        border-left: none;
+    }
+
+    /* Button Styling */
+    .btn-premium-primary {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(45, 122, 122, 0.3);
+    }
+
+    .btn-premium-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(45, 122, 122, 0.4);
+        filter: brightness(1.1);
+    }
+
+    .btn-google {
+        border: 1.5px solid #eee;
+        border-radius: 12px;
+        background: white;
+        padding: 0.8rem;
+        font-weight: 500;
+        color: #444;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-google:hover {
+        background: #f8f9fa;
+        border-color: #ddd;
+        transform: translateY(-1px);
+    }
+
+    /* Role Badges Styling */
+    .role-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+
+    .role-badge-pill {
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        margin: 0.25rem;
+        display: inline-block;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: default;
+    }
+
+    .role-badge-pill:hover {
+        transform: scale(1.05);
+    }
+
+    .badge-customer {
+        background: #E0F2F1;
+        color: #00796B;
+    }
+
+    .badge-nutritionist {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    .badge-staff {
+        background: #F1F8E9;
+        color: #558B2F;
+    }
+
+    .badge-delivery {
+        background: #E0F7FA;
+        color: #00838F;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-mesh"></div>
+
+<div class="container login-container">
+    <div class="glass-card animate-fade-in-up">
+        <div class="card-header-premium">
+            <i class="bi bi-shield-lock-fill"></i>
+            <h2 class="h3 mb-1">Welcome Back</h2>
+            <p class="mb-0 opacity-75">Secure Access to Dusangire</p>
         </div>
-      </div>
+
+        <div class="card-body-premium">
+            <form method="post" action="{% url 'accounts:login' %}" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                {% if form.errors or form.non_field_errors %}
+                <div class="alert alert-danger border-0 rounded-4 mb-4 small">
+                    <ul class="mb-0">
+                        {% for field in form %}
+                        {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Hidden next parameter -->
+                <input type="hidden" name="next"
+                    value="{% if request.GET.next %}{{ request.GET.next }}{% else %}{% url 'accounts:dashboard_redirect' %}{% endif %}">
+
+                <div class="mb-4">
+                    <label for="id_username" class="form-label ms-1 small fw-bold text-muted">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-3 text-muted"
+                            style="border: 1.5px solid #eee;">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input type="text" name="username" class="form-control form-control-premium border-start-0 ps-0"
+                            id="id_username" required autofocus placeholder="Enter credentials">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password" class="form-label ms-1 small fw-bold text-muted">Password</label>
+                    <div class="input-group input-group-premium">
+                        <span class="input-group-text bg-white border-end-0 rounded-start-3 text-muted"
+                            style="border: 1.5px solid #eee;">
+                            <i class="bi bi-key"></i>
+                        </span>
+                        <input type="password" name="password"
+                            class="form-control form-control-premium border-start-0 ps-0" id="id_password" required
+                            placeholder="••••••••">
+                        <button class="btn btn-outline-light text-muted border-start-0" type="button"
+                            id="togglePassword">
+                            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4 px-1">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="id_remember_me" name="remember_me">
+                        <label class="form-check-label small text-muted" for="id_remember_me">Keep me signed in</label>
+                    </div>
+                    <a href="{% url 'accounts:password_reset' %}"
+                        class="small text-primary text-decoration-none">Forgot?</a>
+                </div>
+
+                <div class="d-grid gap-2 mb-4">
+                    <button type="submit" class="btn btn-premium-primary">
+                        Sign In <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+
+                <div class="position-relative mb-4">
+                    <hr class="text-muted opacity-25">
+                    <span
+                        class="position-absolute top-50 start-50 translate-middle bg-white px-3 small text-muted">OR</span>
+                </div>
+
+                <div class="d-grid">
+                    <a href="{% provider_login_url 'google' %}" class="btn btn-google">
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        Continue with Google
+                    </a>
+                </div>
+
+                <div class="role-section text-center">
+                    <p class="small text-muted mb-3 fw-bold">Select Role Area:</p>
+                    <span class="role-badge-pill badge-customer">Patient/Customer</span>
+                    <span class="role-badge-pill badge-nutritionist">Nutritionist</span>
+                    <span class="role-badge-pill badge-staff">Hospital Staff</span>
+                    <span class="role-badge-pill badge-delivery">Delivery</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-footer bg-light border-0 py-3 text-center">
+            <p class="mb-0 small text-muted">
+                New to Dusangire? <a href="{% url 'accounts:register' %}"
+                    class="fw-bold text-primary text-decoration-none">Create Account</a>
+            </p>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-  // Toggle password visibility
-  document
-    .getElementById("togglePassword")
-    ?.addEventListener("click", function () {
-      const passwordInput = document.getElementById("id_password");
-      const icon = document.getElementById("togglePasswordIcon");
+    // Toggle password visibility
+    const togglePasswordBtn = document.getElementById("togglePassword");
+    if (togglePasswordBtn) {
+        togglePasswordBtn.addEventListener("click", function () {
+            const passwordInput = document.getElementById("id_password");
+            const icon = document.getElementById("togglePasswordIcon");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.replace("bi-eye", "bi-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.replace("bi-eye-slash", "bi-eye");
+            }
+        });
+    }
 
-      if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-        icon.classList.remove("bi-eye");
-        icon.classList.add("bi-eye-slash");
-      } else {
-        passwordInput.type = "password";
-        icon.classList.remove("bi-eye-slash");
-        icon.classList.add("bi-eye");
-      }
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
     });
 </script>
 {% endblock %}

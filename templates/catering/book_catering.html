@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white p-4 border-0 text-center">
+                    <h2 class="fw-bold mb-0">{% trans "Book Catering Service" %}</h2>
+                    <p class="mb-0 opacity-75">{% trans "Tell us about your event and we'll handle the rest." %}</p>
+                </div>
+                <div class="card-body p-5">
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="row g-4">
+                            <!-- Event Details -->
+                            <div class="col-12">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">{% trans "1. Event Details" %}</h5>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="event_name" class="form-label fw-bold">{% trans "Event Name" %}</label>
+                                <input type="text" class="form-control form-control-lg" id="event_name"
+                                    name="event_name" placeholder="e.g. Corporate Annual Lunch" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="event_date" class="form-label fw-bold">{% trans "Event Date" %}</label>
+                                <input type="date" class="form-control form-control-lg" id="event_date"
+                                    name="event_date" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="event_time" class="form-label fw-bold">{% trans "Event Time" %}</label>
+                                <input type="time" class="form-control form-control-lg" id="event_time"
+                                    name="event_time" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="location" class="form-label fw-bold">{% trans "Event Location" %}</label>
+                                <textarea class="form-control form-control-lg" id="location" name="location" rows="2"
+                                    placeholder="{% trans 'Full address or venue name' %}" required></textarea>
+                            </div>
+
+                            <!-- Package & Guests -->
+                            <div class="col-12 mt-5">
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">{% trans "2. Package & Guests" %}</h5>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label for="package_id" class="form-label fw-bold">{% trans "Select Package" %}</label>
+                                <select class="form-select form-select-lg" id="package_id" name="package_id" required>
+                                    <option value="">{% trans "Choose a package..." %}</option>
+                                    {% for package in packages %}
+                                    {% with pkg_id=package.id|stringformat:"s" %}
+                                    <option value="{{ package.id }}" {% if selected_package_id==pkg_id %}selected{%
+                                        endif %} data-price="{{ package.price_per_person }}">
+                                        {{ package.name }} (RWF {{ package.price_per_person }}/person)
+                                    </option>
+                                    {% endwith %}
+                                    {% endfor %}
+                                    <option value="custom">{% trans "Custom Request" %}</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="number_of_people" class="form-label fw-bold">{% trans "Number of Guests"
+                                    %}</label>
+                                <input type="number" class="form-control form-control-lg" id="number_of_people"
+                                    name="number_of_people" min="1" required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="special_requests" class="form-label fw-bold">{% trans "Special Requests /
+                                    Dietary Requirements" %}</label>
+                                <textarea class="form-control form-control-lg" id="special_requests"
+                                    name="special_requests" rows="3"
+                                    placeholder="{% trans 'e.g. Vegan options needed, nut-free, etc.' %}"></textarea>
+                            </div>
+
+                            <!-- Summary -->
+                            <div class="col-12 mt-4">
+                                <div class="bg-light p-4 rounded-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{% trans "Estimated Total" %}</h6>
+                                        <small class="text-muted">{% trans "Final price will be confirmed after review"
+                                            %}</small>
+                                    </div>
+                                    <div class="h3 mb-0 fw-bold text-primary" id="total_display">RWF 0</div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-5">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3">
+                                        {% trans "Submit Booking Request" %}
+                                    </button>
+                                </div>
+                                <p class="text-center text-muted small mt-3">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {% trans "Our team will review your request and contact you within 24 hours." %}
+                                </p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const packageSelect = document.getElementById('package_id');
+        const peopleInput = document.getElementById('number_of_people');
+        const totalDisplay = document.getElementById('total_display');
+
+        function calculateTotal() {
+            const selectedOption = packageSelect.options[packageSelect.selectedIndex];
+            const price = parseFloat(selectedOption.dataset.price || 0);
+            const people = parseInt(peopleInput.value || 0);
+
+            if (price && people) {
+                const total = price * people;
+                totalDisplay.textContent = 'RWF ' + total.toLocaleString();
+            } else {
+                totalDisplay.textContent = 'RWF 0';
+            }
+        }
+
+        packageSelect.addEventListener('change', calculateTotal);
+        peopleInput.addEventListener('input', calculateTotal);
+
+        // Initial calculation if package is pre-selected
+        calculateTotal();
+    });
+</script>
+{% endblock %}

@@ -114,7 +114,7 @@ def menu_list(request):
         'dietary_tags': dietary_tags,
         'filter_form': filter_form,
         'search_query': search_query,
-        'selected_category_id': category_id,
+        'selected_category_id': str(category_id) if category_id else "",
         'selected_dietary_tags': [int(tag_id) for tag_id in dietary_tag_ids],
         'recommendations': recommendations,
         'popular_items': popular_items,
@@ -144,21 +144,31 @@ def menu_detail(request, item_id):
     if request.user.is_authenticated:
         recommendations = get_recommendations(request.user, limit=4)
     
-    # Get review statistics
+    # Get review statistics (use cached values from model)
     from reviews.models import Review
-    review_stats = Review.objects.filter(
+    # Use cached average_rating and total_reviews from MenuItem
+    # But also get detailed stats for display
+    review_stats = {
+        'avg_rating': float(menu_item.average_rating),
+        'total_reviews': menu_item.total_reviews,
+        'rating_distribution': Review.objects.filter(
+            menu_item=menu_item,
+            is_approved=True
+        ).values('rating').annotate(count=Count('id')).order_by('-rating')
+    }
+    
+    # Get recent approved reviews for preview
+    recent_reviews = Review.objects.filter(
         menu_item=menu_item,
         is_approved=True
-    ).aggregate(
-        avg_rating=Avg('rating'),
-        total_reviews=Count('id')
-    )
+    ).select_related('user').order_by('-created_at', '-is_verified_purchase')[:5]
     
     context = {
         'menu_item': menu_item,
         'related_items': related_items,
         'recommendations': recommendations,
         'review_stats': review_stats,
+        'recent_reviews': recent_reviews,
     }
     return render(request, 'menu/menu_detail.html', context)
 

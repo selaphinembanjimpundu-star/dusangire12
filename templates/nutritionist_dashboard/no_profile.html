@@ -1,0 +1,163 @@
+{% extends 'nutritionist_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Complete Your Profile - Nutritionist{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="row min-vh-100 align-items-center">
+        <div class="col-lg-6 mx-auto">
+            <!-- Main Card -->
+            <div class="card border-0 shadow-lg rounded-5 overflow-hidden mb-4">
+                <div class="card-body p-5 text-center">
+                    <!-- Icon -->
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center" 
+                             style="width: 100px; height: 100px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                            <i class="bi bi-person-check" style="font-size: 3rem; color: white;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Heading -->
+                    <h1 class="display-5 fw-bold mb-3">Welcome to Dusangire!</h1>
+                    <p class="lead text-muted mb-4">
+                        Complete your professional profile to unlock the full power of your nutritionist dashboard and start managing clients.
+                    </p>
+
+                    <!-- Benefits Section -->
+                    <div class="card border-0 bg-light rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold mb-3">What You'll Get</h6>
+                        <div class="row text-start">
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-check-circle text-success fw-bold" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <h6 class="fw-bold small mb-0">Client Management</h6>
+                                        <small class="text-muted">Manage all your clients in one place</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-check-circle text-success fw-bold" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <h6 class="fw-bold small mb-0">Meal Planning</h6>
+                                        <small class="text-muted">Create customized meal plans</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-check-circle text-success fw-bold" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <h6 class="fw-bold small mb-0">Consultations</h6>
+                                        <small class="text-muted">Schedule and track sessions</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="d-flex gap-2">
+                                    <i class="bi bi-check-circle text-success fw-bold" style="font-size: 1.25rem;"></i>
+                                    <div>
+                                        <h6 class="fw-bold small mb-0">Analytics</h6>
+                                        <small class="text-muted">Track your progress and earnings</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requirements Section -->
+                    <div class="alert alert-info alert-dismissible fade show rounded-4" role="alert">
+                        <div class="text-start">
+                            <h6 class="alert-heading mb-3"><i class="bi bi-info-circle me-2"></i> What We'll Ask For</h6>
+                            <div class="row small">
+                                <div class="col-6 mb-2">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Professional bio
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Specializations
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Certifications
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Contact information
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Consultation rates
+                                </div>
+                                <div class="col-6">
+                                    <i class="bi bi-dash-square text-info me-2"></i> Professional photo
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <a href="{% url 'nutritionist_dashboard:create_profile' %}" class="btn btn-primary btn-lg rounded-3 px-5 mb-3 w-100">
+                        <i class="bi bi-arrow-right me-2"></i> Create Your Profile
+                    </a>
+
+                    <!-- Secondary CTA -->
+                    <a href="{% url 'nutritionist_dashboard:dashboard' %}" class="btn btn-outline-secondary btn-lg rounded-3 px-5 w-100">
+                        <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Trust Indicators -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light rounded-4 text-center p-3">
+                        <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mt-2 small">Secure</h6>
+                        <small class="text-muted">Your data is protected</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light rounded-4 text-center p-3">
+                        <i class="bi bi-lightning text-warning" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mt-2 small">Quick Setup</h6>
+                        <small class="text-muted">Takes 5-10 minutes</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light rounded-4 text-center p-3">
+                        <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mt-2 small">Grow</h6>
+                        <small class="text-muted">Find more clients</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .btn {
+        border-radius: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+    }
+</style>
+{% endblock %}

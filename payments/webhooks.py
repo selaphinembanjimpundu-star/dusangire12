@@ -116,3 +116,17 @@ def airtel_money_webhook(request):
     except Exception as e:
         logger.error(f"Airtel Money webhook error: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

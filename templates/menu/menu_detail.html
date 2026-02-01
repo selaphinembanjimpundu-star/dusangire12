@@ -1,206 +1,1199 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ menu_item.name }} - NOURISH LINK{% endblock %}
+{% block title %}{{ menu_item.name }} - Dusangire{% endblock %}
 
 {% block extra_css %}
 <style>
+  /* Base Styles */
+  :root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --border-radius: 1rem;
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+  }
+
+  /* Entire Product Container Clickable */
+  .product-detail-container {
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .product-detail-container:hover {
+    transform: translateY(-5px);
+  }
+
+  /* Main Image Container - Clickable */
+  .image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+  }
+
+  .menu-detail-image {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .menu-detail-image:hover {
+    transform: scale(1.05);
+  }
+
+  .image-badge-container {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10;
+  }
+
+  /* Product Details Section - Clickable */
+  .product-details-section {
+    cursor: pointer;
+  }
+
+  .product-details-section h1:hover,
+  .product-details-section p:hover {
+    color: var(--primary-color);
+  }
+
+  /* Price Display */
+  .price-display {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    pointer-events: none;
+    /* Prevent price from interfering with clicks */
+  }
+
+  /* Action Buttons Container - NOT Clickable for details */
+  .action-buttons-container {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+    cursor: default;
+    /* Reset cursor for action area */
+  }
+
+  .action-buttons-container * {
+    cursor: auto;
+    /* Reset cursor for buttons inside */
+  }
+
+  .quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .quantity-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .quantity-input {
+    width: 80px;
+    text-align: center;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: var(--transition);
+  }
+
+  .quantity-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+  }
+
+  /* Button Styles */
+  .btn-primary-gradient {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
+  }
+
+  .btn-primary-gradient:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+  }
+
+  .btn-outline-gradient {
+    background: white;
+    border: 2px solid transparent;
+    border-image: var(--primary-gradient);
+    border-image-slice: 1;
+    color: var(--primary-color);
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: var(--transition);
+  }
+
+  .btn-outline-gradient:hover {
+    background: var(--primary-gradient);
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  /* Reviews Section - Separate Click Handler */
+  .reviews-section {
+    margin: 2rem 0;
+  }
+
+  .rating-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .rating-stars {
+    color: var(--warning-color);
+    font-size: 1.2rem;
+  }
+
+  .rating-badge {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-weight: 600;
+  }
+
+  /* Dietary Tags - Clickable for filtering */
+  .dietary-tags-container {
+    margin: 1.5rem 0;
+  }
+
+  .dietary-tag {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    border: 1px solid rgba(40, 167, 69, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0.25rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .dietary-tag:hover {
+    background: rgba(40, 167, 69, 0.2);
+    transform: translateY(-2px);
+  }
+
+  /* Nutrition Section - Not Clickable for details */
+  .nutrition-section {
+    background: var(--secondary-gradient);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin: 3rem 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    cursor: default;
+  }
+
+  .nutrition-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .nutrition-card {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+    text-align: center;
+    height: 100%;
+    cursor: default;
+  }
+
+  .nutrition-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .macro-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+  }
+
+  .macro-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0.5rem 0;
+  }
+
+  .macro-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .nutrition-progress {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+
+  .nutrition-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+  }
+
+  /* Related Items Section */
+  .related-items-section {
+    margin: 3rem 0;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  /* Related Items - Entire Card Clickable */
+  .related-item-card {
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: var(--transition);
+    height: 100%;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .related-item-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .related-item-image-container {
+    position: relative;
+    overflow: hidden;
+    height: 200px;
+  }
+
+  .related-item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .related-item-card:hover .related-item-image {
+    transform: scale(1.1);
+  }
+
+  .related-item-content {
+    padding: 1.5rem;
+  }
+
+  /* Hover Effect for Clickable Product Areas */
+  .clickable-area {
+    position: relative;
+  }
+
+  .clickable-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: var(--border-radius);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .clickable-area:hover::after {
+    opacity: 1;
+  }
+
+  /* Non-clickable areas reset */
+  .non-clickable {
+    cursor: default;
+  }
+
+  .non-clickable * {
+    cursor: auto;
+  }
+
+  /* Floating Action Button */
+  .floating-action-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    z-index: 1000;
+    transition: var(--transition);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .floating-action-btn:hover {
+    transform: scale(1.1);
+    color: white;
+  }
+
+  /* Modal Styles */
+  .cart-modal-content {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
     .menu-detail-image {
-        border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      height: 300px;
     }
-    .nutrition-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 0.5rem;
+
+    .price-display {
+      font-size: 1.25rem;
+      padding: 0.5rem 1rem;
     }
-    .nutrition-item {
-        text-align: center;
-        padding: 1rem;
+
+    .nutrition-grid {
+      grid-template-columns: 1fr;
     }
-    .nutrition-value {
-        font-size: 1.5rem;
-        font-weight: bold;
+
+    .macro-value {
+      font-size: 2rem;
     }
-    .related-item-card {
-        transition: transform 0.2s;
+
+    .action-buttons-container {
+      padding: 1rem;
     }
+
+    .floating-action-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 1.25rem;
+      bottom: 1rem;
+      right: 1rem;
+    }
+
+    .nutrition-section {
+      padding: 1rem;
+      margin: 2rem 0;
+    }
+
+    .related-item-image-container {
+      height: 180px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .quantity-control {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .quantity-input-wrapper {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-primary-gradient,
+    .btn-outline-gradient {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  /* Touch Device Optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .product-detail-container:hover {
+      transform: none;
+    }
+
     .related-item-card:hover {
-        transform: translateY(-5px);
+      transform: none;
     }
+
+    .dietary-tag:hover {
+      transform: none;
+    }
+
+    /* Active state for touch devices */
+    .product-detail-container:active,
+    .related-item-card:active {
+      opacity: 0.8;
+    }
+  }
+
+  /* Animation Classes */
+  .fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .stagger-delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .stagger-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  .stagger-delay-3 {
+    animation-delay: 0.3s;
+  }
+
+  .stagger-delay-4 {
+    animation-delay: 0.4s;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'menu:menu_list' %}">Menu</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'menu:menu_list' %}?category={{ menu_item.category.id }}">{{ menu_item.category.name }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ menu_item.name }}</li>
-        </ol>
-    </nav>
+<div class="container py-4">
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="breadcrumb-navigation">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="text-decoration-none">Home</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'menu:menu_list' %}" class="text-decoration-none">Menu</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'menu:menu_list' %}?category={{ menu_item.category.id }}" class="text-decoration-none">
+          {{ menu_item.category.name }}
+        </a>
+      </li>
+      <li class="breadcrumb-item active">{{ menu_item.name }}</li>
+    </ol>
+  </nav>
 
-    <div class="row mb-5">
-        <!-- Image Section -->
-        <div class="col-md-6 mb-4">
-            {% if menu_item.image %}
-                <img src="{% if menu_item.get_thumbnail_url %}{{ menu_item.get_thumbnail_url }}{% else %}{{ menu_item.image.url }}{% endif %}" 
-                     {% if menu_item.get_thumbnail_url %}data-src="{{ menu_item.image.url }}"{% endif %}
-                     loading="lazy"
-                     class="img-fluid menu-detail-image w-100" 
-                     alt="{{ menu_item.name }}"
-                     style="max-height: 500px; object-fit: cover;">
-            {% else %}
-                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 500px;">
-                    <i class="bi bi-image text-muted" style="font-size: 5rem;"></i>
-                </div>
+  <!-- Main Product Container - Entire container clickable for details -->
+  <div class="product-detail-container clickable-area fade-in-up"
+    onclick="window.location='{% url 'menu:menu_detail' menu_item.id %}'">
+
+    <div class="row g-4 mb-5">
+      <!-- Image Column - Clickable -->
+      <div class="col-lg-6">
+        <div class="image-container">
+          {% if menu_item.image %}
+          <img src="{{ menu_item.image.url }}" class="menu-detail-image" alt="{{ menu_item.name }}" loading="eager" />
+          {% else %}
+          <div class="menu-detail-image bg-gradient d-flex align-items-center justify-content-center"
+            style="background: var(--primary-gradient);">
+            <i class="bi bi-egg-fried display-1 text-white"></i>
+          </div>
+          {% endif %}
+
+          <!-- Image Badges - Also clickable -->
+          <div class="image-badge-container">
+            <a href="{% url 'menu:menu_list' %}?category={{ menu_item.category.id }}" class="text-decoration-none"
+              onclick="event.stopPropagation()">
+              <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">
+                {{ menu_item.category.name }}
+              </span>
+            </a>
+            {% if menu_item.is_featured %}
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">
+              <i class="bi bi-star-fill"></i> Featured
+            </span>
             {% endif %}
+          </div>
         </div>
 
-        <!-- Details Section -->
-        <div class="col-md-6">
-            <div class="mb-3">
-                <span class="badge bg-primary">{{ menu_item.category.name }}</span>
-                {% if menu_item.is_featured %}
-                    <span class="badge bg-warning text-dark">
-                        <i class="bi bi-star-fill"></i> Featured
-                    </span>
+        <!-- Mobile Action Buttons - NOT part of clickable area -->
+        <div class="d-lg-none mt-3 non-clickable" onclick="event.stopPropagation()">
+          <div class="action-buttons-container">
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'orders:add_to_cart' menu_item.id %}">
+              {% csrf_token %}
+              <div class="quantity-control">
+                <label class="form-label fw-bold">Quantity:</label>
+                <div class="quantity-input-wrapper">
+                  <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity(this)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="number" name="quantity" value="1" min="1" max="10" class="form-control quantity-input"
+                    id="mobileQuantity" />
+                  <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity(this)">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary-gradient w-100 mb-2">
+                <i class="bi bi-cart-plus me-2"></i> Add to Cart
+              </button>
+            </form>
+            {% else %}
+            <a href="{% url 'accounts:login' %}?next={% url 'menu:menu_detail' menu_item.id %}"
+              class="btn btn-primary-gradient w-100 mb-2">
+              <i class="bi bi-box-arrow-in-right me-2"></i> Login to Order
+            </a>
+            {% endif %}
+            <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-gradient w-100">
+              <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Column - Clickable -->
+      <div class="col-lg-6 product-details-section">
+        <!-- Title and Price -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h1 class="display-5 fw-bold">{{ menu_item.name }}</h1>
+          <div class="price-display d-none d-lg-block">RWF {{ menu_item.price }}</div>
+        </div>
+
+        <div class="d-lg-none mb-4">
+          <div class="price-display">RWF {{ menu_item.price }}</div>
+        </div>
+
+        <!-- Description -->
+        <p class="lead text-muted mb-4">{{ menu_item.description }}</p>
+
+        <!-- Reviews Section - Separate click handler -->
+        <div class="reviews-section non-clickable" onclick="event.stopPropagation()">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <div class="rating-container">
+                <h5 class="card-title mb-0">
+                  <i class="bi bi-star-fill text-warning"></i> Customer Rating
+                </h5>
+                {% if menu_item.average_rating %}
+                <span class="rating-badge">
+                  {{ menu_item.average_rating|floatformat:1 }} <i class="bi bi-star-fill"></i>
+                </span>
                 {% endif %}
-            </div>
-            
-            <h1 class="display-5 mb-3">{{ menu_item.name }}</h1>
-            
-            <div class="mb-4">
-                <h2 class="text-primary mb-0">RWF {{ menu_item.price }}</h2>
-                <small class="text-muted">per serving</small>
-            </div>
-            
-            <p class="lead mb-4">{{ menu_item.description }}</p>
-            
-            <!-- Dietary Tags -->
-            {% if menu_item.dietary_tags.all %}
-                <div class="mb-4">
-                    <h5 class="mb-3"><i class="bi bi-tags"></i> Dietary Tags</h5>
-                    {% for tag in menu_item.dietary_tags.all %}
-                        <span class="badge bg-info me-2 mb-2" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
-                            {% if tag.icon %}{{ tag.icon }} {% endif %}{{ tag.name }}
-                        </span>
+              </div>
+
+              {% if menu_item.average_rating %}
+              <div class="d-flex align-items-center mb-3">
+                <div class="rating-stars me-3">
+                  {% for i in "12345"|make_list %}
+                  {% if forloop.counter <= menu_item.average_rating|default:0|floatformat:0 %} <i
+                    class="bi bi-star-fill"></i>
+                    {% else %}
+                    <i class="bi bi-star"></i>
+                    {% endif %}
                     {% endfor %}
                 </div>
-            {% endif %}
+                <span class="text-muted">Based on {{ menu_item.review_set.count }} reviews</span>
+              </div>
+              {% else %}
+              <div class="text-center py-2">
+                <i class="bi bi-star text-muted display-6 mb-2"></i>
+                <p class="text-muted mb-0">No ratings yet</p>
+              </div>
+              {% endif %}
 
-            <!-- Nutrition Information -->
-            {% if menu_item.calories or menu_item.protein or menu_item.carbs or menu_item.fat %}
-                <div class="card nutrition-card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title mb-4">
-                            <i class="bi bi-clipboard-data"></i> Nutrition Information
-                        </h5>
-                        <div class="row g-3">
-                            {% if menu_item.calories %}
-                                <div class="col-6 col-md-3">
-                                    <div class="nutrition-item">
-                                        <div class="nutrition-value">{{ menu_item.calories }}</div>
-                                        <div class="small">Calories</div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            {% if menu_item.protein %}
-                                <div class="col-6 col-md-3">
-                                    <div class="nutrition-item">
-                                        <div class="nutrition-value">{{ menu_item.protein }}g</div>
-                                        <div class="small">Protein</div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            {% if menu_item.carbs %}
-                                <div class="col-6 col-md-3">
-                                    <div class="nutrition-item">
-                                        <div class="nutrition-value">{{ menu_item.carbs }}g</div>
-                                        <div class="small">Carbs</div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            {% if menu_item.fat %}
-                                <div class="col-6 col-md-3">
-                                    <div class="nutrition-item">
-                                        <div class="nutrition-value">{{ menu_item.fat }}g</div>
-                                        <div class="small">Fat</div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-            
-            <!-- Action Buttons -->
-            <div class="d-grid gap-2">
-                {% if user.is_authenticated %}
-                    <form method="post" action="{% url 'orders:add_to_cart' menu_item.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <div class="input-group mb-2">
-                            <span class="input-group-text">Quantity</span>
-                            <input type="number" name="quantity" value="1" min="1" class="form-control" style="max-width: 100px;">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="bi bi-cart-plus"></i> Add to Cart
-                            </button>
-                        </div>
-                    </form>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}?next={% url 'menu:menu_detail' menu_item.id %}" class="btn btn-primary btn-lg">
-                        <i class="bi bi-box-arrow-in-right"></i> Login to Add to Cart
-                    </a>
-                {% endif %}
-                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Menu
+              <div class="d-flex gap-2">
+                <a href="{% url 'reviews:item_reviews' menu_item.id %}" class="btn btn-outline-gradient flex-fill">
+                  <i class="bi bi-chat-left-text"></i> View Reviews
                 </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'reviews:add_review' menu_item.id %}" class="btn btn-primary-gradient flex-fill">
+                  <i class="bi bi-pencil-square"></i> Add Review
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}?next={% url 'reviews:add_review' menu_item.id %}"
+                  class="btn btn-primary-gradient flex-fill">
+                  <i class="bi bi-box-arrow-in-right"></i> Login to Review
+                </a>
+                {% endif %}
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- Dietary Tags - Separate click handler -->
+        <div class="dietary-tags-container non-clickable" onclick="event.stopPropagation()">
+          <h5 class="mb-3"><i class="bi bi-tags-fill text-success"></i> Dietary Information</h5>
+          <div>
+            {% for tag in menu_item.dietary_tags.all %}
+            <a href="{% url 'menu:menu_list' %}?dietary_tag={{ tag.id }}" class="text-decoration-none">
+              <span class="dietary-tag">
+                {% if tag.icon %}<i class="{{ tag.icon }}"></i>{% endif %}
+                {{ tag.name }}
+              </span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Desktop Action Buttons - NOT part of clickable area -->
+        <div class="d-none d-lg-block non-clickable" onclick="event.stopPropagation()">
+          <div class="action-buttons-container">
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'orders:add_to_cart' menu_item.id %}">
+              {% csrf_token %}
+              <div class="quantity-control">
+                <label class="form-label fw-bold">Quantity:</label>
+                <div class="quantity-input-wrapper">
+                  <button type="button" class="btn btn-outline-secondary" onclick="decrementQuantity(this)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="number" name="quantity" value="1" min="1" max="10" class="form-control quantity-input"
+                    id="desktopQuantity" />
+                  <button type="button" class="btn btn-outline-secondary" onclick="incrementQuantity(this)">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary-gradient">
+                  <i class="bi bi-cart-plus me-2"></i> Add to Cart
+                </button>
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-gradient">
+                  <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+                </a>
+              </div>
+            </form>
+            {% else %}
+            <div class="d-grid gap-2">
+              <a href="{% url 'accounts:login' %}?next={% url 'menu:menu_detail' menu_item.id %}"
+                class="btn btn-primary-gradient">
+                <i class="bi bi-box-arrow-in-right me-2"></i> Login to Add to Cart
+              </a>
+              <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-gradient">
+                <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nutrition Information - NOT clickable -->
+  {% if menu_item.calories or menu_item.protein or menu_item.carbs or menu_item.fat %}
+  <section class="nutrition-section">
+    <!-- Header -->
+    <div class="nutrition-header">
+      <i class="bi bi-clipboard2-data-fill display-6"></i>
+      <div>
+        <h3 class="mb-1">Nutrition Facts</h3>
+        <p class="mb-0 opacity-75">Per Serving • Estimated Values</p>
+      </div>
     </div>
 
-    <!-- Related Items -->
-    {% if related_items %}
-        <div class="row mt-5">
-            <div class="col-12">
-                <h3 class="mb-4">
-                    <i class="bi bi-grid"></i> More from {{ menu_item.category.name }}
-                </h3>
-                <div class="row g-4">
-                    {% for item in related_items %}
-                        <div class="col-md-6 col-lg-3">
-                            <div class="card related-item-card h-100 shadow-sm">
-                                {% if item.image %}
-                                    <img src="{% if item.get_thumbnail_url %}{{ item.get_thumbnail_url }}{% else %}{{ item.image.url }}{% endif %}" 
-                                         {% if item.get_thumbnail_url %}data-src="{{ item.image.url }}"{% endif %}
-                                         loading="lazy"
-                                         class="card-img-top" 
-                                         alt="{{ item.name }}"
-                                         style="height: 150px; object-fit: cover;">
-                                {% else %}
-                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
-                                        <i class="bi bi-image text-muted"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ item.name }}</h6>
-                                    <p class="card-text text-muted small">{{ item.description|truncatewords:10 }}</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-primary fw-bold">RWF {{ item.price }}</span>
-                                        <a href="{% url 'menu:menu_detail' item.id %}" class="btn btn-sm btn-outline-primary">
-                                            View
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
+    <!-- Macronutrients Grid -->
+    <div class="nutrition-grid">
+      <!-- Calories -->
+      {% if menu_item.calories %}
+      <div class="nutrition-card fade-in-up stagger-delay-1">
+        <div class="macro-icon" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
+          <i class="bi bi-fire text-white"></i>
         </div>
-    {% endif %}
+        <div class="macro-value">{{ menu_item.calories }}</div>
+        <div class="macro-label">Calories</div>
+        <div class="nutrition-progress">
+          <div class="nutrition-progress-bar" style="background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+                      width: {% widthratio menu_item.calories 800 100 %}%;">
+          </div>
+        </div>
+        <small class="text-muted">
+          {% with cal=menu_item.calories %}
+          {% if cal < 300 %}Light meal {% elif cal < 500 %}Moderate {% elif cal < 700 %}Substantial {% else %}High
+            energy {% endif %} {% endwith %} </small>
+      </div>
+      {% endif %}
+
+      <!-- Protein -->
+      {% if menu_item.protein %}
+      <div class="nutrition-card fade-in-up stagger-delay-2">
+        <div class="macro-icon" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">
+          <i class="bi bi-droplet-fill text-white"></i>
+        </div>
+        <div class="macro-value">{{ menu_item.protein }}g</div>
+        <div class="macro-label">Protein</div>
+        <div class="nutrition-progress">
+          <div class="nutrition-progress-bar" style="background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
+                      width: {% widthratio menu_item.protein 50 100 %}%;">
+          </div>
+        </div>
+        <small class="text-muted">
+          {% with prot=menu_item.protein %}
+          {% if prot < 10 %}Light source {% elif prot < 20 %}Good source {% elif prot < 30 %}Rich source {% else
+            %}Excellent source {% endif %} {% endwith %} </small>
+      </div>
+      {% endif %}
+
+      <!-- Carbs -->
+      {% if menu_item.carbs %}
+      <div class="nutrition-card fade-in-up stagger-delay-3">
+        <div class="macro-icon" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+          <i class="bi bi-wheat"></i>
+        </div>
+        <div class="macro-value">{{ menu_item.carbs }}g</div>
+        <div class="macro-label">Carbohydrates</div>
+        <div class="nutrition-progress">
+          <div class="nutrition-progress-bar" style="background: linear-gradient(90deg, #ffecd2, #fcb69f);
+                      width: {% widthratio menu_item.carbs 100 100 %}%;">
+          </div>
+        </div>
+        <small class="text-muted">
+          {% with carb=menu_item.carbs %}
+          {% if carb < 20 %}Low carb {% elif carb < 40 %}Moderate {% elif carb < 60 %}High {% else %}Very high {% endif %} {% endwith %} </small>
+      </div>
+      {% endif %}
+
+      <!-- Fat -->
+      {% if menu_item.fat %}
+      <div class="navigation-card fade-in-up stagger-delay-4">
+        <div class="macro-icon" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+          <i class="bi bi-droplet"></i>
+        </div>
+        <div class="macro-value">{{ menu_item.fat }}g</div>
+        <div class="macro-label">Fat</div>
+        <div class="nutrition-progress">
+          <div class="nutrition-progress-bar" style="background: linear-gradient(90deg, #84fab0, #8fd3f4);
+                      width: {% widthratio menu_item.fat 50 100 %}%;">
+          </div>
+        </div>
+        <small class="text-muted">
+          {% with fat=menu_item.fat %}
+          {% if fat < 10 %}Low fat {% elif fat < 20 %}Moderate {% elif fat < 30 %}High {% else %}Very high {% endif %}
+            {% endwith %} </small>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Detailed Nutrition -->
+    <div class="detailed-nutrition">
+      <h5 class="mb-3"><i class="bi bi-info-circle-fill text-primary"></i> Detailed Information</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Serving Size</span>
+            <span class="fw-semibold">1 portion (approx. 300g)</span>
+          </div>
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Preparation</span>
+            <span class="fw-semibold">Fresh daily</span>
+          </div>
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Allergens</span>
+            <span class="fw-semibold">
+              {% if menu_item.dietary_tags.all %}
+              Check dietary tags
+              {% else %}
+              None reported
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Saturated Fat</span>
+            <span class="fw-semibold">
+              {% if menu_item.fat %}
+              {% widthratio menu_item.fat 3 1 %}g
+              {% else %}
+              N/A
+              {% endif %}
+            </span>
+          </div>
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Sodium</span>
+            <span class="fw-semibold">
+              {% if menu_item.carbs %}
+              {% widthratio menu_item.carbs 2 1 %}mg
+              {% else %}
+              N/A
+              {% endif %}
+            </span>
+          </div>
+          <div class="nutrition-fact-row">
+            <span class="text-muted">Sugar</span>
+            <span class="fw-semibold">
+              {% if menu_item.carbs %}
+              {% widthratio menu_item.carbs 10 1 %}g
+              {% else %}
+              N/A
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Related Items - Each item clickable -->
+  {% if related_items %}
+  <section class="related-items-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="mb-0">
+        <i class="bi bi-grid-3x3-gap-fill text-primary"></i>
+        You Might Also Like
+      </h3>
+      <a href="{% url 'menu:menu_list' %}?category={{ menu_item.category.id }}" class="btn btn-outline-gradient">
+        View All <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="related-grid">
+      {% for item in related_items|slice:":4" %}
+      <a href="{% url 'menu:menu_detail' item.id %}" class="related-item-card text-decoration-none">
+        <!-- Image Container -->
+        <div class="related-item-image-container">
+          {% if item.image %}
+          <img src="{{ item.image.url }}" class="related-item-image" alt="{{ item.name }}" loading="lazy">
+          {% else %}
+          <div class="related-item-image d-flex align-items-center justify-content-center"
+            style="background: var(--primary-gradient);">
+            <i class="bi bi-egg-fried display-4 text-white"></i>
+          </div>
+          {% endif %}
+
+          <!-- Category Badge -->
+          <div class="position-absolute top-0 end-0 m-2">
+            <span class="badge bg-primary bg-opacity-75 text-white px-2 py-1 rounded-pill">
+              {{ item.category.name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="related-item-content">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="card-title fw-bold mb-0">{{ item.name }}</h6>
+            <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded">
+              RWF {{ item.price }}
+            </span>
+          </div>
+
+          <p class="card-text text-muted small mb-3">
+            {{ item.description|truncatewords:15 }}
+          </p>
+
+          <!-- Rating -->
+          <div class="d-flex justify-content-between align-items-center">
+            {% if item.average_rating %}
+            <div class="rating-stars small">
+              {% for i in "12345"|make_list %}
+              {% if forloop.counter <= item.average_rating|floatformat:0 %} <i class="bi bi-star-fill"></i>
+                {% else %}
+                <i class="bi bi-star"></i>
+                {% endif %}
+                {% endfor %}
+                <span class="text-muted ms-1">{{ item.average_rating|floatformat:1 }}</span>
+            </div>
+            {% else %}
+            <span class="text-muted small">No ratings</span>
+            {% endif %}
+
+            <span class="btn btn-sm btn-outline-primary">
+              View <i class="bi bi-arrow-right-short"></i>
+            </span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 </div>
+
+<!-- Floating Action Button -->
+{% if user.is_authenticated %}
+<a href="#addToCartModal" class="floating-action-btn d-lg-none" data-bs-toggle="modal" data-bs-target="#addToCartModal">
+  <i class="bi bi-cart-plus"></i>
+</a>
+
+<!-- Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cart-modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-cart-plus me-2"></i> Add to Cart
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" action="{% url 'orders:add_to_cart' menu_item.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-4">
+            <h6 class="mb-2">{{ menu_item.name }}</h6>
+            <p class="text-muted small mb-0">{{ menu_item.description|truncatewords:20 }}</p>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Quantity</label>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-outline-secondary" onclick="decrementModalQuantity()">
+                <i class="bi bi-dash"></i>
+              </button>
+              <input type="number" name="quantity" value="1" min="1" max="10"
+                class="form-control quantity-input text-center" id="modalQuantity">
+              <button type="button" class="btn btn-outline-secondary" onclick="incrementModalQuantity()">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center border-top pt-3">
+            <span class="fw-bold">Total:</span>
+            <span class="text-primary fw-bold fs-5" id="modalTotalPrice">
+              RWF {{ menu_item.price }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary-gradient">
+            <i class="bi bi-cart-plus me-2"></i> Add to Cart
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const pricePerUnit = {{ menu_item.price }
+  };
+  const modalQuantityInput = document.getElementById('modalQuantity');
+  const modalTotalPrice = document.getElementById('modalTotalPrice');
+
+  // Quantity control functions
+  window.decrementQuantity = function (button) {
+    const wrapper = button.closest('.quantity-input-wrapper');
+    const input = wrapper.querySelector('.quantity-input');
+    input.value = Math.max(1, parseInt(input.value) - 1);
+    updateTotalPrice();
+  };
+
+  window.incrementQuantity = function (button) {
+    const wrapper = button.closest('.quantity-input-wrapper');
+    const input = wrapper.querySelector('.quantity-input');
+    input.value = Math.min(10, parseInt(input.value) + 1);
+    updateTotalPrice();
+  };
+
+  // Modal quantity controls
+  window.decrementModalQuantity = function () {
+    if (modalQuantityInput) {
+      modalQuantityInput.value = Math.max(1, parseInt(modalQuantityInput.value) - 1);
+      updateModalTotalPrice();
+    }
+  };
+
+  window.incrementModalQuantity = function () {
+    if (modalQuantityInput) {
+      modalQuantityInput.value = Math.min(10, parseInt(modalQuantityInput.value) + 1);
+      updateModalTotalPrice();
+    }
+  };
+
+  // Update modal total price
+  function updateModalTotalPrice() {
+    if (modalQuantityInput && modalTotalPrice) {
+      const quantity = parseInt(modalQuantityInput.value) || 1;
+      const total = pricePerUnit * quantity;
+      modalTotalPrice.textContent = 'RWF ' + total.toLocaleString();
+    }
+  }
+
+  // Update all total prices
+  function updateTotalPrice() {
+    const inputs = document.querySelectorAll('.quantity-input');
+    inputs.forEach(input => {
+      if (input.id !== 'modalQuantity') {
+        const wrapper = input.closest('.quantity-input-wrapper');
+        if (wrapper) {
+          const totalElement = wrapper.querySelector('.total-price');
+          if (totalElement) {
+            const quantity = parseInt(input.value) || 1;
+            const total = pricePerUnit * quantity;
+            totalElement.textContent = 'RWF ' + total.toLocaleString();
+          }
+        }
+      }
+    });
+    updateModalTotalPrice();
+  }
+
+  // Initialize event listeners
+  document.querySelectorAll('.quantity-input').forEach(input => {
+    input.addEventListener('input', function () {
+      if (this.value < 1) this.value = 1;
+      if (this.value > 10) this.value = 10;
+      updateTotalPrice();
+    });
+
+    input.addEventListener('change', function () {
+      if (this.value < 1) this.value = 1;
+      if (this.value > 10) this.value = 10;
+      updateTotalPrice();
+    });
+  });
+
+  // Initialize modal price
+  updateModalTotalPrice();
+
+  // Prevent click events from bubbling from action areas
+  document.querySelectorAll('.non-clickable, .action-buttons-container, .btn, form, input, button').forEach(element => {
+    element.addEventListener('click', function (e) {
+      e.stopPropagation();
+    });
+  });
+
+  // Allow category badges to redirect (they're inside clickable area)
+  document.querySelectorAll('.image-badge-container a').forEach(link => {
+    link.addEventListener('click', function (e) {
+      // Let the click go through to the link
+      e.stopPropagation();
+    });
+  });
+
+  // Touch/click feedback for mobile
+  if ('ontouchstart' in window) {
+    const clickableAreas = document.querySelectorAll('.product-detail-container, .related-item-card');
+
+    clickableAreas.forEach(area => {
+      area.addEventListener('touchstart', function () {
+        this.style.opacity = '0.8';
+      });
+
+      area.addEventListener('touchend', function () {
+        this.style.opacity = '1';
+      });
+
+      area.addEventListener('touchcancel', function () {
+        this.style.opacity = '1';
+      });
+    });
+  }
+
+  // Intersection Observer for animations
+  const animatedElements = document.querySelectorAll('.fade-in-up');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  animatedElements.forEach(el => {
+    el.style.animationPlayState = 'paused';
+    observer.observe(el);
+  });
+
+  // Add to cart form validation
+  const forms = document.querySelectorAll('form[action*="add_to_cart"]');
+  forms.forEach(form => {
+    form.addEventListener('submit', function (e) {
+      const quantityInput = this.querySelector('.quantity-input');
+      if (quantityInput) {
+        const value = parseInt(quantityInput.value);
+        if (value < 1 || value > 10) {
+          e.preventDefault();
+          alert('Please enter a quantity between 1 and 10.');
+          quantityInput.focus();
+        }
+      }
+    });
+  });
+  });
+</script>
 {% endblock %}

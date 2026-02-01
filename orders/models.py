@@ -56,24 +56,50 @@ class Order(models.Model):
     """Customer order"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     order_number = models.CharField(max_length=20, unique=True, editable=False)
-    status = models.CharField(
-        max_length=20,
-        choices=OrderStatus.choices,
-        default=OrderStatus.PENDING
-    )
+    status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING)
     
-    # Customer information (can be different from user profile)
+    PAYMENT_METHOD_CHOICES = [
+        ('cash_on_delivery', 'Cash on Delivery'),
+        ('mtn_mobile_money', 'MTN Mobile Money'),
+        ('airtel_money', 'Airtel Money'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('card', 'Credit/Debit Card'),
+    ]
+    
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, default='cash_on_delivery')
+    payment_notes = models.TextField(blank=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    transaction_id = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    account_number = models.CharField(max_length=100, blank=True)
+    
     customer_name = models.CharField(max_length=200)
     customer_phone = models.CharField(max_length=20)
     delivery_address = models.TextField()
     delivery_instructions = models.TextField(blank=True)
     
-    # Pricing
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    loyalty_points_redeemed = models.PositiveIntegerField(default=0)
+    loyalty_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    vip_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    corporate_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    referral_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    coupon_code = models.CharField(max_length=50, blank=True)
+    
+    # ✅ Corrected: use `total` instead of `total_amount`
     total = models.DecimalField(max_digits=10, decimal_places=2)
     
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
@@ -86,32 +112,23 @@ class Order(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.order_number:
-            # Generate unique order number using timestamp + random
-            import random
-            import string
+            import random, string, uuid
             from django.utils import timezone
             prefix = 'ORD'
-            # Use timestamp (YYYYMMDD) + random 6 digits for better uniqueness
             timestamp = timezone.now().strftime('%Y%m%d')
             random_part = ''.join(random.choices(string.digits, k=6))
             self.order_number = f"{prefix}{timestamp}{random_part}"
             
-            # Ensure uniqueness (retry if collision)
-            max_retries = 10
-            retry_count = 0
-            while Order.objects.filter(order_number=self.order_number).exists() and retry_count < max_retries:
+            for _ in range(10):
+                if not Order.objects.filter(order_number=self.order_number).exists():
+                    break
                 random_part = ''.join(random.choices(string.digits, k=6))
                 self.order_number = f"{prefix}{timestamp}{random_part}"
-                retry_count += 1
-            
-            if retry_count >= max_retries:
-                # Fallback to UUID-based if still collision
-                import uuid
+            else:
                 self.order_number = f"{prefix}{uuid.uuid4().hex[:12].upper()}"
         super().save(*args, **kwargs)
     
     def get_status_display_class(self):
-        """Return Bootstrap class for status badge"""
         status_classes = {
             OrderStatus.PENDING: 'warning',
             OrderStatus.CONFIRMED: 'info',
@@ -128,13 +145,12 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     menu_item = models.ForeignKey(MenuItem, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Store price at time of order
+    price = models.DecimalField(max_digits=10, decimal_places=2)  # price at time of order
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     
     def __str__(self):
         return f"{self.quantity} x {self.menu_item.name} - Order {self.order.order_number}"
     
     def save(self, *args, **kwargs):
-        # Calculate subtotal before saving
         self.subtotal = self.price * self.quantity
         super().save(*args, **kwargs)

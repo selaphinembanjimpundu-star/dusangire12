@@ -1,7 +1,7 @@
-# NOURISH LINK - Staff Training Guide
+# Dusangire - Staff Training Guide
 
 ## Overview
-This guide provides training materials for different staff roles in the NOURISH LINK Hospital E-Commerce Restaurant system.
+This guide provides training materials for different staff roles in the Dusangire Hospital E-Commerce Restaurant system.
 
 ## Table of Contents
 
@@ -425,3 +425,17 @@ Each order shows:
 - Staff should receive hands-on training in addition to this guide
 - Regular refresher training is recommended
 - Document any issues or improvements needed
+
+
+
+
+
+
+
+
+
+
+
+
+
+

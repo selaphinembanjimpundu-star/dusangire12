@@ -1,0 +1,167 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div>
+    <!-- ===== BREADCRUMB ===== -->
+    <nav class="breadcrumb" style="margin-bottom: 1.5rem;">
+        <span class="breadcrumb-item">
+            <a href="{% url 'customer_dashboard:dashboard' %}" style="text-decoration: none;">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </span>
+        <span class="breadcrumb-item active">
+            <i class="bi bi-receipt me-2"></i> Payment History
+        </span>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-receipt"></i> Payment History</h1>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+            Manage your invoices and billing records
+        </p>
+    </div>
+
+    <!-- ===== SUMMARY STATS ===== -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <!-- Total Payments -->
+        <div class="stat-card">
+            <h3>Total Payments</h3>
+            <div class="value">{{ payments.count|default:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">All time</div>
+        </div>
+
+        <!-- Total Amount Paid -->
+        <div class="stat-card">
+            <h3>Total Paid</h3>
+            <div class="value">RWF {{ total_paid|default:0|floatformat:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Cumulative</div>
+        </div>
+
+        <!-- Pending Payments -->
+        <div class="stat-card">
+            <h3>Pending</h3>
+            <div class="value">{{ pending_count|default:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Outstanding</div>
+        </div>
+
+        <!-- Average Payment -->
+        <div class="stat-card">
+            <h3>Avg Payment</h3>
+            <div class="value">RWF {{ avg_payment|default:0|floatformat:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Per transaction</div>
+        </div>
+    </div>
+
+    <!-- ===== FILTERS & ACTIONS ===== -->
+    <div class="dashboard-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h6 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Filter & Actions</h6>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{% url 'customer_dashboard:payment_history' %}" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-funnel"></i> All
+                </a>
+                <a href="{% url 'customer_dashboard:payment_history' %}?status=completed" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-check-circle"></i> Completed
+                </a>
+                <a href="{% url 'customer_dashboard:payment_history' %}?status=pending" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-hourglass"></i> Pending
+                </a>
+                <a href="{% url 'customer_dashboard:billing_info' %}" class="btn-custom btn-primary-custom">
+                    <i class="bi bi-credit-card"></i> Billing Info
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PAYMENTS TABLE ===== -->
+    {% if payments %}
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-receipt"></i> Payment Records</h2>
+            <a href="{% url 'customer_dashboard:payment_history' %}" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-download"></i> Export
+            </a>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>
+                            <strong>#{{ payment.invoice_number|default:"PENDING" }}</strong>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">ID: {{ payment.payment_id|truncatechars:8 }}</div>
+                        </td>
+                        <td>{{ payment.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="bi bi-{% if payment.payment_method == 'card' %}credit-card{% elif 'money' in payment.payment_method %}phone{% else %}bank{% endif %}"></i>
+                                {{ payment.get_payment_method_display }}
+                            </div>
+                        </td>
+                        <td class="fw-bold" style="color: var(--primary-color);">RWF {{ payment.amount|floatformat:0 }}</td>
+                        <td>
+                            <span class="badge-custom badge-{% if payment.status == 'completed' %}success{% elif payment.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'customer_dashboard:payment_receipt' payment.id %}" class="btn-custom btn-secondary-custom" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                                <i class="bi bi-download"></i> Receipt
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== PAGINATION (if needed) ===== -->
+    {% if is_paginated %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="btn-custom btn-secondary-custom"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="btn-custom" style="background: var(--primary-color); color: white;">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}" class="btn-custom btn-secondary-custom">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn-custom btn-secondary-custom"><i class="bi bi-chevron-right"></i></a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- ===== EMPTY STATE ===== -->
+    <div class="dashboard-card" style="text-align: center; padding: 4rem 2rem;">
+        <i class="bi bi-receipt" style="font-size: 4rem; color: var(--primary-color); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">No Payment Records</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">You haven't made any payments yet.</p>
+        <a href="{% url 'menu:menu_list' %}" class="btn-custom btn-primary-custom">
+            <i class="bi bi-plus-circle"></i> Start Ordering
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

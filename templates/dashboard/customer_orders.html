@@ -1,0 +1,823 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Orders - Dusangire{% endblock %}
+
+{% block content %}
+<div class="customer-orders-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1>My Orders</h1>
+            <p class="header-subtitle">View and manage your meal orders</p>
+        </div>
+        {% if 'place_order' in user_permissions or user.is_staff %}
+        <a href="{% url 'create_order' %}" class="btn btn-primary btn-lg">+ Place New Order</a>
+        {% endif %}
+    </div>
+
+    <!-- Role-Based Customer Info -->
+    <div class="customer-info-banner">
+        <div class="customer-info">
+            <span class="customer-role-badge">{{ user.profile.get_role_display }}</span>
+            {% if user.profile.role == 'patient' %}
+            <span class="customer-type">Patient - Primary Customer</span>
+            {% elif user.profile.role == 'medical_staff' %}
+            <span class="customer-type">Healthcare Provider - Can order for self & patients</span>
+            {% elif user.profile.role == 'chef' %}
+            <span class="customer-type">Chef - Can order for personal use</span>
+            {% elif user.profile.role == 'support_staff' %}
+            <span class="customer-type">Support Staff - Can order for personal use</span>
+            {% elif user.profile.role == 'hospital_manager' %}
+            <span class="customer-type">Hospital Manager - Can order for staff/events</span>
+            {% elif user.profile.role == 'delivery_person' %}
+            <span class="customer-type">Delivery Personnel - Can order for personal use</span>
+            {% else %}
+            <span class="customer-type">Customer</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabs for Order Types -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="my-orders">
+                <span class="tab-icon">📦</span>
+                My Orders ({{ my_orders_count|default:0 }})
+            </button>
+            {% if user.profile.role == 'medical_staff' %}
+            <button class="tab-btn" data-tab="patient-orders">
+                <span class="tab-icon">👥</span>
+                Patient Orders ({{ patient_orders_count|default:0 }})
+            </button>
+            {% endif %}
+            {% if user.profile.role == 'hospital_manager' %}
+            <button class="tab-btn" data-tab="team-orders">
+                <span class="tab-icon">👨‍💼</span>
+                Team Orders ({{ team_orders_count|default:0 }})
+            </button>
+            {% endif %}
+            <button class="tab-btn" data-tab="order-history">
+                <span class="tab-icon">📜</span>
+                History
+            </button>
+        </div>
+    </div>
+
+    <!-- My Orders Tab -->
+    <div class="tab-content active" data-tab="my-orders">
+        <div class="orders-filters">
+            <input type="text" placeholder="Search orders..." class="filter-input" id="searchOrders">
+            <select class="filter-select" id="filterStatus">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="preparing">Preparing</option>
+                <option value="ready">Ready</option>
+                <option value="out_for_delivery">Out for Delivery</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+
+        {% if my_orders %}
+        <div class="orders-grid">
+            {% for order in my_orders %}
+            <div class="order-card">
+                <div class="order-card-header">
+                    <div class="order-info">
+                        <h3>Order #{{ order.id }}</h3>
+                        <p class="order-date">{{ order.created_at|date:"M d, Y \a\t g:i A" }}</p>
+                    </div>
+                    <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+
+                <div class="order-card-body">
+                    <!-- Order Items -->
+                    <div class="order-items">
+                        <h4>Items:</h4>
+                        <ul class="items-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span class="item-name">{{ item.meal.name }}</span>
+                                <span class="item-qty">x{{ item.quantity }}</span>
+                                <span class="item-price">${{ item.price }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Delivery Information -->
+                    {% if order.delivery_date %}
+                    <div class="delivery-info">
+                        <h4>Delivery Details:</h4>
+                        <p><strong>Date:</strong> {{ order.delivery_date|date:"M d, Y" }}</p>
+                        <p><strong>Time:</strong> {{ order.delivery_time|default:"Not specified" }}</p>
+                        <p><strong>Address:</strong> {{ order.delivery_address }}</p>
+                        {% if order.delivery_person %}
+                        <p><strong>Delivery By:</strong> {{ order.delivery_person.get_full_name }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Order Total -->
+                    <div class="order-total">
+                        <div class="total-row">
+                            <span>Subtotal:</span>
+                            <span>${{ order.subtotal }}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax:</span>
+                            <span>${{ order.tax }}</span>
+                        </div>
+                        <div class="total-row total">
+                            <span><strong>Total:</strong></span>
+                            <span><strong>${{ order.total }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="payment-status">
+                        <span class="payment-badge payment-{{ order.payment_status }}">
+                            Payment: {{ order.get_payment_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="order-card-footer">
+                    <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary">View Details</a>
+                    {% if order.status == 'pending' %}
+                    <a href="{% url 'cancel_order' order.id %}" class="btn btn-danger" onclick="return confirm('Cancel this order?')">Cancel</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div class="empty-icon">📭</div>
+            <h3>No Orders Yet</h3>
+            <p>You haven't placed any orders yet. Start ordering delicious meals today!</p>
+            {% if 'place_order' in user_permissions or user.is_staff %}
+            <a href="{% url 'create_order' %}" class="btn btn-primary">Place Your First Order</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Patient Orders Tab (for Medical Staff) -->
+    {% if user.profile.role == 'medical_staff' %}
+    <div class="tab-content" data-tab="patient-orders">
+        <div class="orders-info-banner">
+            <p>📋 Orders you've placed for your patients</p>
+        </div>
+        
+        {% if patient_orders %}
+        <div class="orders-grid">
+            {% for order in patient_orders %}
+            <div class="order-card">
+                <div class="order-card-header">
+                    <div class="order-info">
+                        <h3>Order #{{ order.id }} - {{ order.patient.get_full_name }}</h3>
+                        <p class="order-date">{{ order.created_at|date:"M d, Y \a\t g:i A" }}</p>
+                    </div>
+                    <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="order-card-body">
+                    <div class="order-items">
+                        <h4>Items:</h4>
+                        <ul class="items-list">
+                            {% for item in order.items.all %}
+                            <li>
+                                <span class="item-name">{{ item.meal.name }}</span>
+                                <span class="item-qty">x{{ item.quantity }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div class="empty-icon">📋</div>
+            <h3>No Patient Orders</h3>
+            <p>You haven't placed any orders for your patients yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Team Orders Tab (for Hospital Manager) -->
+    {% if user.profile.role == 'hospital_manager' %}
+    <div class="tab-content" data-tab="team-orders">
+        <div class="orders-info-banner">
+            <p>👨‍💼 Orders placed for your hospital team and events</p>
+        </div>
+        
+        {% if team_orders %}
+        <div class="orders-grid">
+            {% for order in team_orders %}
+            <div class="order-card">
+                <div class="order-card-header">
+                    <div class="order-info">
+                        <h3>Order #{{ order.id }}</h3>
+                        <p class="order-date">{{ order.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div class="empty-icon">👨‍💼</div>
+            <h3>No Team Orders</h3>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Order History Tab -->
+    <div class="tab-content" data-tab="order-history">
+        <div class="history-filter">
+            <label>Show orders from last:</label>
+            <select id="historyPeriod">
+                <option value="30">30 Days</option>
+                <option value="90">90 Days</option>
+                <option value="365">1 Year</option>
+            </select>
+        </div>
+
+        {% if order_history %}
+        <div class="history-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in order_history %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        <td>{{ order.items.count }} item{{ order.items.count|pluralize }}</td>
+                        <td><span class="badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td>${{ order.total }}</td>
+                        <td><a href="{% url 'order_detail' order.id %}" class="link">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state-card">
+            <div class="empty-icon">📜</div>
+            <h3>No Order History</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.customer-orders-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.header-content h1 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    color: #333;
+}
+
+.header-subtitle {
+    margin: 0;
+    color: #999;
+    font-size: 14px;
+}
+
+.customer-info-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.customer-role-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.customer-type {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.tabs-container {
+    margin-bottom: 30px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid #eee;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 15px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: #667eea;
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-icon {
+    font-size: 16px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.orders-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-input,
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-input {
+    flex: 1;
+    max-width: 300px;
+}
+
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.order-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.order-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.order-card-header {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.order-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.order-date {
+    margin: 0;
+    color: #999;
+    font-size: 12px;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-confirmed {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-preparing {
+    background: #e7d4f5;
+    color: #5a3a7d;
+}
+
+.status-ready {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-out_for_delivery {
+    background: #cff4fc;
+    color: #055160;
+}
+
+.status-delivered {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.order-card-body {
+    padding: 20px;
+}
+
+.order-items {
+    margin-bottom: 15px;
+}
+
+.order-items h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.items-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.items-list li:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    color: #333;
+    flex: 1;
+}
+
+.item-qty {
+    color: #999;
+    margin: 0 10px;
+}
+
+.item-price {
+    color: #667eea;
+    font-weight: 600;
+}
+
+.delivery-info,
+.order-total {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.delivery-info h4,
+.order-total h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.delivery-info p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    color: #666;
+}
+
+.total-row.total {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 5px;
+}
+
+.payment-status {
+    margin: 10px 0;
+}
+
+.payment-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.payment-paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.payment-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.payment-failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.order-card-footer {
+    display: flex;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #d0d0d0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.empty-state-card {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state-card p {
+    margin: 0 0 20px 0;
+    color: #999;
+}
+
+.orders-info-banner {
+    background: #f0f0f0;
+    padding: 15px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.history-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.history-filter label {
+    font-weight: 600;
+    color: #333;
+}
+
+.history-filter select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.history-table {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+.history-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th {
+    background: #f9f9f9;
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.history-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+.history-table tr:hover {
+    background: #f9f9f9;
+}
+
+.link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+    .orders-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-lg {
+        width: 100%;
+    }
+
+    .orders-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .orders-filters {
+        flex-direction: column;
+    }
+
+    .filter-input {
+        max-width: 100%;
+    }
+
+    .tabs {
+        overflow-x: auto;
+    }
+
+    .history-table {
+        font-size: 12px;
+    }
+
+    .history-table th,
+    .history-table td {
+        padding: 10px 15px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // Remove active from all
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active to clicked
+            this.classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchOrders');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.order-card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

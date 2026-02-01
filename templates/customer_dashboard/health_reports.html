@@ -1,0 +1,240 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Health Impact Reports</h2>
+            <p class="text-muted">Track your nutritional progress and medical recovery metrics</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary rounded-pill px-4">
+                <i class="bi bi-download me-2"></i> Export Data
+            </button>
+            <a href="{% url 'customer_dashboard:book_consultation' %}" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-calendar-plus me-2"></i> Book Assessment
+            </a>
+        </div>
+    </div>
+
+    {% if not health_profile %}
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+        <div class="card-body">
+            <div class="mb-4">
+                <i class="bi bi-heart-pulse text-primary opacity-25" style="font-size: 5rem;"></i>
+            </div>
+            <h3 class="fw-bold">No Health Profile Found</h3>
+            <p class="text-muted mb-4">Complete your health profile to start tracking your nutritional impact and
+                recovery metrics.</p>
+            <a href="{% url 'customer_dashboard:update_health_profile' %}"
+                class="btn btn-primary btn-lg rounded-pill px-5">Setup Health Profile</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="row g-4">
+        <!-- Summary Cards -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-3">
+                            <i class="bi bi-speedometer2 h4 mb-0"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Current BMI</h6>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ health_profile.calculate_bmi|default:"--" }}</h2>
+                    <p class="text-muted small mb-0">
+                        {% with bmi=health_profile.calculate_bmi %}
+                        {% if bmi < 18.5 %}Underweight {% elif bmi < 25 %}Normal {% elif bmi < 30 %}Overweight {% else
+                            %}Obese{% endif %} {% endwith %} </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success bg-opacity-10 text-success p-2 rounded-3 me-3">
+                            <i class="bi bi-calendar-check h4 mb-0"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Last Assessment</h6>
+                    </div>
+                    <h2 class="fw-bold mb-1">
+                        {% if nutrition_history %}
+                        {{ nutrition_history.0.assessment_date|date:"M d" }}
+                        {% else %}
+                        --
+                        {% endif %}
+                    </h2>
+                    <p class="text-muted small mb-0">
+                        {% if nutrition_history %}
+                        Status: {{ nutrition_history.0.get_status_display }}
+                        {% else %}
+                        No assessments yet
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info bg-opacity-10 text-info p-2 rounded-3 me-3">
+                            <i class="bi bi-hospital h4 mb-0"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Stay Duration</h6>
+                    </div>
+                    <h2 class="fw-bold mb-1">
+                        {% if recovery_metrics %}
+                        {{ recovery_metrics.0.hospital_stay_days }} Days
+                        {% else %}
+                        --
+                        {% endif %}
+                    </h2>
+                    <p class="text-muted small mb-0">Current/Last admission</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 text-warning p-2 rounded-3 me-3">
+                            <i class="bi bi-file-earmark-medical h4 mb-0"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Active Prescriptions</h6>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ prescriptions.count }}</h2>
+                    <p class="text-muted small mb-0">Dietary requirements</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Nutrition Progress Chart Placeholder -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Nutritional Status Progress</h5>
+                    <div class="bg-light rounded-4 d-flex align-items-center justify-content-center"
+                        style="height: 300px;">
+                        <div class="text-center">
+                            <i class="bi bi-graph-up text-muted opacity-25 display-1 mb-3"></i>
+                            <p class="text-muted">Progress chart will appear here as you complete more assessments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nutrition History Table -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Assessment History</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Weight</th>
+                                    <th>MUAC</th>
+                                    <th>Assessed By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessment in nutrition_history %}
+                                <tr>
+                                    <td>{{ assessment.assessment_date|date:"M d, Y" }}</td>
+                                    <td>{{ assessment.get_assessment_type_display }}</td>
+                                    <td>
+                                        <span
+                                            class="badge rounded-pill bg-{% if assessment.status == 'NORMAL' %}success{% elif assessment.status == 'AT_RISK' %}warning{% else %}danger{% endif %}">
+                                            {{ assessment.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ assessment.weight_kg }} kg</td>
+                                    <td>{{ assessment.muac_cm|default:"--" }} cm</td>
+                                    <td>{{ assessment.assessed_by.get_full_name|default:assessment.assessed_by.username
+                                        }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No assessments recorded.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Active Prescriptions -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Active Prescriptions</h5>
+                    {% for prescription in prescriptions %}
+                    {% if prescription.status == 'ACTIVE' %}
+                    <div class="p-3 bg-light rounded-4 mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold text-primary">{{ prescription.doctor_name }}</span>
+                            <span class="small text-muted">{{ prescription.prescription_date|date:"M d" }}</span>
+                        </div>
+                        <p class="small mb-2">{{ prescription.meal_requirements }}</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-white text-dark border">{{ prescription.calorie_target }} kcal</span>
+                            <span class="badge bg-white text-dark border">{{ prescription.protein_target_grams }}g
+                                Protein</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% empty %}
+                    <p class="text-muted small mb-0">No active prescriptions.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recovery Status -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Recovery Status</h5>
+                    {% if recovery_metrics %}
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                            <i class="bi bi-activity h3 mb-0"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="small text-muted">Current Outcome</div>
+                            <div class="fw-bold h5 mb-0">{{ recovery_metrics.0.get_current_outcome_display }}</div>
+                        </div>
+                    </div>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3 d-flex justify-content-between small">
+                            <span class="text-muted">Admission Reason</span>
+                            <span class="fw-bold text-end">{{ recovery_metrics.0.admission_reason|truncatechars:30
+                                }}</span>
+                        </li>
+                        <li class="mb-3 d-flex justify-content-between small">
+                            <span class="text-muted">Infection Status</span>
+                            <span class="fw-bold">{% if recovery_metrics.0.infection_status %}Present{% else %}None{% endif %}</span>
+                        </li>
+                        <li class="d-flex justify-content-between small">
+                            <span class="text-muted">Nutrition Intervention</span>
+                            <span class="fw-bold">{% if recovery_metrics.0.nutrition_intervention_applied %}Applied{% else %}Not Applied{% endif %}</span>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <p class="text-muted small mb-0">No recovery data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

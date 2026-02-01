@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Kitchen Dashboard - NOURISH LINK{% endblock %}
+{% block title %}Kitchen Dashboard - Dusangire{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -10,14 +10,27 @@
         margin-bottom: 1rem;
         transition: transform 0.2s;
     }
+
     .order-card:hover {
         transform: translateX(5px);
     }
-    .order-card.pending { border-left-color: #ffc107; }
-    .order-card.confirmed { border-left-color: #0dcaf0; }
-    .order-card.preparing { border-left-color: #0d6efd; }
-    .order-card.ready { border-left-color: #198754; }
-    
+
+    .order-card.pending {
+        border-left-color: #ffc107;
+    }
+
+    .order-card.confirmed {
+        border-left-color: #0dcaf0;
+    }
+
+    .order-card.preparing {
+        border-left-color: #0d6efd;
+    }
+
+    .order-card.ready {
+        border-left-color: #198754;
+    }
+
     .kitchen-column {
         min-height: 500px;
         background: #f8f9fa;
@@ -40,7 +53,7 @@
             </button>
         </div>
     </div>
-    
+
     <div class="row g-4">
         <!-- Pending Orders -->
         <div class="col-md-3">
@@ -50,36 +63,37 @@
                     <span class="badge bg-secondary">{{ pending_orders|length }}</span>
                 </h5>
                 {% for order in pending_orders %}
-                    <div class="card order-card pending mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title">Order {{ order.order_number }}</h6>
-                            <p class="card-text small mb-2">
-                                <strong>{{ order.customer_name }}</strong><br>
-                                {{ order.created_at|date:"H:i" }}
-                            </p>
-                            <ul class="list-unstyled small mb-2">
-                                {% for item in order.items.all|slice:":3" %}
-                                    <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
-                                {% endfor %}
-                                {% with item_count=order.items.count %}
-                                    {% if item_count > 3 %}
-                                        <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
-                                    {% endif %}
-                                {% endwith %}
-                            </ul>
-                            <div class="d-grid">
-                                <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
+                <div class="card order-card pending mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Order {{ order.order_number }}</h6>
+                        <p class="card-text small mb-2">
+                            <strong>{{ order.customer_name }}</strong><br>
+                            {{ order.created_at|date:"H:i" }}
+                        </p>
+                        <ul class="list-unstyled small mb-2">
+                            {% for item in order.items.all|slice:":3" %}
+                            <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
+                            {% endfor %}
+                            {% with item_count=order.items.count %}
+                            {% if item_count > 3 %}
+                            <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
+                            {% endif %}
+                            {% endwith %}
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
                         </div>
                     </div>
+                </div>
                 {% empty %}
-                    <p class="text-muted text-center">No pending orders</p>
+                <p class="text-muted text-center">No pending orders</p>
                 {% endfor %}
             </div>
         </div>
-        
+
         <!-- Confirmed Orders -->
         <div class="col-md-3">
             <div class="kitchen-column">
@@ -88,36 +102,37 @@
                     <span class="badge bg-secondary">{{ confirmed_orders|length }}</span>
                 </h5>
                 {% for order in confirmed_orders %}
-                    <div class="card order-card confirmed mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title">Order {{ order.order_number }}</h6>
-                            <p class="card-text small mb-2">
-                                <strong>{{ order.customer_name }}</strong><br>
-                                {{ order.created_at|date:"H:i" }}
-                            </p>
-                            <ul class="list-unstyled small mb-2">
-                                {% for item in order.items.all|slice:":3" %}
-                                    <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
-                                {% endfor %}
-                                {% with item_count=order.items.count %}
-                                    {% if item_count > 3 %}
-                                        <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
-                                    {% endif %}
-                                {% endwith %}
-                            </ul>
-                            <div class="d-grid">
-                                <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
+                <div class="card order-card confirmed mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Order {{ order.order_number }}</h6>
+                        <p class="card-text small mb-2">
+                            <strong>{{ order.customer_name }}</strong><br>
+                            {{ order.created_at|date:"H:i" }}
+                        </p>
+                        <ul class="list-unstyled small mb-2">
+                            {% for item in order.items.all|slice:":3" %}
+                            <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
+                            {% endfor %}
+                            {% with item_count=order.items.count %}
+                            {% if item_count > 3 %}
+                            <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
+                            {% endif %}
+                            {% endwith %}
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
                         </div>
                     </div>
+                </div>
                 {% empty %}
-                    <p class="text-muted text-center">No confirmed orders</p>
+                <p class="text-muted text-center">No confirmed orders</p>
                 {% endfor %}
             </div>
         </div>
-        
+
         <!-- Preparing Orders -->
         <div class="col-md-3">
             <div class="kitchen-column">
@@ -126,36 +141,37 @@
                     <span class="badge bg-secondary">{{ preparing_orders|length }}</span>
                 </h5>
                 {% for order in preparing_orders %}
-                    <div class="card order-card preparing mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title">Order {{ order.order_number }}</h6>
-                            <p class="card-text small mb-2">
-                                <strong>{{ order.customer_name }}</strong><br>
-                                {{ order.created_at|date:"H:i" }}
-                            </p>
-                            <ul class="list-unstyled small mb-2">
-                                {% for item in order.items.all|slice:":3" %}
-                                    <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
-                                {% endfor %}
-                                {% with item_count=order.items.count %}
-                                    {% if item_count > 3 %}
-                                        <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
-                                    {% endif %}
-                                {% endwith %}
-                            </ul>
-                            <div class="d-grid">
-                                <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
+                <div class="card order-card preparing mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Order {{ order.order_number }}</h6>
+                        <p class="card-text small mb-2">
+                            <strong>{{ order.customer_name }}</strong><br>
+                            {{ order.created_at|date:"H:i" }}
+                        </p>
+                        <ul class="list-unstyled small mb-2">
+                            {% for item in order.items.all|slice:":3" %}
+                            <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
+                            {% endfor %}
+                            {% with item_count=order.items.count %}
+                            {% if item_count > 3 %}
+                            <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
+                            {% endif %}
+                            {% endwith %}
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
                         </div>
                     </div>
+                </div>
                 {% empty %}
-                    <p class="text-muted text-center">No orders being prepared</p>
+                <p class="text-muted text-center">No orders being prepared</p>
                 {% endfor %}
             </div>
         </div>
-        
+
         <!-- Ready Orders -->
         <div class="col-md-3">
             <div class="kitchen-column">
@@ -164,32 +180,33 @@
                     <span class="badge bg-secondary">{{ ready_orders|length }}</span>
                 </h5>
                 {% for order in ready_orders %}
-                    <div class="card order-card ready mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title">Order {{ order.order_number }}</h6>
-                            <p class="card-text small mb-2">
-                                <strong>{{ order.customer_name }}</strong><br>
-                                {{ order.created_at|date:"H:i" }}
-                            </p>
-                            <ul class="list-unstyled small mb-2">
-                                {% for item in order.items.all|slice:":3" %}
-                                    <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
-                                {% endfor %}
-                                {% with item_count=order.items.count %}
-                                    {% if item_count > 3 %}
-                                        <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
-                                    {% endif %}
-                                {% endwith %}
-                            </ul>
-                            <div class="d-grid">
-                                <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
+                <div class="card order-card ready mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">Order {{ order.order_number }}</h6>
+                        <p class="card-text small mb-2">
+                            <strong>{{ order.customer_name }}</strong><br>
+                            {{ order.created_at|date:"H:i" }}
+                        </p>
+                        <ul class="list-unstyled small mb-2">
+                            {% for item in order.items.all|slice:":3" %}
+                            <li>{{ item.quantity }}x {{ item.menu_item.name }}</li>
+                            {% endfor %}
+                            {% with item_count=order.items.count %}
+                            {% if item_count > 3 %}
+                            <li class="text-muted">+{{ item_count|add:"-3" }} more</li>
+                            {% endif %}
+                            {% endwith %}
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
                         </div>
                     </div>
+                </div>
                 {% empty %}
-                    <p class="text-muted text-center">No ready orders</p>
+                <p class="text-muted text-center">No ready orders</p>
                 {% endfor %}
             </div>
         </div>
@@ -198,9 +215,8 @@
 
 <script>
     // Auto-refresh every 30 seconds
-    setTimeout(function() {
+    setTimeout(function () {
         location.reload();
     }, 30000);
 </script>
 {% endblock %}
-

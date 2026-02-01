@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Cancel Subscription - NOURISH LINK{% endblock %}
+{% block title %}Cancel Subscription - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -14,12 +14,14 @@
                     <p>Are you sure you want to cancel this subscription?</p>
                     <div class="alert alert-warning">
                         <strong>{{ subscription.plan.name }}</strong><br>
-                        <small>This action cannot be undone. You will need to create a new subscription to continue.</small>
+                        <small>This action cannot be undone. You will need to create a new subscription to
+                            continue.</small>
                     </div>
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'subscriptions:subscription_detail' subscription.id %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'subscriptions:subscription_detail' subscription.id %}"
+                                class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle"></i> Keep Subscription
                             </a>
                             <button type="submit" class="btn btn-danger">
@@ -33,6 +35,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

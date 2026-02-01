@@ -1,0 +1,17 @@
+{% autoescape off %}
+Dear {{ patient_name }},
+
+Great news! A consultant has been assigned to your health check request.
+
+Consultant: {{ consultant_name }}
+Check Type: {{ check_type }}
+Check ID: #{{ check_id }}
+
+Your consultant will reach out to you shortly to schedule the consultation.
+
+Thank you for choosing {{ site_name }} for your healthcare needs.
+
+Best regards,
+{{ site_name }} Team
+Contact: {{ contact_email }}
+{% endautoescape %}

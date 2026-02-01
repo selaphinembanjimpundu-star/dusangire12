@@ -1,0 +1,908 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
+        --success-color: #48bb78;
+        --danger-color: #f56565;
+        --warning-color: #ed8936;
+        --info-color: #4299e1;
+        --light-bg: #f7fafc;
+        --border-color: #e2e8f0;
+        --text-primary: #2d3748;
+        --text-secondary: #718096;
+    }
+
+    * {
+        transition: all 0.3s ease;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        display: flex;
+        min-height: calc(100vh - 80px);
+        background: #fff;
+    }
+
+    /* ===== SIDEBAR STYLES ===== */
+    .dashboard-sidebar {
+        width: 280px;
+        background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+        padding: 2rem 0;
+        flex-shrink: 0;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 80px);
+    }
+
+    .sidebar-header {
+        color: white;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar-header i {
+        margin-right: 0.8rem;
+        font-size: 1.3rem;
+    }
+
+    .sidebar-section {
+        padding: 1rem 0;
+    }
+
+    .sidebar-section-title {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.5rem 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link-custom {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        margin: 0.25rem 0;
+        position: relative;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .nav-link-custom:hover {
+        color: white;
+        background: rgba(102, 126, 234, 0.1);
+        border-left-color: var(--primary-color);
+    }
+
+    .nav-link-custom.active {
+        color: white;
+        background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-left-color: white;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link-custom i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+        width: 20px;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .dashboard-content {
+        flex-grow: 1;
+        background: var(--light-bg);
+        padding: 2rem;
+        overflow-y: auto;
+    }
+
+    .dashboard-header {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 0.8rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dashboard-header i {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .breadcrumb {
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+
+    /* ===== CARD STYLES ===== */
+    .dashboard-card {
+        background: white;
+        border-radius: 0.8rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+    }
+
+    .dashboard-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* ===== BUTTON STYLES ===== */
+    .btn-custom {
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary-custom {
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--light-bg);
+    }
+
+    .btn-success-custom {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .btn-danger-custom {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .btn-custom:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* ===== STATUS BADGES ===== */
+    .badge-custom {
+        display: inline-block;
+        padding: 0.35rem 0.8rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: rgba(72, 187, 120, 0.1);
+        color: var(--success-color);
+    }
+
+    .badge-warning {
+        background: rgba(237, 137, 54, 0.1);
+        color: var(--warning-color);
+    }
+
+    .badge-danger {
+        background: rgba(245, 101, 101, 0.1);
+        color: var(--danger-color);
+    }
+
+    .badge-info {
+        background: rgba(66, 153, 225, 0.1);
+        color: var(--info-color);
+    }
+
+    /* ===== GRID LAYOUTS ===== */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.8rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .stat-card h3 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .stat-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .stat-card .change {
+        font-size: 0.85rem;
+        color: var(--success-color);
+        margin-top: 0.5rem;
+    }
+
+    /* ===== DELIVERY INFO WIDGET ===== */
+    .delivery-widget {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .delivery-widget h3 {
+        margin: 0 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 1.2rem;
+    }
+
+    .delivery-widget i {
+        font-size: 1.5rem;
+    }
+
+    .delivery-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .delivery-info-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .delivery-info-item .label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .delivery-info-item .value {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* ===== TABLE STYLES ===== */
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .dashboard-table th {
+        background: var(--light-bg);
+        color: var(--text-primary);
+        font-weight: 700;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .dashboard-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .dashboard-table tbody tr:hover {
+        background: var(--light-bg);
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 992px) {
+        .dashboard-container {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            width: 100%;
+            position: static;
+            max-height: none;
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+            padding: 1rem 0;
+        }
+
+        .sidebar-header {
+            display: none;
+        }
+
+        .sidebar-section {
+            display: flex;
+            padding: 0;
+            gap: 0;
+        }
+
+        .sidebar-section-title {
+            display: none;
+        }
+
+        .nav-link-custom {
+            margin: 0;
+            padding: 0.75rem 1rem;
+            border-left: none;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .nav-link-custom.active {
+            border-left: none;
+            border-bottom-color: white;
+        }
+
+        .dashboard-content {
+            padding: 1.5rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.4rem;
+        }
+
+        .dashboard-content {
+            padding: 1rem;
+        }
+
+        .dashboard-card {
+            padding: 1rem;
+        }
+
+        .btn-custom {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+        }
+
+        .delivery-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ===== LOADING STATE ===== */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ===== SCROLLBAR CUSTOMIZATION ===== */
+    .dashboard-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .dashboard-sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dashboard-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    .dashboard-sidebar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* ===== DASHBOARD CONTENT STYLES ===== */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 1rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dashboard-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-color);
+    }
+
+    .stat-card h3 {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 1rem 0;
+    }
+
+    .stat-card .value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    /* ===== DELIVERY WIDGET ===== */
+    .delivery-widget {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+
+    .delivery-widget h3 {
+        margin: 0 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .delivery-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .delivery-info-item {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 1.5rem;
+        border-radius: 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .delivery-info-item .label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+    }
+
+    .delivery-info-item .value {
+        color: white;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    /* ===== TABLE STYLES ===== */
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .dashboard-table thead {
+        background: var(--light-bg);
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .dashboard-table th {
+        padding: 1rem;
+        text-align: left;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .dashboard-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .dashboard-table tbody tr:hover {
+        background: var(--light-bg);
+    }
+
+    /* ===== BADGE STYLES ===== */
+    .badge-custom {
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .badge-success {
+        background-color: rgba(72, 187, 120, 0.2);
+        color: #22543d;
+    }
+
+    .badge-warning {
+        background-color: rgba(237, 137, 54, 0.2);
+        color: #7c2d12;
+    }
+
+    .badge-danger {
+        background-color: rgba(245, 101, 101, 0.2);
+        color: #742a2a;
+    }
+
+    .badge-info {
+        background-color: rgba(66, 153, 225, 0.2);
+        color: #1e3a8a;
+    }
+
+    /* ===== BUTTON STYLES ===== */
+    .btn-custom {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 0.6rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom {
+        background: white;
+        color: var(--primary-color);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary-custom:hover {
+        background: var(--light-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .btn-custom:disabled,
+    .btn-custom[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .dashboard-container {
+            flex-direction: column;
+        }
+
+        .dashboard-sidebar {
+            width: 100%;
+            position: relative;
+            top: auto;
+            max-height: none;
+            padding: 1rem 0;
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dashboard-sidebar::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .sidebar-section {
+            min-width: 200px;
+            padding: 0 1rem;
+        }
+
+        .sidebar-section-title {
+            display: none;
+        }
+
+        .dashboard-main {
+            padding: 1rem;
+        }
+
+        .dashboard-header {
+            padding: 1.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .dashboard-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-main {
+            padding: 0.75rem;
+        }
+
+        .delivery-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-table {
+            font-size: 0.85rem;
+        }
+
+        .dashboard-table th,
+        .dashboard-table td {
+            padding: 0.75rem;
+        }
+
+        .btn-custom {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- ===== SIDEBAR ===== -->
+    <div class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h5><i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}</h5>
+        </div>
+
+        <!-- Account Section -->
+        <div class="sidebar-section">
+            <div style="flex: 1;">
+                <div class="sidebar-section-title">Account</div>
+                <nav style="display: flex; flex-direction: column;">
+                    <a href="{% url 'customer_dashboard:dashboard' %}"
+                        class="nav-link-custom {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer"></i> Dashboard
+                    </a>
+                    <a href="{% url 'customer_dashboard:my_orders' %}"
+                        class="nav-link-custom {% if 'order' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-bag-check"></i> My Orders
+                    </a>
+                    <a href="{% url 'customer_dashboard:my_subscriptions' %}"
+                        class="nav-link-custom {% if 'subscription' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-calendar2-check"></i> Subscriptions
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Rewards Section -->
+        <div class="sidebar-section">
+            <div style="flex: 1;">
+                <div class="sidebar-section-title">Rewards</div>
+                <nav style="display: flex; flex-direction: column;">
+                    <a href="{% url 'customer_dashboard:loyalty' %}"
+                        class="nav-link-custom {% if request.resolver_match.url_name == 'loyalty' %}active{% endif %}">
+                        <i class="bi bi-star"></i> Loyalty & Rewards
+                    </a>
+                    <a href="{% url 'customer_dashboard:payment_history' %}"
+                        class="nav-link-custom {% if 'payment' in request.resolver_match.url_name or 'billing' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-receipt"></i> Billing & Invoices
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Health Section -->
+        <div class="sidebar-section">
+            <div style="flex: 1;">
+                <div class="sidebar-section-title">Health</div>
+                <nav style="display: flex; flex-direction: column;">
+                    <a href="{% url 'customer_dashboard:my_meal_plans' %}"
+                        class="nav-link-custom {% if 'meal_plan' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-journal-text"></i> Meal Plans
+                    </a>
+                    <a href="{% url 'customer_dashboard:my_consultations' %}"
+                        class="nav-link-custom {% if 'consultation' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-chat-dots"></i> Consultations
+                    </a>
+                    <a href="{% url 'customer_dashboard:health_reports' %}"
+                        class="nav-link-custom {% if 'health' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-heart-pulse"></i> Health Reports
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="sidebar-section">
+            <div style="flex: 1;">
+                <div class="sidebar-section-title">Settings</div>
+                <nav style="display: flex; flex-direction: column;">
+                    <a href="{% url 'customer_dashboard:my_profile' %}"
+                        class="nav-link-custom {% if 'profile' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-person-circle"></i> My Profile
+                    </a>
+                    <a href="{% url 'customer_dashboard:notifications' %}"
+                        class="nav-link-custom {% if 'notification' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="bi bi-bell"></i> Notifications
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="dashboard-content">
+        {% if messages %}
+        <div style="margin-bottom: 1.5rem;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block dashboard_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

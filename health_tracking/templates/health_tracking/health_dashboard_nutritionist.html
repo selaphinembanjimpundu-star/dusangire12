@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nutritionist Dashboard - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h1 class="h3 mb-0">Nutritionist Dashboard</h1>
+            <p class="text-muted">Monitor patient progress and identify intervention opportunities</p>
+        </div>
+    </div>
+
+    <!-- Patient Overview -->
+    <div class="row mb-4">
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Patients Monitored</small>
+                            <h4 class="mb-0">{{ total_patients }}</h4>
+                        </div>
+                        <div class="text-info fs-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Unacknowledged Alerts</small>
+                            <h4 class="mb-0">{{ alerts|length }}</h4>
+                        </div>
+                        <div class="text-warning fs-3">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Goals at Risk</small>
+                            <h4 class="mb-0">{{ at_risk_goals|length }}</h4>
+                        </div>
+                        <div class="text-danger fs-3">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <small class="text-muted d-block">Low Ratings</small>
+                            <h4 class="mb-0">{{ low_rated_meals|length }}</h4>
+                        </div>
+                        <div class="text-warning fs-3">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Alerts Section -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Critical Alerts Requiring Action</h5>
+                </div>
+                <div class="card-body">
+                    {% if alerts %}
+                        <div class="space-y-3">
+                            {% for alert in alerts %}
+                                <div class="alert alert-{{ alert.get_severity_display|lower }} mb-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="alert-heading mb-1">{{ alert.user.get_full_name|default:alert.user.username }}</h6>
+                                            <p class="mb-1"><strong>{{ alert.title }}</strong></p>
+                                            <p class="mb-1">{{ alert.message }}</p>
+                                            <small class="text-muted">
+                                                {% if alert.metric %}
+                                                    Metric: {{ alert.metric.metric_type.metric_name }}
+                                                {% elif alert.goal %}
+                                                    Goal: {{ alert.goal.goal_name }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted d-block">{{ alert.created_at|timesince }} ago</small>
+                                            <form method="POST" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="acknowledge_alert">
+                                                <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Mark as Reviewed</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No active alerts</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals at Risk Section -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Goals at Risk of Not Being Met</h5>
+                </div>
+                <div class="card-body">
+                    {% if at_risk_goals %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Goal</th>
+                                        <th>Progress</th>
+                                        <th>Target Date</th>
+                                        <th>Days Left</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for goal in at_risk_goals %}
+                                        <tr>
+                                            <td>{{ goal.user.get_full_name|default:goal.user.username }}</td>
+                                            <td>{{ goal.goal_name }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px; width: 150px;">
+                                                    <div class="progress-bar bg-warning" style="width: {{ goal.progress_percentage }}%;">
+                                                        {{ goal.progress_percentage|floatformat:0 }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ goal.target_date }}</td>
+                                            <td><span class="badge bg-danger">{{ goal.days_remaining }} days</span></td>\n                                            <td>
+                                                <a href="{% url 'admin:health_tracking_patienthealthgoal_change' goal.id %}" class="btn btn-sm btn-outline-primary">
+                                                    Review & Adjust\n                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">All monitored goals are on track</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Meal Ratings Section -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="card-title mb-0">Meals with Low Effectiveness Ratings</h5>
+                </div>
+                <div class="card-body">
+                    {% if low_rated_meals %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Meal</th>
+                                        <th>Avg Rating</th>
+                                        <th>Reviews</th>
+                                        <th>Issues Reported</th>
+                                        <th>Recommendation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for meal in low_rated_meals %}
+                                        <tr>
+                                            <td>{{ meal.name }}</td>
+                                            <td>
+                                                <div class="stars">
+                                                    {% for i in "x"|rjust:meal.avg_rating %}⭐{% endfor %}
+                                                    <small class="text-muted">({{ meal.avg_rating|floatformat:1 }}/5)</small>
+                                                </div>
+                                            </td>
+                                            <td>{{ meal.review_count }}</td>
+                                            <td>\n                                                <span class="badge bg-warning">{{ meal.issues|length }} Issues</span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'admin:menu_menuitem_change' meal.id %}" class="btn btn-sm btn-outline-primary\">\n                                                    Review Recipe
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0\">All meals are receiving good ratings</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

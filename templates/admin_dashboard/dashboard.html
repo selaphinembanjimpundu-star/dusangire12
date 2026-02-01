@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Admin Dashboard - NOURISH LINK{% endblock %}
+{% block title %}Admin Dashboard - Dusangire{% endblock %}
 
 {% block extra_css %}
 <style>
     .stat-card {
         transition: transform 0.2s;
     }
+
     .stat-card:hover {
         transform: translateY(-5px);
     }
+
     .stat-icon {
         font-size: 2.5rem;
         opacity: 0.3;
@@ -32,9 +34,15 @@
             <a href="{% url 'admin_dashboard:reports' %}" class="btn btn-info">
                 <i class="bi bi-graph-up"></i> Reports
             </a>
+            <a href="{% url 'admin_dashboard:bi_dashboard' %}" class="btn btn-dark">
+                <i class="bi bi-pie-chart"></i> BI Dashboard
+            </a>
+            <a href="{% url 'support:staff_dashboard' %}" class="btn btn-warning">
+                <i class="bi bi-headset"></i> Support
+            </a>
         </div>
     </div>
-    
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <!-- Orders Today -->
@@ -51,7 +59,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Revenue Today -->
         <div class="col-md-3">
             <div class="card stat-card border-success">
@@ -66,7 +74,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Pending Orders -->
         <div class="col-md-3">
             <div class="card stat-card border-warning">
@@ -81,7 +89,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Total Orders -->
         <div class="col-md-3">
             <div class="card stat-card border-info">
@@ -97,7 +105,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="row g-4 mb-4">
         <!-- Revenue Stats -->
         <div class="col-md-4">
@@ -125,7 +133,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Order Status Breakdown -->
         <div class="col-md-4">
             <div class="card">
@@ -151,7 +159,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Payment Status -->
         <div class="col-md-4">
             <div class="card">
@@ -172,7 +180,52 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Corporate & Catering Row -->
+    <div class="row g-4 mb-4">
+        <!-- Corporate Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Corporate Contracts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <h3 class="fw-bold">{{ total_partners }}</h3>
+                            <small class="text-muted">Total Partners</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="fw-bold text-success">{{ active_contracts }}</h3>
+                            <small class="text-muted">Active Contracts</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Catering Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Catering Services</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 border-end">
+                            <h3 class="fw-bold text-warning">{{ pending_catering }}</h3>
+                            <small class="text-muted">Pending Bookings</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="fw-bold text-primary">RWF {{ total_catering_revenue|floatformat:0 }}</h3>
+                            <small class="text-muted">Total Revenue</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Orders -->
     <div class="row">
         <div class="col-12">
@@ -199,35 +252,36 @@
                             </thead>
                             <tbody>
                                 {% for order in recent_orders %}
-                                    <tr>
-                                        <td><strong>{{ order.order_number }}</strong></td>
-                                        <td>{{ order.customer_name }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ order.get_status_display_class }}">
-                                                {{ order.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if order.payment %}
-                                                <span class="badge bg-{{ order.payment.get_status_display_class }}">
-                                                    {{ order.payment.get_status_display }}
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">No Payment</span>
-                                            {% endif %}
-                                        </td>
-                                        <td><strong>RWF {{ order.total }}</strong></td>
-                                        <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
-                                        <td>
-                                            <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i> View
-                                            </a>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td><strong>{{ order.order_number }}</strong></td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ order.get_status_display_class }}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if order.payment %}
+                                        <span class="badge bg-{{ order.payment.get_status_display_class }}">
+                                            {{ order.payment.get_status_display }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">No Payment</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>RWF {{ order.total }}</strong></td>
+                                    <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted">No orders yet</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No orders yet</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -236,7 +290,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Popular Items -->
     {% if popular_items %}
     <div class="row mt-4">
@@ -257,11 +311,11 @@
                             </thead>
                             <tbody>
                                 {% for item in popular_items %}
-                                    <tr>
-                                        <td>{{ item.menu_item__name }}</td>
-                                        <td><strong>{{ item.total_quantity }}</strong></td>
-                                        <td>{{ item.total_orders }}</td>
-                                    </tr>
+                                <tr>
+                                    <td>{{ item.menu_item__name }}</td>
+                                    <td><strong>{{ item.total_quantity }}</strong></td>
+                                    <td>{{ item.total_orders }}</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -273,6 +327,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
-
-

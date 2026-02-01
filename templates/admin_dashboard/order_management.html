@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Order Management - NOURISH LINK{% endblock %}
+{% block title %}Order Management - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4 mb-5">
@@ -10,7 +10,7 @@
             <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
     </div>
-    
+
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-body">
@@ -20,9 +20,9 @@
                     <select name="status" id="status" class="form-select">
                         <option value="">All Statuses</option>
                         {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -36,7 +36,8 @@
                 </div>
                 <div class="col-md-3">
                     <label for="search" class="form-label">Search</label>
-                    <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}" placeholder="Order #, Customer, Phone">
+                    <input type="text" name="search" id="search" class="form-control" value="{{ search_query }}"
+                        placeholder="Order #, Customer, Phone">
                 </div>
                 <div class="col-12">
                     <button type="submit" class="btn btn-primary">
@@ -49,7 +50,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Orders Table -->
     <div class="card">
         <div class="card-body">
@@ -69,36 +70,37 @@
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                            <tr>
-                                <td><strong>{{ order.order_number }}</strong></td>
-                                <td>{{ order.customer_name }}</td>
-                                <td>{{ order.customer_phone }}</td>
-                                <td>
-                                    <span class="badge bg-{{ order.get_status_display_class }}">
-                                        {{ order.get_status_display }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {% if order.payment %}
-                                        <span class="badge bg-{{ order.payment.get_status_display_class }}">
-                                            {{ order.payment.get_status_display }}
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">No Payment</span>
-                                    {% endif %}
-                                </td>
-                                <td><strong>RWF {{ order.total }}</strong></td>
-                                <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
-                                <td>
-                                    <a href="{% url 'admin_dashboard:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i> View
-                                    </a>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td><strong>{{ order.order_number }}</strong></td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.customer_phone }}</td>
+                            <td>
+                                <span class="badge bg-{{ order.get_status_display_class }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if order.payment %}
+                                <span class="badge bg-{{ order.payment.get_status_display_class }}">
+                                    {{ order.payment.get_status_display }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">No Payment</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>RWF {{ order.total }}</strong></td>
+                            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'admin_dashboard:order_detail' order.id %}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
                         {% empty %}
-                            <tr>
-                                <td colspan="8" class="text-center text-muted">No orders found</td>
-                            </tr>
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No orders found</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -107,6 +109,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

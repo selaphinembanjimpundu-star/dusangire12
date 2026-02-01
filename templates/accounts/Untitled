@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Email Sent - NOURISH LINK{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow border-0 p-4 text-center">
+        <h3>Check Your Email</h3>
+        <p class="text-muted mt-3">
+          If an account with the email you entered exists, we have sent a password
+          reset link. Please check your inbox.
+        </p>
+
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary mt-3">
+          Back to Login
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

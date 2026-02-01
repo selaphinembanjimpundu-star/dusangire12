@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Health Metric - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-white border-bottom">
+                    <h4 class="card-title mb-0">Record Health Metric</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="metric_type" class="form-label">Metric Type</label>
+                            <select name="metric_type" id="metric_type" class="form-select" required>
+                                <option value="">Select a metric...</option>
+                                {% for metric in metric_types %}
+                                    <option value="{{ metric.id }}">{{ metric.metric_name }} ({{ metric.unit }})</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                                <strong>Reference:</strong> <br>
+                                Normal Range: <span id="normal_range" class="badge bg-info">N/A</span> <br>
+                                Alert Range: <span id="alert_range" class="badge bg-warning">N/A</span>
+                            </small>
+                            {% if form.metric_type.errors %}
+                                <div class="invalid-feedback d-block">{{ form.metric_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="value" class="form-label">Value</label>
+                            <div class="input-group">
+                                <input type="number" name="value" id="value" class="form-control" step="0.01" required placeholder="Enter value">
+                                <span class="input-group-text" id="unit_display">unit</span>
+                            </div>
+                            {% if form.value.errors %}
+                                <div class="invalid-feedback d-block">{{ form.value.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="recorded_date" class="form-label">Date</label>
+                                <input type="date" name="recorded_date" id="recorded_date" class="form-control" required>
+                                {% if form.recorded_date.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.recorded_date.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="recorded_time" class="form-label">Time</label>
+                                <input type="time" name="recorded_time" id="recorded_time" class="form-control" required>
+                                {% if form.recorded_time.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.recorded_time.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="conditions" class="form-label">Conditions <small class="text-muted">(Optional)</small></label>
+                            <input type="text" name="conditions" id="conditions" class="form-control" 
+                                   placeholder="e.g., Before meal, After exercise, Fasting, Morning">
+                            <small class="text-muted">Describe the context when this metric was recorded</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes <small class="text-muted">(Optional)</small></label>
+                            <textarea name="notes" id="notes" class="form-control" rows="3" 
+                                      placeholder="Any additional observations or symptoms..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <small>
+                                <strong>💡 Tip:</strong> Recording metrics consistently helps identify patterns and track your health progress over time.
+                            </small>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+                            <a href="{% url 'health_tracking:dashboard_patient' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Record Metric
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const metricData = {
+{% for metric in metric_types %}
+    {{ metric.id }}: {
+        name: '{{ metric.metric_name }}',
+        unit: '{{ metric.unit }}',
+        min: {{ metric.normal_range_min|default:'null' }},
+        max: {{ metric.normal_range_max|default:'null' }},
+        alert_min: {{ metric.alert_threshold_min|default:'null' }},
+        alert_max: {{ metric.alert_threshold_max|default:'null' }}
+    },
+{% endfor %}
+};
+
+const metricSelect = document.getElementById('metric_type');
+const normalRange = document.getElementById('normal_range');
+const alertRange = document.getElementById('alert_range');
+const unitDisplay = document.getElementById('unit_display');
+
+metricSelect.addEventListener('change', function() {
+    const data = metricData[this.value];
+    if (data) {
+        unitDisplay.textContent = data.unit;
+        
+        if (data.min && data.max) {
+            normalRange.textContent = `${data.min} - ${data.max} ${data.unit}`;
+        } else {
+            normalRange.textContent = 'N/A';
+        }
+        
+        if (data.alert_min && data.alert_max) {
+            alertRange.textContent = `< ${data.alert_min} or > ${data.alert_max}`;
+        } else {
+            alertRange.textContent = 'N/A';
+        }
+    }
+});
+
+// Set today's date and current time
+const today = new Date().toISOString().split('T')[0];
+const now = new Date().toTimeString().slice(0, 5);
+document.getElementById('recorded_date').value = today;
+document.getElementById('recorded_time').value = now;
+
+// Form validation
+const form = document.querySelector('form');
+form.addEventListener('submit', function(e) {
+    if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    form.classList.add('was-validated');
+});
+</script>
+{% endblock %}

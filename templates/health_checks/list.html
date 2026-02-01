@@ -1,0 +1,745 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Health Checks - Dusangire{% endblock %}
+
+{% block content %}
+<div class="health-checks-container">
+    <div class="page-header">
+        <h1>Health Checks & Consultations</h1>
+        <div class="header-actions">
+            {% if user.profile.role == 'patient' %}
+            <a href="{% url 'request_health_check' %}" class="btn btn-primary">+ Request Health Check</a>
+            {% endif %}
+            {% if user.profile.role in 'medical_staff,nutritionist' %}
+            <button class="btn btn-secondary" id="toggleAvailability">Update My Availability</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs">
+            {% if user.profile.role == 'patient' %}
+            <button class="tab-btn active" data-tab="my-checks">
+                <span class="tab-icon">📋</span>
+                My Health Checks ({{ pending_count }})
+            </button>
+            {% endif %}
+            
+            {% if user.profile.role in 'medical_staff,nutritionist' %}
+            <button class="tab-btn{% if user.profile.role == 'medical_staff' %} active{% endif %}" data-tab="assigned-checks">
+                <span class="tab-icon">👥</span>
+                Assigned Checks ({{ assigned_count }})
+            </button>
+            <button class="tab-btn" data-tab="my-availability">
+                <span class="tab-icon">🟢</span>
+                My Availability
+            </button>
+            {% endif %}
+            
+            <button class="tab-btn" data-tab="all-history">
+                <span class="tab-icon">📜</span>
+                History
+            </button>
+        </div>
+    </div>
+
+    <!-- Patient's Health Checks Tab -->
+    {% if user.profile.role == 'patient' %}
+    <div class="tab-content active" data-tab="my-checks">
+        {% if patient_checks %}
+        <div class="health-checks-grid">
+            {% for check in patient_checks %}
+            <div class="health-check-card">
+                <div class="check-status-badge status-{{ check.status }}">{{ check.get_status_display }}</div>
+                
+                <div class="check-header">
+                    <h3>{{ check.get_check_type_display }}</h3>
+                    <span class="priority-badge priority-{{ check.priority }}">{{ check.get_priority_display }}</span>
+                </div>
+
+                <div class="check-body">
+                    <p class="check-date">Requested: {{ check.created_at|date:"M d, Y" }}</p>
+                    
+                    {% if check.description %}
+                    <div class="check-description">
+                        <strong>Reason:</strong>
+                        <p>{{ check.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if check.assigned_consultant %}
+                    <div class="consultant-info">
+                        <strong>Assigned To:</strong>
+                        <div class="consultant-card">
+                            <span class="consultant-name">{{ check.assigned_consultant.get_full_name }}</span>
+                            {% if check.assigned_consultant.consultant_availability.specialization %}
+                            <span class="consultant-specialization">{{ check.assigned_consultant.consultant_availability.specialization }}</span>
+                            {% endif %}
+                            {% if check.assigned_consultant.consultant_availability.average_rating %}
+                            <span class="consultant-rating">⭐ {{ check.assigned_consultant.consultant_availability.average_rating|floatformat:1 }}/5</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="waiting-assignment">
+                        <p>🔄 Waiting for consultant assignment...</p>
+                    </div>
+                    {% endif %}
+
+                    {% if check.scheduled_datetime %}
+                    <div class="scheduled-info">
+                        <strong>Scheduled:</strong>
+                        <p>{{ check.scheduled_datetime|date:"M d, Y \a\t g:i A" }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if check.recommendations %}
+                    <div class="recommendations">
+                        <strong>Recommendations:</strong>
+                        <p>{{ check.recommendations }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="check-footer">
+                    <a href="{% url 'health_check_detail' check.id %}" class="btn btn-secondary btn-sm">View Details</a>
+                    {% if check.status == 'pending' %}
+                    <a href="{% url 'cancel_health_check' check.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Cancel this request?')">Cancel</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No Health Checks</h3>
+            <p>You haven't requested any health checks yet.</p>
+            <a href="{% url 'request_health_check' %}" class="btn btn-primary">Request Your First Health Check</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Consultant's Assigned Checks Tab -->
+    {% if user.profile.role in 'medical_staff,nutritionist' %}
+    <div class="tab-content{% if user.profile.role == 'medical_staff' %} active{% endif %}" data-tab="assigned-checks">
+        {% if assigned_checks %}
+        <div class="checks-list">
+            <div class="checks-filter">
+                <select id="filterStatus" class="filter-select">
+                    <option value="">All Statuses</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            <table class="checks-table">
+                <thead>
+                    <tr>
+                        <th>Check ID</th>
+                        <th>Patient</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Scheduled</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check in assigned_checks %}
+                    <tr class="check-row" data-status="{{ check.status }}">
+                        <td>#{{ check.id }}</td>
+                        <td>{{ check.patient.get_full_name }}</td>
+                        <td>{{ check.get_check_type_display }}</td>
+                        <td><span class="priority-badge priority-{{ check.priority }}">{{ check.get_priority_display }}</span></td>
+                        <td><span class="status-badge status-{{ check.status }}">{{ check.get_status_display }}</span></td>
+                        <td>{{ check.scheduled_datetime|date:"M d, g:i A"|default:"Not scheduled" }}</td>
+                        <td>
+                            <a href="{% url 'health_check_detail' check.id %}" class="action-link">View</a>
+                            {% if check.status == 'assigned' %}
+                            <a href="{% url 'start_consultation' check.id %}" class="action-link">Start</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No Assigned Checks</h3>
+            <p>No health checks have been assigned to you yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Consultant Availability Tab -->
+    <div class="tab-content" data-tab="my-availability">
+        {% if consultant_availability %}
+        <div class="availability-card">
+            <h3>Your Availability</h3>
+            
+            <div class="availability-info">
+                <div class="info-row">
+                    <label>Current Status:</label>
+                    <div class="status-display">
+                        <span class="status-indicator status-{{ consultant_availability.status }}"></span>
+                        <span>{{ consultant_availability.get_status_display }}</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <label>Workload:</label>
+                    <div class="workload-bar">
+                        <div class="workload-fill" style="width: {{ consultant_availability.workload_percentage }}%"></div>
+                        <span class="workload-text">{{ consultant_availability.current_assignments }}/{{ consultant_availability.max_concurrent_checks }} ({{ consultant_availability.workload_percentage|floatformat:0 }}%)</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <label>Specialization:</label>
+                    <span>{{ consultant_availability.specialization }}</span>
+                </div>
+
+                <div class="info-row">
+                    <label>Performance:</label>
+                    <span>⭐ {{ consultant_availability.average_rating|floatformat:1 }}/5 • {{ consultant_availability.total_completed_checks }} completed</span>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'update_availability' %}" class="availability-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Update Status:</label>
+                    <select name="status" class="form-control">
+                        <option value="available" {% if consultant_availability.status == 'available' %}selected{% endif %}>Available</option>
+                        <option value="busy" {% if consultant_availability.status == 'busy' %}selected{% endif %}>Busy</option>
+                        <option value="break" {% if consultant_availability.status == 'break' %}selected{% endif %}>On Break</option>
+                        <option value="offline" {% if consultant_availability.status == 'offline' %}selected{% endif %}>Offline</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Max Concurrent Checks:</label>
+                    <input type="number" name="max_concurrent" value="{{ consultant_availability.max_concurrent_checks }}" min="1" max="10" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update Availability</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No availability record. Contact admin to set up your profile.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- History Tab -->
+    <div class="tab-content" data-tab="all-history">
+        {% if history_checks %}
+        <div class="history-list">
+            {% for check in history_checks %}
+            <div class="history-item">
+                <div class="history-header">
+                    <span class="history-id">Check #{{ check.id }}</span>
+                    <span class="history-type">{{ check.get_check_type_display }}</span>
+                    <span class="history-date">{{ check.completed_datetime|date:"M d, Y" }}</span>
+                </div>
+                <div class="history-body">
+                    {% if check.consultant_notes %}
+                    <p><strong>Notes:</strong> {{ check.consultant_notes }}</p>
+                    {% endif %}
+                    {% if check.recommendations %}
+                    <p><strong>Recommendations:</strong> {{ check.recommendations }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No completed health checks yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.health-checks-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.tabs-container {
+    margin-bottom: 30px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid #eee;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 15px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: #667eea;
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-icon {
+    font-size: 16px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.health-checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.health-check-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s;
+}
+
+.health-check-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.check-status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-assigned {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-in_progress {
+    background: #e7d4f5;
+    color: #5a3a7d;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.check-header {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.check-header h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.priority-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.priority-urgent {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.priority-high {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.priority-normal {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.priority-low {
+    background: #d4edda;
+    color: #155724;
+}
+
+.check-body {
+    padding: 20px;
+}
+
+.check-date {
+    margin: 0 0 15px 0;
+    color: #999;
+    font-size: 12px;
+}
+
+.check-description,
+.consultant-info,
+.scheduled-info,
+.recommendations,
+.waiting-assignment {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+}
+
+.consultant-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.consultant-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.consultant-specialization {
+    font-size: 12px;
+    color: #666;
+}
+
+.consultant-rating {
+    font-size: 12px;
+    color: #667eea;
+}
+
+.check-footer {
+    display: flex;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #d0d0d0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-sm {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+.checks-table {
+    width: 100%;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    border-collapse: collapse;
+}
+
+.checks-table th {
+    background: #f9f9f9;
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #eee;
+    font-size: 12px;
+}
+
+.checks-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.checks-table tr:hover {
+    background: #f9f9f9;
+}
+
+.availability-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 30px;
+}
+
+.availability-info {
+    margin-bottom: 30px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.info-row label {
+    font-weight: 600;
+    color: #333;
+    min-width: 150px;
+}
+
+.status-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-available {
+    background: #28a745;
+}
+
+.status-busy {
+    background: #ffc107;
+}
+
+.status-break {
+    background: #ff9800;
+}
+
+.status-offline {
+    background: #999;
+}
+
+.workload-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.workload-fill {
+    height: 8px;
+    background: #667eea;
+    border-radius: 4px;
+    min-width: 100px;
+}
+
+.workload-text {
+    white-space: nowrap;
+    font-size: 12px;
+    color: #666;
+}
+
+.availability-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.empty-state p {
+    margin: 0 0 20px 0;
+    color: #999;
+}
+
+@media (max-width: 768px) {
+    .health-checks-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tabs {
+        overflow-x: auto;
+    }
+
+    .check-status-badge {
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        });
+    });
+
+    // Filter by status
+    const filterStatus = document.getElementById('filterStatus');
+    if (filterStatus) {
+        filterStatus.addEventListener('change', function() {
+            const status = this.value;
+            document.querySelectorAll('.check-row').forEach(row => {
+                if (!status || row.dataset.status === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Toggle availability modal
+    const toggleBtn = document.getElementById('toggleAvailability');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            document.querySelector('[data-tab="my-availability"]').click();
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,7 +1,6 @@
-from django.db.models import Q, Count, Avg
+from django.db.models import Count, Avg
 from .models import MenuItem
-from orders.models import Order, OrderItem
-
+from orders.models import Order
 
 def get_recommendations(user, limit=6):
     """Get personalized menu item recommendations based on user's order history"""
@@ -11,71 +10,62 @@ def get_recommendations(user, limit=6):
             is_available=True,
             is_featured=True
         ).select_related('category').prefetch_related('dietary_tags')[:limit]
-    
+
     # Get user's order history
     user_orders = Order.objects.filter(
         user=user,
         status__in=['delivered', 'ready']
-    ).select_related('user').prefetch_related('items__menu_item__category', 'items__menu_item__dietary_tags')
-    
+    ).prefetch_related('items__menu_item__category', 'items__menu_item__dietary_tags')
+
     if not user_orders.exists():
         # No order history, return featured items
         return MenuItem.objects.filter(
             is_available=True,
             is_featured=True
         )[:limit]
-    
-    # Get categories and dietary tags from user's orders
+
+    # Gather ordered item IDs, categories, and dietary tags
+    ordered_items = set()
     ordered_categories = set()
     ordered_dietary_tags = set()
-    ordered_items = set()
-    
+
     for order in user_orders:
         for order_item in order.items.all():
             menu_item = order_item.menu_item
             ordered_items.add(menu_item.id)
             ordered_categories.add(menu_item.category_id)
             ordered_dietary_tags.update(menu_item.dietary_tags.values_list('id', flat=True))
-    
-    # Get recommendations based on:
-    # 1. Same category as ordered items
-    # 2. Same dietary tags as ordered items
-    # 3. Exclude already ordered items
-    recommendations = MenuItem.objects.filter(
-        is_available=True
-    ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items)
-    
-    # Prioritize items from same categories
-    category_recommendations = recommendations.filter(
-        category_id__in=ordered_categories
-    ).distinct()
-    
-    # Also include items with same dietary tags
-    dietary_recommendations = recommendations.filter(
-        dietary_tags__id__in=ordered_dietary_tags
-    ).distinct()
-    
-    # Combine and get unique items
-    all_recommendations = (category_recommendations | dietary_recommendations).distinct()
-    
-    # If we don't have enough recommendations, add featured items
-    if all_recommendations.count() < limit:
-        featured_items = MenuItem.objects.filter(
-            is_available=True,
-            is_featured=True
-        ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items)
-        all_recommendations = (all_recommendations | featured_items).distinct()
-    
-    # If still not enough, add popular items (by order count)
-    if all_recommendations.count() < limit:
-        popular_items = MenuItem.objects.filter(
-            is_available=True
-        ).select_related('category').prefetch_related('dietary_tags').exclude(id__in=ordered_items).annotate(
-            order_count=Count('orderitem')
-        ).order_by('-order_count')[:limit]
-        all_recommendations = (all_recommendations | popular_items).distinct()
-    
-    return all_recommendations[:limit]
+
+    # Base queryset (all available items excluding already ordered)
+    base_qs = MenuItem.objects.filter(is_available=True).exclude(id__in=ordered_items)
+
+    # Get IDs for category and dietary recommendations
+    category_ids = set(base_qs.filter(category_id__in=ordered_categories).values_list('id', flat=True))
+    dietary_ids = set(base_qs.filter(dietary_tags__id__in=ordered_dietary_tags).values_list('id', flat=True))
+
+    # Combine recommendation IDs
+    recommended_ids = category_ids | dietary_ids
+
+    # If not enough, add featured items
+    if len(recommended_ids) < limit:
+        featured_ids = set(base_qs.filter(is_featured=True).values_list('id', flat=True))
+        recommended_ids |= featured_ids
+
+    # If still not enough, add popular items by order count
+    if len(recommended_ids) < limit:
+        popular_ids = list(
+            base_qs.annotate(order_count=Count('orderitem'))
+            .order_by('-order_count')
+            .values_list('id', flat=True)
+        )
+        recommended_ids |= set(popular_ids)
+
+    # Fetch final queryset
+    final_qs = MenuItem.objects.filter(id__in=recommended_ids)\
+        .select_related('category')\
+        .prefetch_related('dietary_tags')[:limit]
+
+    return final_qs
 
 
 def get_popular_items(limit=6):
@@ -90,7 +80,7 @@ def get_popular_items(limit=6):
 def get_highly_rated_items(limit=6):
     """Get highly rated menu items"""
     from reviews.models import Review
-    
+
     return MenuItem.objects.filter(
         is_available=True
     ).select_related('category').prefetch_related('dietary_tags').annotate(
@@ -100,6 +90,3 @@ def get_highly_rated_items(limit=6):
         review_count__gte=1,
         avg_rating__gte=4.0
     ).order_by('-avg_rating', '-review_count')[:limit]
-
-
-

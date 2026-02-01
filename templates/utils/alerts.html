@@ -1,0 +1,185 @@
+<!-- Alert Messages Component -->
+<!-- Usage: {% include 'utils/alerts.html' %} -->
+
+{% if messages %}
+<div class="alerts-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}">
+        <div class="alert-content">
+            <span class="alert-icon">
+                {% if 'success' in message.tags %}✓{% elif 'error' in message.tags %}✕{% elif 'warning' in message.tags %}⚠{% else %}ℹ{% endif %}
+            </span>
+            <span class="alert-message">{{ message }}</span>
+        </div>
+        <button type="button" class="alert-close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- System messages if any -->
+{% if system_message %}
+<div class="alerts-container">
+    <div class="alert alert-{{ message_type|default:'info' }}">
+        <div class="alert-content">
+            <span class="alert-icon">
+                {% if message_type == 'success' %}✓{% elif message_type == 'error' %}✕{% elif message_type == 'warning' %}⚠{% else %}ℹ{% endif %}
+            </span>
+            <span class="alert-message">{{ system_message }}</span>
+        </div>
+        <button type="button" class="alert-close" data-dismiss="alert">&times;</button>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.alerts-container {
+    margin-bottom: 20px;
+}
+
+.alert {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border-left: 4px solid;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.alert-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    flex: 1;
+}
+
+.alert-icon {
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.alert-message {
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+/* Success Alert */
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left-color: #28a745;
+}
+
+/* Error Alert */
+.alert-error,
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left-color: #dc3545;
+}
+
+/* Warning Alert */
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left-color: #ffc107;
+}
+
+/* Info Alert */
+.alert-info,
+.alert-message {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-left-color: #17a2b8;
+}
+
+/* Alert Animations */
+.alert.dismissing {
+    animation: slideOut 0.3s ease;
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+@media (max-width: 600px) {
+    .alert {
+        font-size: 14px;
+        padding: 12px 15px;
+    }
+
+    .alert-content {
+        gap: 8px;
+    }
+
+    .alert-message {
+        font-size: 13px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const closeButtons = document.querySelectorAll('.alert-close');
+    
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const alert = this.closest('.alert');
+            alert.classList.add('dismissing');
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 300);
+        });
+    });
+
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        if (!alert.classList.contains('alert-error') && !alert.classList.contains('alert-danger')) {
+            setTimeout(() => {
+                alert.classList.add('dismissing');
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 300);
+            }, 5000);
+        }
+    });
+});
+</script>

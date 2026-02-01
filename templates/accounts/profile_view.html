@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - Dusangire{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>My Profile</h1>
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+    </div>
+
+    <div class="profile-grid">
+        <!-- Basic Information -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Basic Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Name</label>
+                    <p>{{ user.get_full_name|default:user.username }}</p>
+                </div>
+                <div class="profile-field">
+                    <label>Email</label>
+                    <p>{{ user.email }}</p>
+                </div>
+                <div class="profile-field">
+                    <label>Phone</label>
+                    <p>{{ user.profile.phone|default:"Not provided" }}</p>
+                </div>
+                <div class="profile-field">
+                    <label>Role</label>
+                    <p><span class="badge badge-role">{{ user.profile.get_role_display }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Information -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Account Status</h3>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Status</label>
+                    <p><span class="badge badge-{{ user.profile.status }}">{{ user.profile.get_status_display }}</span></p>
+                </div>
+                <div class="profile-field">
+                    <label>Active</label>
+                    <p>
+                        {% if user.profile.is_active %}
+                        <span class="badge badge-active">Yes</span>
+                        {% else %}
+                        <span class="badge badge-inactive">No</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="profile-field">
+                    <label>Member Since</label>
+                    <p>{{ user.date_joined|date:"F d, Y" }}</p>
+                </div>
+                <div class="profile-field">
+                    <label>Last Login</label>
+                    <p>{{ user.last_login|date:"F d, Y H:i"|default:"Never" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role-Specific Fields -->
+        {% if user.profile.is_healthcare_provider %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Healthcare Provider Information</h3>
+            </div>
+            <div class="card-body">
+                {% if user.profile.license_number %}
+                <div class="profile-field">
+                    <label>License Number</label>
+                    <p>{{ user.profile.license_number }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.specialization %}
+                <div class="profile-field">
+                    <label>Specialization</label>
+                    <p>{{ user.profile.specialization }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.years_experience %}
+                <div class="profile-field">
+                    <label>Years of Experience</label>
+                    <p>{{ user.profile.years_experience }} years</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.profile.is_staff_member %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Staff Information</h3>
+            </div>
+            <div class="card-body">
+                {% if user.profile.department %}
+                <div class="profile-field">
+                    <label>Department</label>
+                    <p>{{ user.profile.department }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.employee_id %}
+                <div class="profile-field">
+                    <label>Employee ID</label>
+                    <p>{{ user.profile.employee_id }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.manager %}
+                <div class="profile-field">
+                    <label>Manager</label>
+                    <p>{{ user.profile.manager.user.get_full_name }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.profile.role == 'delivery_person' %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Delivery Information</h3>
+            </div>
+            <div class="card-body">
+                {% if user.profile.vehicle_registration %}
+                <div class="profile-field">
+                    <label>Vehicle Registration</label>
+                    <p>{{ user.profile.vehicle_registration }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.delivery_zones %}
+                <div class="profile-field">
+                    <label>Delivery Zones</label>
+                    <p>{{ user.profile.delivery_zones }}</p>
+                </div>
+                {% endif %}
+                <div class="profile-field">
+                    <label>Availability</label>
+                    <p>
+                        {% if user.profile.is_available_for_delivery %}
+                        <span class="badge badge-active">Available</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Not Available</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.profile.role == 'caregiver' %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Caregiver Information</h3>
+            </div>
+            <div class="card-body">
+                {% if user.profile.patient_relationship %}
+                <div class="profile-field">
+                    <label>Relationship to Patient</label>
+                    <p>{{ user.profile.get_patient_relationship_display }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.assigned_patient %}
+                <div class="profile-field">
+                    <label>Assigned Patient</label>
+                    <p>{{ user.profile.assigned_patient.get_full_name }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Patient-Specific Information -->
+        {% if user.profile.is_patient_or_caregiver %}
+        <div class="card">
+            <div class="card-header">
+                <h3>Health Information</h3>
+            </div>
+            <div class="card-body">
+                {% if user.profile.dietary_preferences %}
+                <div class="profile-field">
+                    <label>Dietary Preferences</label>
+                    <p>{{ user.profile.dietary_preferences }}</p>
+                </div>
+                {% endif %}
+                {% if user.profile.medical_alerts %}
+                <div class="profile-field">
+                    <label>Medical Alerts</label>
+                    <p>{{ user.profile.medical_alerts }}</p>
+                </div>
+                {% endif %}
+                <div class="profile-field">
+                    <label>Special Meals</label>
+                    <p>
+                        {% if user.profile.has_light %}
+                        Light meals required
+                        {% else %}
+                        Standard meals
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Notification Preferences -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Notification Preferences</h3>
+            </div>
+            <div class="card-body">
+                <div class="profile-field">
+                    <label>Email Notifications</label>
+                    <p>
+                        {% if user.profile.email_notifications %}
+                        <span class="badge badge-active">Enabled</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Disabled</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="profile-field">
+                    <label>SMS Notifications</label>
+                    <p>
+                        {% if user.profile.sms_notifications %}
+                        <span class="badge badge-active">Enabled</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Disabled</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="profile-field">
+                    <label>Push Notifications</label>
+                    <p>
+                        {% if user.profile.push_notifications %}
+                        <span class="badge badge-active">Enabled</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Disabled</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <a href="{% url 'edit_notifications' %}" class="btn btn-secondary">Update Preferences</a>
+            </div>
+        </div>
+
+        <!-- Permissions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Your Permissions</h3>
+            </div>
+            <div class="card-body">
+                <div class="permissions-list">
+                    {% if user_permissions %}
+                        {% for perm in user_permissions %}
+                        <span class="permission-badge">{{ perm|replace:"_":" "|title }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-state">No permissions assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Account Actions</h3>
+            </div>
+            <div class="card-body account-actions">
+                <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+                <a href="{% url 'password_change' %}" class="btn btn-secondary">Change Password</a>
+                <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.profile-header h1 {
+    margin: 0;
+    color: #333;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.card-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.profile-field {
+    margin-bottom: 15px;
+}
+
+.profile-field:last-child {
+    margin-bottom: 0;
+}
+
+.profile-field label {
+    display: block;
+    font-weight: 600;
+    color: #666;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.profile-field p {
+    margin: 0;
+    color: #333;
+    font-size: 14px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-role {
+    background: #667eea;
+    color: white;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-suspended {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-pending_verification {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.permission-badge {
+    display: inline-block;
+    background: #f0f0f0;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.account-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.empty-state {
+    color: #999;
+    text-align: center;
+    padding: 20px 0;
+    margin: 0;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %}

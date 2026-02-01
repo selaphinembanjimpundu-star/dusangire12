@@ -1,0 +1,136 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Receipt Card -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden" id="invoiceCard">
+                <div class="card-header bg-dark p-5 text-white">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <h2 class="fw-bold mb-0">Dusangire</h2>
+                            <p class="mb-0 opacity-75">Healthy Meals, Happy Life</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h1 class="text-uppercase fw-bold mb-0">Invoice</h1>
+                            <p class="mb-0 opacity-75">#{{ payment.invoice_number }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-5">
+                    <div class="row mb-5">
+                        <div class="col-6">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Billed To:</h6>
+                            <h5 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                            <p class="text-muted mb-0">{{ user.email }}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Payment Details:</h6>
+                            <p class="mb-1"><span class="text-muted">Date:</span> {{ payment.paid_at|date:"M d, Y" }}
+                            </p>
+                            <p class="mb-1"><span class="text-muted">Method:</span> {{
+                                payment.get_payment_method_display }}</p>
+                            <p class="mb-0"><span class="text-muted">Status:</span> <span
+                                    class="text-success fw-bold">PAID</span></p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-5">
+                        <table class="table table-borderless">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 ps-3">Description</th>
+                                    <th class="py-3 text-center">Qty</th>
+                                    <th class="py-3 text-end pe-3">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-4 ps-3">
+                                        {% if payment.order %}
+                                        Order #{{ payment.order.order_number }}
+                                        <div class="small text-muted">Food Delivery Service</div>
+                                        {% elif payment.subscription %}
+                                        Subscription: {{ payment.subscription.plan.name }}
+                                        <div class="small text-muted">{{ payment.subscription.plan.get_plan_type_display
+                                            }} Plan</div>
+                                        {% else %}
+                                        Service Payment
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 text-center">1</td>
+                                    <td class="py-4 text-end pe-3 fw-bold">RWF {{ payment.amount|floatformat:0 }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col-md-5">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="fw-bold">RWF {{ payment.amount|floatformat:0 }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tax (0%)</span>
+                                <span class="fw-bold">RWF 0</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-4">
+                                <span class="h5 fw-bold">Total</span>
+                                <span class="h5 fw-bold text-primary">RWF {{ payment.amount|floatformat:0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-5 border-top text-center text-muted small">
+                        <p class="mb-1">Thank you for choosing Dusangire for your healthy meal needs.</p>
+                        <p class="mb-0">If you have any questions, please contact us at support@dusangire.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 d-flex justify-content-center gap-3 no-print">
+                <button onclick="window.print()" class="btn btn-dark rounded-pill px-5 py-3">
+                    <i class="bi bi-printer me-2"></i> Print Invoice
+                </button>
+                <a href="{% url 'customer_dashboard:payment_history' %}"
+                    class="btn btn-outline-secondary rounded-pill px-5 py-3">
+                    Back to History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+
+        .no-print,
+        .sidebar,
+        .navbar {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #eee !important;
+        }
+    }
+</style>
+{% endblock %}

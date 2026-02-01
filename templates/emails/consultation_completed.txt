@@ -1,0 +1,21 @@
+{% autoescape off %}
+Dear {{ patient_name }},
+
+Your consultation with {{ consultant_name }} has been completed!
+
+Check Type: {{ check_type }}
+Check ID: #{{ check_id }}
+
+Recommendations:
+{{ recommendations }}
+
+Consultant Notes:
+{{ consultant_notes }}
+
+You can view the complete details in your health check dashboard.
+
+Thank you for using {{ site_name }}!
+
+Best regards,
+{{ site_name }} Team
+{% endautoescape %}

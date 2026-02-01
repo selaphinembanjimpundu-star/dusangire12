@@ -1,0 +1,214 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div>
+    <!-- ===== BREADCRUMB ===== -->
+    <nav class="breadcrumb" style="margin-bottom: 1.5rem;">
+        <span class="breadcrumb-item">
+            <a href="{% url 'customer_dashboard:dashboard' %}" style="text-decoration: none;">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </span>
+        <span class="breadcrumb-item active">
+            <i class="bi bi-bag-check me-2"></i> My Orders
+        </span>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-bag-check"></i> My Orders</h1>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+            Track, manage, and repeat your favorite meal orders
+        </p>
+    </div>
+
+    <!-- ===== SUMMARY CARDS ===== -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        <!-- Total Orders -->
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="value">{{ orders.count|default:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">All time</div>
+        </div>
+
+        <!-- Total Spent -->
+        <div class="stat-card">
+            <h3>Total Spent</h3>
+            <div class="value">RWF {{ total_spent|default:0|floatformat:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Cumulative</div>
+        </div>
+
+        <!-- Pending Orders -->
+        <div class="stat-card">
+            <h3>Pending Orders</h3>
+            <div class="value">{{ pending_count|default:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">In progress</div>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="stat-card">
+            <h3>Delivered</h3>
+            <div class="value">{{ delivered_count|default:0 }}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Completed</div>
+        </div>
+    </div>
+
+    <!-- ===== FILTERS & ACTIONS ===== -->
+    <div class="dashboard-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h6 style="margin: 0; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Filter by Status</h6>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{% url 'customer_dashboard:my_orders' %}" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-funnel"></i> All Orders
+                </a>
+                <a href="{% url 'customer_dashboard:my_orders' %}?status=pending" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-hourglass"></i> Pending
+                </a>
+                <a href="{% url 'customer_dashboard:my_orders' %}?status=shipped" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-truck"></i> Shipped
+                </a>
+                <a href="{% url 'customer_dashboard:my_orders' %}?status=delivered" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-check-circle"></i> Delivered
+                </a>
+            </div>
+            <a href="{% url 'menu:menu_list' %}" class="btn-custom btn-primary-custom">
+                <i class="bi bi-plus-circle"></i> New Order
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== ORDERS LIST ===== -->
+    {% if orders %}
+    <div style="display: grid; gap: 1.5rem; margin-top: 2rem;">
+        {% for order in orders %}
+        <div class="dashboard-card" style="border-left: 4px solid {% if order.status == 'delivered' %}var(--success-color){% elif order.status == 'shipped' %}var(--info-color){% elif order.status == 'pending' %}var(--warning-color){% else %}var(--danger-color){% endif %};">
+            <!-- Order Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem; font-weight: 700;">Order #{{ order.order_number|default:order.id }}</h3>
+                        <span class="badge-custom badge-{% if order.status == 'delivered' %}success{% elif order.status == 'shipped' %}info{% elif order.status == 'pending' %}warning{% else %}danger{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 2rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        <span><i class="bi bi-calendar"></i> {{ order.created_at|date:"M d, Y" }}</span>
+                        <span><i class="bi bi-clock"></i> {{ order.created_at|date:"h:i A" }}</span>
+                        <span><i class="bi bi-box"></i> {{ order.items.count }} item{{ order.items.count|pluralize }}</span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.3rem;">Total Amount</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">RWF {{ order.total_amount|floatformat:0 }}</div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div style="margin-bottom: 1.5rem;">
+                <h6 style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">Items</h6>
+                <div style="display: grid; gap: 0.5rem;">
+                    {% for item in order.items.all %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--light-bg); border-radius: 0.5rem;">
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-primary);">{{ item.menu_item.name }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">Qty: {{ item.quantity }}</div>
+                        </div>
+                        <div style="text-align: right; font-weight: 600; color: var(--primary-color);">
+                            RWF {{ item.subtotal|floatformat:0 }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Delivery Information (if applicable) -->
+            {% if order.status != 'cancelled' %}
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(66, 153, 225, 0.05); border-radius: 0.6rem; border: 1px solid var(--info-color); border-left: 4px solid var(--info-color);">
+                <h6 style="margin: 0 0 0.8rem 0; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; font-weight: 600;">
+                    <i class="bi bi-box-seam"></i> Delivery Information
+                </h6>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; font-size: 0.9rem;">
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 0.3rem;">Status</div>
+                        <div style="color: var(--text-primary); font-weight: 600;">{{ order.get_status_display }}</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 0.3rem;">Estimated Delivery</div>
+                        <div style="color: var(--text-primary); font-weight: 600;">
+                            {% if order.estimated_delivery %}
+                                {{ order.estimated_delivery|date:"M d, Y" }}
+                            {% else %}
+                                <span style="opacity: 0.6;">TBD</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div style="color: var(--text-secondary); margin-bottom: 0.3rem;">Delivery Address</div>
+                        <div style="color: var(--text-primary); font-weight: 600;">{{ order.delivery_address|truncatewords:5 }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Order Actions -->
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <a href="{% url 'customer_dashboard:order_detail' order.id %}" class="btn-custom btn-primary-custom">
+                    <i class="bi bi-eye"></i> View Details
+                </a>
+                {% if order.status == 'delivered' %}
+                <a href="{% url 'customer_dashboard:repeat_order' order.id %}" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-arrow-repeat"></i> Repeat Order
+                </a>
+                {% elif order.status == 'pending' or order.status == 'processing' %}
+                <a href="{% url 'customer_dashboard:cancel_order' order.id %}" class="btn-custom btn-secondary-custom" style="color: var(--danger-color); border-color: var(--danger-color);">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                {% endif %}
+                <a href="{% url 'customer_dashboard:order_receipt' order.id %}" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-download"></i> Receipt
+                </a>
+                <a href="#" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-chat-dots"></i> Support
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ===== PAGINATION (if needed) ===== -->
+    {% if is_paginated %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="btn-custom btn-secondary-custom"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="btn-custom" style="background: var(--primary-color); color: white;">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}" class="btn-custom btn-secondary-custom">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn-custom btn-secondary-custom"><i class="bi bi-chevron-right"></i></a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- ===== EMPTY STATE ===== -->
+    <div class="dashboard-card" style="text-align: center; padding: 4rem 2rem;">
+        <i class="bi bi-inbox" style="font-size: 4rem; color: var(--primary-color); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">No Orders Yet</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">You haven't placed any orders. Start ordering to see them here.</p>
+        <a href="{% url 'menu:menu_list' %}" class="btn-custom btn-primary-custom">
+            <i class="bi bi-plus-circle"></i> Start Ordering
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

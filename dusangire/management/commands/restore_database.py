@@ -185,3 +185,17 @@ class Command(BaseCommand):
             f'\n  2. Verify data: python manage.py shell'
             f'\n  3. Test application functionality'
         ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+

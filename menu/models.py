@@ -69,6 +69,18 @@ class MenuItem(models.Model):
     is_available = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     
+    # Rating cache (updated automatically when reviews are added/updated)
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        default=0.00,
+        help_text="Average rating from reviews (1.00 to 5.00)"
+    )
+    total_reviews = models.PositiveIntegerField(
+        default=0,
+        help_text="Total number of approved reviews"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -104,3 +116,30 @@ class MenuItem(models.Model):
         
         # Fallback to original image
         return self.image.url if self.image else None
+    
+    def update_average_rating(self):
+        """Update cached average rating and total reviews count"""
+        from reviews.models import Review
+        from django.db.models import Avg, Count
+        
+        stats = Review.objects.filter(
+            menu_item=self,
+            is_approved=True
+        ).aggregate(
+            avg_rating=Avg('rating'),
+            total_reviews=Count('id')
+        )
+        
+        self.average_rating = stats['avg_rating'] or Decimal('0.00')
+        self.total_reviews = stats['total_reviews'] or 0
+        # Save without triggering signals to avoid recursion
+        MenuItem.objects.filter(id=self.id).update(
+            average_rating=self.average_rating,
+            total_reviews=self.total_reviews
+        )
+    
+    def get_rating_display(self):
+        """Get formatted rating display"""
+        if self.total_reviews == 0:
+            return "No ratings yet"
+        return f"{self.average_rating:.1f} ({self.total_reviews} review{'s' if self.total_reviews != 1 else ''})"

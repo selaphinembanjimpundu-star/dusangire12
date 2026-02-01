@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Campaign Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .campaign-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .campaign-status.active {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .campaign-status.draft {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .campaign-status.completed {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .campaign-status.paused {
+        background-color: #ffc107;
+        color: white;
+    }
+    
+    .campaign-row {
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .campaign-row:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .campaign-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .campaign-info {
+        flex-grow: 1;
+    }
+    
+    .campaign-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .campaign-dates {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .performance-item {
+        text-align: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    
+    .performance-item strong {
+        display: block;
+        color: #007bff;
+        font-size: 1.2rem;
+    }
+    
+    .performance-item small {
+        color: #6c757d;
+    }
+    
+    .stats-summary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .stats-summary h3 {
+        margin: 0 0 10px 0;
+    }
+    
+    .stats-summary p {
+        margin: 8px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3 mb-0">Campaign Manager</h1>
+            <p class="text-muted">Create, manage, and track promotional campaigns</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'admin:analytics_campaign_add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Campaign
+            </a>
+        </div>
+    </div>
+
+    <!-- Campaign Statistics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="stats-summary">
+                <h3>Campaign Statistics</h3>
+                <div class="row">
+                    <div class="col-md-3">
+                        <p><strong>Total Campaigns:</strong> {{ stats.total_campaigns }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Active:</strong> {{ stats.active_campaigns }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Completed:</strong> {{ stats.completed_campaigns }}</p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Draft:</strong> {{ stats.draft_campaigns }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group">
+                <a href="?status=" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+                <a href="?status=active" class="btn btn-sm {% if status_filter == 'active' %}btn-primary{% else %}btn-outline-primary{% endif %}">Active</a>
+                <a href="?status=draft" class="btn btn-sm {% if status_filter == 'draft' %}btn-primary{% else %}btn-outline-primary{% endif %}">Draft</a>
+                <a href="?status=completed" class="btn btn-sm {% if status_filter == 'completed' %}btn-primary{% else %}btn-outline-primary{% endif %}">Completed</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaigns List -->
+    <div class="row">
+        <div class="col-12">
+            {% for item in campaign_data %}
+            <div class="campaign-row">
+                <div class="campaign-header">
+                    <div class="campaign-info">
+                        <p class="campaign-title">{{ item.campaign.name }}</p>
+                        <div class="campaign-dates">
+                            {{ item.campaign.start_date|date:'M d, Y' }} - {{ item.campaign.end_date|date:'M d, Y' }}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="campaign-status {{ item.campaign.status }}">
+                            {{ item.campaign.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <p class="text-muted small mb-3">{{ item.campaign.description|truncatewords:20 }}</p>
+
+                {% if item.performance %}
+                <div class="performance-grid">
+                    <div class="performance-item">
+                        <strong>{{ item.performance.orders_influenced }}</strong>
+                        <small>Orders</small>
+                    </div>
+                    <div class="performance-item">
+                        <strong>{{ item.performance.customers_converted }}</strong>
+                        <small>Conversions</small>
+                    </div>
+                    <div class="performance-item">
+                        <strong>{{ item.performance.conversion_rate|floatformat:1 }}%</strong>
+                        <small>Conv. Rate</small>
+                    </div>
+                    <div class="performance-item">
+                        <strong>{{ item.performance.roi|floatformat:1 }}%</strong>
+                        <small>ROI</small>
+                    </div>
+                    <div class="performance-item">
+                        <strong>RWF {{ item.performance.revenue_generated|floatformat:0 }}</strong>
+                        <small>Revenue</small>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'analytics:campaign_detail' item.campaign.id %}" class="btn btn-sm btn-outline-primary">
+                        View Details
+                    </a>
+                    <a href="{% url 'admin:analytics_campaign_change' item.campaign.id %}" class="btn btn-sm btn-outline-secondary">
+                        Edit
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-muted small">No performance data yet</p>
+                <div class="mt-3">
+                    <a href="{% url 'admin:analytics_campaign_change' item.campaign.id %}" class="btn btn-sm btn-outline-secondary">
+                        Edit Campaign
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No campaigns found. 
+                <a href="{% url 'admin:analytics_campaign_add' %}">Create a new campaign</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

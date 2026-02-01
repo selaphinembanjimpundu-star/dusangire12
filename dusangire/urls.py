@@ -13,7 +13,12 @@ from menu import views as menu_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', menu_views.menu_list, name='home'),
-    path('health/', menu_views.health_check, name='health_check'),  # Health check endpoint
+    path('health/', menu_views.health_check, name='health_check'),
+    
+    # Allauth URLs for OAuth
+    path('accounts/', include('allauth.urls')),
+    
+    # Apps - include without namespace parameter
     path('menu/', include('menu.urls')),
     path('accounts/', include('accounts.urls')),
     path('orders/', include('orders.urls')),
@@ -22,9 +27,15 @@ urlpatterns = [
     path('dashboard/', include('admin_dashboard.urls')),
     path('subscriptions/', include('subscriptions.urls')),
     path('loyalty/', include('loyalty.urls')),
+    path('catering/', include('catering.urls')),
     path('notifications/', include('notifications.urls')),
     path('reviews/', include('reviews.urls')),
     path('support/', include('support.urls')),
+    path('nutritionist/', include('nutritionist_dashboard.urls')),
+    path('customer-dashboard/', include('customer_dashboard.urls')),
+    path('analytics/', include('analytics.urls')),
+    path('health-tracking/', include('health_tracking.urls')),
+    path('health-checks/', include('health_profiles.urls')),
 ]
 
 # Serve media files in development

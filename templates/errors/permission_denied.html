@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Access Denied - Dusangire{% endblock %}
+
+{% block content %}
+<div class="permission-denied-container">
+    <div class="error-content">
+        <div class="error-icon">🔒</div>
+        <h1>Access Denied</h1>
+        <p class="error-code">Error 403</p>
+        
+        <div class="error-message">
+            <p>You don't have permission to access this resource.</p>
+        </div>
+
+        <!-- Show role information -->
+        {% if user.is_authenticated %}
+        <div class="user-info-box">
+            <h3>Your Current Access Level</h3>
+            <div class="access-info">
+                <div class="info-item">
+                    <label>Your Role:</label>
+                    <span class="role-badge">{{ user.profile.get_role_display|default:"No role assigned" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Your Status:</label>
+                    <span class="status-badge status-{{ user.profile.status }}">{{ user.profile.get_status_display }}</span>
+                </div>
+                {% if user_permissions %}
+                <div class="info-item">
+                    <label>Your Permissions:</label>
+                    <div class="permissions-list">
+                        {% for perm in user_permissions %}
+                        <span class="permission-tag">{{ perm|replace:"_":" "|title }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Show required access -->
+        {% if required_permission %}
+        <div class="required-access-box">
+            <h3>Required Access</h3>
+            <p>To access this resource, you need:</p>
+            <span class="required-permission">{{ required_permission|replace:"_":" "|title }}</span>
+        </div>
+        {% endif %}
+
+        {% if required_role %}
+        <div class="required-access-box">
+            <h3>Required Role</h3>
+            <p>To access this resource, you need one of the following roles:</p>
+            <div class="role-list">
+                {% for role in required_role %}
+                <span class="required-role">{{ role }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Helpful information -->
+        <div class="help-box">
+            <h3>What Can You Do?</h3>
+            <ul>
+                <li>Go back to your <a href="{% url 'dashboard' %}">dashboard</a></li>
+                <li>Contact <a href="{% url 'support' %}">support</a> if you believe this is an error</li>
+                <li>Check your <a href="{% url 'profile' %}">profile</a> for more information</li>
+                <li>Return to <a href="{% url 'home' %}">home page</a></li>
+            </ul>
+        </div>
+
+        {% else %}
+        <!-- For unauthenticated users -->
+        <div class="help-box">
+            <p>You must be logged in to access this resource.</p>
+            <div class="action-buttons">
+                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-secondary">Create Account</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Additional help section -->
+        <div class="faq-section">
+            <h3>Frequently Asked Questions</h3>
+            <div class="faq-item">
+                <details>
+                    <summary>Why am I getting this error?</summary>
+                    <p>This error occurs when you try to access a resource that requires a higher access level or specific permissions than your current role provides.</p>
+                </details>
+            </div>
+            <div class="faq-item">
+                <details>
+                    <summary>How do I get access?</summary>
+                    <p>Contact your administrator or organization manager to request access. They can upgrade your account or assign you the required permissions.</p>
+                </details>
+            </div>
+            <div class="faq-item">
+                <details>
+                    <summary>Is this a technical issue?</summary>
+                    <p>If you believe you should have access to this resource, please <a href="{% url 'contact_support' %}">contact support</a> with details about what you were trying to access.</p>
+                </details>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.permission-denied-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.error-content {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-icon {
+    font-size: 60px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    font-size: 32px;
+    margin: 0 0 10px 0;
+}
+
+.error-code {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    margin: 0 0 20px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.error-message {
+    background: #f9f9f9;
+    border-left: 4px solid #dc3545;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.error-message p {
+    margin: 0;
+    color: #333;
+}
+
+.user-info-box,
+.required-access-box,
+.help-box {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.user-info-box h3,
+.required-access-box h3,
+.help-box h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.access-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #666;
+    min-width: 120px;
+}
+
+.role-badge {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-suspended {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+}
+
+.permission-tag {
+    display: inline-block;
+    background: #e7f3ff;
+    color: #0066cc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.required-permission {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.role-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.required-role {
+    display: inline-block;
+    background: #e7f3ff;
+    color: #0066cc;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.help-box ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.help-box li {
+    margin: 0;
+}
+
+.help-box a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.help-box a:hover {
+    text-decoration: underline;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.faq-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.faq-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.faq-item {
+    margin-bottom: 10px;
+}
+
+.faq-item details {
+    cursor: pointer;
+}
+
+.faq-item summary {
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.3s;
+}
+
+.faq-item summary:hover {
+    background: #e0e0e0;
+}
+
+.faq-item details[open] summary {
+    background: #f9f9f9;
+}
+
+.faq-item p {
+    margin: 10px 10px 0 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .error-content {
+        padding: 30px 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .error-icon {
+        font-size: 40px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .info-item {
+        flex-wrap: wrap;
+    }
+
+    .info-item label {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

@@ -79,6 +79,20 @@ def dashboard(request):
     # Average Order Value
     avg_order_value = Order.objects.aggregate(avg=Avg('total'))['avg'] or Decimal('0.00')
     
+    # Corporate Statistics
+    from corporate.models import CorporateContract, CorporatePartner
+    total_partners = CorporatePartner.objects.count()
+    #active_contracts = CorporateContract.objects.filter(status='active').count()
+    active_contracts = CorporateContract.objects.filter(is_active=True).count()
+    
+    
+    # Catering Statistics
+    from catering.models import CateringBooking
+    pending_catering = CateringBooking.objects.filter(status='pending').count()
+    total_catering_revenue = CateringBooking.objects.filter(status='completed').aggregate(
+        total=Sum('total_price')
+    )['total'] or Decimal('0.00')
+
     context = {
         # Order Stats
         'total_orders': total_orders,
@@ -104,6 +118,12 @@ def dashboard(request):
         'completed_payments': completed_payments,
         'failed_payments': failed_payments,
         
+        # Corporate & Catering
+        'total_partners': total_partners,
+        'active_contracts': active_contracts,
+        'pending_catering': pending_catering,
+        'total_catering_revenue': total_catering_revenue,
+
         # Other Stats
         'recent_orders': recent_orders,
         'popular_items': popular_items,
@@ -286,3 +306,71 @@ def reports(request):
     }
     
     return render(request, 'admin_dashboard/reports.html', context)
+@login_required
+@user_passes_test(is_staff_or_admin)
+def bi_dashboard(request):
+    """Business Intelligence Dashboard with advanced analytics"""
+    from django.db.models import Count, Sum, Avg, Q
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Time periods
+    now = timezone.now()
+    month_ago = now - timedelta(days=30)
+    two_months_ago = now - timedelta(days=60)
+    
+    # 1. Average Order Value (AOV)
+    aov = Order.objects.filter(status=OrderStatus.DELIVERED).aggregate(avg=Avg('total'))['avg'] or Decimal('0.00')
+    
+    # 2. Customer Retention Rate
+    # Customers who ordered in the previous month
+    prev_month_customers = Order.objects.filter(
+        created_at__range=[two_months_ago, month_ago]
+    ).values('user').distinct().count()
+    
+    # Customers from prev month who also ordered this month
+    retained_customers = Order.objects.filter(
+        created_at__range=[month_ago, now],
+        user__in=Order.objects.filter(created_at__range=[two_months_ago, month_ago]).values('user')
+    ).values('user').distinct().count()
+    
+    retention_rate = (retained_customers / prev_month_customers * 100) if prev_month_customers > 0 else 0
+    
+    # 3. Customer Lifetime Value (CLV)
+    # CLV = AOV * Purchase Frequency
+    total_orders = Order.objects.filter(status=OrderStatus.DELIVERED).count()
+    total_customers = Order.objects.values('user').distinct().count()
+    purchase_frequency = (total_orders / total_customers) if total_customers > 0 else 0
+    clv = aov * Decimal(str(purchase_frequency))
+    
+    # 4. Revenue vs Target (Placeholder target)
+    monthly_revenue = Payment.objects.filter(
+        status=PaymentStatus.COMPLETED,
+        paid_at__gte=month_ago
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    
+    revenue_target = Decimal('5000000.00') # Example target: 5M RWF
+    target_achievement = (monthly_revenue / revenue_target * 100) if revenue_target > 0 else 0
+    
+    # 5. Churn Rate
+    churn_rate = 100 - retention_rate if prev_month_customers > 0 else 0
+
+    # 6. Revenue by Category
+    category_revenue = OrderItem.objects.values(
+        'menu_item__category__name'
+    ).annotate(
+        revenue=Sum('subtotal')
+    ).order_by('-revenue')
+
+    context = {
+        'aov': aov,
+        'retention_rate': retention_rate,
+        'clv': clv,
+        'monthly_revenue': monthly_revenue,
+        'revenue_target': revenue_target,
+        'target_achievement': target_achievement,
+        'churn_rate': churn_rate,
+        'category_revenue': category_revenue,
+        'title': ('Business Intelligence Dashboard'),
+    }
+    return render(request, 'admin_dashboard/bi_dashboard.html', context)

@@ -4,18 +4,12 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
   <div class="container">
     <a class="navbar-brand animate-fade-in d-flex align-items-center" href="{% url 'home' %}">
-      <img src="{% static 'images/logo.png' %}" alt="NOURISH LINK Logo" class="me-2" style="height: 40px; width: auto;" />
-      <span class="d-none d-md-inline">NOURISH LINK</span>
+      <img src="{% static 'images/logo.png' %}" alt="Dusangire Logo" class="me-2" style="height: 40px; width: auto;"
+        loading="eager" fetchpriority="high" />
+      <span class="d-none d-md-inline">Dusangire</span>
     </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
@@ -43,10 +37,7 @@
             <i class="bi bi-cart"></i> Cart
             {% get_cart_count user as cart_count %}
             {% if cart_count > 0 %}
-            <span
-              class="badge bg-danger position-absolute top-0 start-100 translate-middle"
-              id="cart-badge"
-            >
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="cart-badge">
               {{ cart_count }}
             </span>
             {% endif %}
@@ -57,10 +48,7 @@
             <i class="bi bi-bell"></i> Notifications
             {% get_unread_notification_count user as unread_count %}
             {% if unread_count > 0 %}
-            <span
-              class="badge bg-danger position-absolute top-0 start-100 translate-middle"
-              id="notification-badge"
-            >
+            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="notification-badge">
               {{ unread_count }}
             </span>
             {% endif %}
@@ -81,21 +69,12 @@
       <ul class="navbar-nav">
         {% if user.is_authenticated %}
         <li class="nav-item dropdown">
-          <a
-            class="nav-link dropdown-toggle d-flex align-items-center"
-            href="#"
-            id="navbarDropdown"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-circle me-1"></i>
             <span class="d-none d-md-inline">{{ user.username }}</span>
           </a>
-          <ul
-            class="dropdown-menu dropdown-menu-end shadow-lg"
-            aria-labelledby="navbarDropdown"
-          >
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="navbarDropdown">
             <li>
               <a class="dropdown-item" href="{% url 'accounts:profile' %}">
                 <i class="bi bi-person"></i> Profile
@@ -115,23 +94,26 @@
                 {% endif %}
               </a>
             </li>
-                            {% if user.is_staff %}
-                            <li>
-                              <a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">
-                                <i class="bi bi-speedometer2"></i> Dashboard
-                              </a>
-                            </li>
-                            <li>
-                              <a class="dropdown-item" href="{% url 'admin:index' %}">
-                                <i class="bi bi-gear"></i> Admin Panel
-                              </a>
-                            </li>
-                            {% endif %}
-            <li><hr class="dropdown-divider" /></li>
+            {% if user.is_staff %}
+            <li>
+              <a class="dropdown-item" href="{% url 'admin_dashboard:dashboard' %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'admin:index' %}">
+                <i class="bi bi-gear"></i> Admin Panel
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <hr class="dropdown-divider" />
+            </li>
             <li>
               <form method="post" action="{% url 'accounts:logout' %}" class="d-inline w-100">
                 {% csrf_token %}
-                <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start p-0" style="padding: 0.25rem 1rem !important;">
+                <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start p-0"
+                  style="padding: 0.25rem 1rem !important;">
                   <i class="bi bi-box-arrow-right"></i> Logout
                 </button>
               </form>
@@ -145,10 +127,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a
-            class="nav-link btn btn-outline-light ms-2 px-3"
-            href="{% url 'accounts:register' %}"
-          >
+          <a class="nav-link btn btn-outline-light ms-2 px-3" href="{% url 'accounts:register' %}">
             <i class="bi bi-person-plus"></i> Register
           </a>
         </li>

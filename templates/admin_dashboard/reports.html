@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Reports & Analytics - NOURISH LINK{% endblock %}
+{% block title %}Reports & Analytics - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4 mb-5">
@@ -10,14 +10,15 @@
             <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
     </div>
-    
+
     <!-- Date Range Filter -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-4">
                     <label for="date_from" class="form-label">Date From</label>
-                    <input type="date" name="date_from" id="date_from" class="form-control" value="{{ date_from }}" required>
+                    <input type="date" name="date_from" id="date_from" class="form-control" value="{{ date_from }}"
+                        required>
                 </div>
                 <div class="col-md-4">
                     <label for="date_to" class="form-label">Date To</label>
@@ -34,7 +35,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Summary Statistics -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
@@ -62,7 +63,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Popular Items -->
     <div class="row">
         <div class="col-lg-6">
@@ -84,17 +85,17 @@
                             </thead>
                             <tbody>
                                 {% for item in popular_items %}
-                                    <tr>
-                                        <td><strong>{{ item.menu_item__name }}</strong></td>
-                                        <td>{{ item.menu_item__category__name }}</td>
-                                        <td>{{ item.total_quantity }}</td>
-                                        <td>RWF {{ item.total_revenue|floatformat:0 }}</td>
-                                        <td>{{ item.order_count }}</td>
-                                    </tr>
+                                <tr>
+                                    <td><strong>{{ item.menu_item__name }}</strong></td>
+                                    <td>{{ item.menu_item__category__name }}</td>
+                                    <td>{{ item.total_quantity }}</td>
+                                    <td>RWF {{ item.total_revenue|floatformat:0 }}</td>
+                                    <td>{{ item.order_count }}</td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">No data available</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No data available</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -102,7 +103,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-6">
             <!-- Sales by Category -->
             <div class="card mb-4">
@@ -121,15 +122,15 @@
                             </thead>
                             <tbody>
                                 {% for category in category_sales %}
-                                    <tr>
-                                        <td><strong>{{ category.menu_item__category__name }}</strong></td>
-                                        <td>RWF {{ category.total_revenue|floatformat:0 }}</td>
-                                        <td>{{ category.total_quantity }}</td>
-                                    </tr>
+                                <tr>
+                                    <td><strong>{{ category.menu_item__category__name }}</strong></td>
+                                    <td>RWF {{ category.total_revenue|floatformat:0 }}</td>
+                                    <td>{{ category.total_quantity }}</td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No data available</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No data available</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -138,7 +139,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Payment Methods -->
     <div class="row">
         <div class="col-12">
@@ -158,15 +159,15 @@
                             </thead>
                             <tbody>
                                 {% for method in payment_methods %}
-                                    <tr>
-                                        <td><strong>{{ method.payment_method|title }}</strong></td>
-                                        <td>{{ method.count }}</td>
-                                        <td>RWF {{ method.total|floatformat:0 }}</td>
-                                    </tr>
+                                <tr>
+                                    <td><strong>{{ method.payment_method|title }}</strong></td>
+                                    <td>{{ method.count }}</td>
+                                    <td>RWF {{ method.total|floatformat:0 }}</td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No data available</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No data available</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -177,6 +178,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Update Subscription - NOURISH LINK{% endblock %}
+{% block title %}Update Subscription - Dusangire{% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5">
@@ -15,35 +15,36 @@
                         <strong>Plan:</strong> {{ subscription.plan.name }}<br>
                         <strong>Status:</strong> {{ subscription.get_status_display }}
                     </div>
-                    
+
                     <form method="post">
                         {% csrf_token %}
-                        
+
                         <div class="mb-3">
                             <label for="id_preferred_delivery_time" class="form-label">Preferred Delivery Time</label>
                             {{ form.preferred_delivery_time }}
                             {% if form.preferred_delivery_time.errors %}
-                                <div class="text-danger small">{{ form.preferred_delivery_time.errors }}</div>
+                            <div class="text-danger small">{{ form.preferred_delivery_time.errors }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="id_dietary_preferences" class="form-label">Dietary Preferences</label>
                             {{ form.dietary_preferences }}
                             {% if form.dietary_preferences.errors %}
-                                <div class="text-danger small">{{ form.dietary_preferences.errors }}</div>
+                            <div class="text-danger small">{{ form.dietary_preferences.errors }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <div class="form-check mb-3">
                             {{ form.auto_order_enabled }}
                             <label class="form-check-label" for="id_auto_order_enabled">
                                 Enable automatic order generation
                             </label>
                         </div>
-                        
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'subscriptions:subscription_detail' subscription.id %}" class="btn btn-outline-secondary">
+                            <a href="{% url 'subscriptions:subscription_detail' subscription.id %}"
+                                class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">
@@ -57,6 +58,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-

@@ -1,7 +1,7 @@
-# NOURISH LINK - Monitoring Setup Guide
+# Dusangire - Monitoring Setup Guide
 
 ## Overview
-This guide explains how to set up monitoring and logging for the NOURISH LINK application in production.
+This guide explains how to set up monitoring and logging for the Dusangire application in production.
 
 ## Table of Contents
 
@@ -477,3 +477,17 @@ Monitoring is essential for:
 - **Reliability**: Ensure system availability
 
 Set up monitoring before launch and maintain it continuously.
+
+
+
+
+
+
+
+
+
+
+
+
+
+

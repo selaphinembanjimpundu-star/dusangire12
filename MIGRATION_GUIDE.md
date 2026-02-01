@@ -405,3 +405,17 @@ Current migration files:
 - [PostgreSQL Backup and Restore](https://www.postgresql.org/docs/current/backup.html)
 - [Django Migration Operations](https://docs.djangoproject.com/en/stable/ref/migration-operations/)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

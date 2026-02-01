@@ -1,0 +1,73 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Dietary Emergency Info</h2>
+            <p class="text-muted">Critical information about your allergies and dietary restrictions</p>
+        </div>
+        <a href="{% url 'customer_dashboard:my_profile' %}" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="bi bi-pencil me-2"></i> Edit Preferences
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 border-start border-5 border-danger">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-circle me-3">
+                            <i class="bi bi-exclamation-triangle h3 mb-0"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0">Allergies</h4>
+                    </div>
+                    {% if health_profile.allergies %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for allergy in health_profile.allergies.split %}
+                        <span class="badge bg-danger rounded-pill px-3 py-2">{{ allergy|trim }}</span>
+                        {% endfor %}
+                    </div>
+                    <p class="mt-4 text-muted">{{ health_profile.allergies }}</p>
+                    {% else %}
+                    <p class="text-muted">No allergies recorded. Please update your profile if you have any food
+                        allergies.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 border-start border-5 border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle me-3">
+                            <i class="bi bi-info-circle h3 mb-0"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0">Dietary Restrictions</h4>
+                    </div>
+                    {% if health_profile.dietary_restrictions %}
+                    <p class="lead mb-0">{{ health_profile.dietary_restrictions }}</p>
+                    {% else %}
+                    <p class="text-muted">No specific dietary restrictions recorded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-light">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Important Note for Kitchen Staff</h5>
+                    <p class="mb-0 text-muted">
+                        This information is shared with our kitchen and delivery staff to ensure your meals are prepared
+                        and handled safely. If you have a life-threatening allergy, please ensure it is clearly listed
+                        here and mentioned during your consultations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

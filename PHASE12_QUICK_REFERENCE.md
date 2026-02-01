@@ -360,3 +360,17 @@ python manage.py dbshell
 - Monitor closely after deployment
 - Document all issues and solutions
 - Keep this guide updated
+
+
+
+
+
+
+
+
+
+
+
+
+
+

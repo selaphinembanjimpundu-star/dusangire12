@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Sign Out - NOURISH LINK{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.82);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --logout-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+
+    body {
+        background: #f0f2f5;
+        overflow-x: hidden;
+    }
+
+    .logout-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+    }
+
+    .glass-pro-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+    }
+
+    .logout-icon {
+        font-size: 4rem;
+        color: #2a5298;
+        margin: 2rem 0 1rem;
+    }
+
+    .btn-pro-logout {
+        background: var(--logout-gradient);
+        border: none;
+        border-radius: 16px;
+        padding: 1rem;
+        font-weight: 700;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(30, 60, 114, 0.3);
+    }
+
+    .btn-pro-logout:hover {
+        transform: scale(1.02);
+        box-shadow: 0 15px 30px rgba(30, 60, 114, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container logout-container">
+    <div class="glass-pro-card animate-fade-in-up">
+        <div class="logout-icon">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+
+        <div class="px-5 pb-5">
+            <h2 class="h3 fw-bold mb-2">{% trans "Sign Out" %}</h2>
+            <p class="text-muted mb-4">{% trans "Are you sure you want to sign out?" %}</p>
+
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                <div class="d-grid gap-3">
+                    <button type="submit" class="btn btn-pro-logout">
+                        {% trans "Yes, Sign Me Out" %}
+                    </button>
+                    <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-muted fw-bold">
+                        {% trans "Stay Logged In" %}
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

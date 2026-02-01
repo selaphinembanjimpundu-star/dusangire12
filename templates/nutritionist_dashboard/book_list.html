@@ -1,0 +1,216 @@
+{% extends 'nutritionist_dashboard/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== Header ===== -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'nutritionist_dashboard:dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Resources & Learning</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold mb-2">
+                <i class="bi bi-book-half text-primary me-2"></i> Resources & Educational Materials
+            </h1>
+            <p class="text-muted">Stay updated with the latest nutritional science and resources</p>
+        </div>
+    </div>
+
+    <!-- ===== Filter & Search Section ===== -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control rounded-3" placeholder="Search resources...">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select rounded-3">
+                                <option>All Categories</option>
+                                <option>Articles</option>
+                                <option>Books</option>
+                                <option>Research Papers</option>
+                                <option>Videos</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select rounded-3">
+                                <option>Sort by: Newest</option>
+                                <option>Most Popular</option>
+                                <option>Rating</option>
+                                <option>Most Saved</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Featured Section ===== -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h5 class="fw-bold mb-3">Featured Resources</h5>
+            <div class="row g-4">
+                {% for resource in featured_resources %}
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 transition-transform">
+                        <div class="position-relative" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-warning">Featured</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-star-fill text-white" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="mb-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Article</span>
+                            </div>
+                            <h6 class="fw-bold mb-2">Advanced Macronutrient Optimization</h6>
+                            <p class="text-muted small mb-3">Learn evidence-based strategies for optimizing client macronutrient ratios based on their individual goals...</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted"><i class="bi bi-calendar"></i> Feb 1, 2026</small>
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-3">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Resources Grid ===== -->
+    <div class="row">
+        <div class="col-12">
+            <h5 class="fw-bold mb-3">Latest Resources</h5>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {% for resource in resources %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 transition-transform">
+                <!-- Resource Header -->
+                <div class="card-header bg-light border-bottom-0 p-3 position-relative">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            {% if resource.type == 'article' %}
+                                <i class="bi bi-file-text text-primary" style="font-size: 1.5rem;"></i>
+                            {% elif resource.type == 'book' %}
+                                <i class="bi bi-book text-success" style="font-size: 1.5rem;"></i>
+                            {% elif resource.type == 'video' %}
+                                <i class="bi bi-play-circle text-danger" style="font-size: 1.5rem;"></i>
+                            {% elif resource.type == 'research' %}
+                                <i class="bi bi-graph-up text-info" style="font-size: 1.5rem;"></i>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-secondary rounded-3 px-2 py-1">
+                                <i class="bi bi-bookmark"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-3 px-2 py-1">
+                                <i class="bi bi-share"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <span class="badge bg-{% if resource.type == 'article' %}primary{% elif resource.type == 'book' %}success{% elif resource.type == 'video' %}danger{% else %}info{% endif %} bg-opacity-10 text-{% if resource.type == 'article' %}primary{% elif resource.type == 'book' %}success{% elif resource.type == 'video' %}danger{% else %}info{% endif %} rounded-pill">
+                        {{ resource.get_type_display }}
+                    </span>
+                </div>
+
+                <!-- Resource Body -->
+                <div class="card-body p-4 d-flex flex-column">
+                    <h6 class="fw-bold mb-2 flex-grow-1">{{ resource.title }}</h6>
+                    <p class="text-muted small mb-3">{{ resource.description|truncatewords:25 }}</p>
+                    
+                    <div class="row g-2 text-muted small mb-3">
+                        <div class="col-auto">
+                            <i class="bi bi-person me-1"></i>{{ resource.author }}
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar me-1"></i>{{ resource.published_date|date:"M d" }}
+                        </div>
+                    </div>
+
+                    <!-- Rating & Stats -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="bi bi-star-fill text-warning" style="font-size: 0.9rem;"></i>
+                            <small class="text-muted">{{ resource.rating|default:"4.5" }} ({{ resource.reviews_count|default:"128" }})</small>
+                        </div>
+                        <a href="{% url 'nutritionist_dashboard:resource_detail' resource.id %}" class="btn btn-sm btn-primary rounded-3">
+                            View <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                <h5 class="mt-3 fw-bold">No Resources Available</h5>
+                <p class="text-muted">Check back soon for new educational materials</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ===== Pagination ===== -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mb-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-3" href="?page=1">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link rounded-3" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link rounded-3" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-3" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link rounded-3" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .transition-transform {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .transition-transform:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .btn {
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

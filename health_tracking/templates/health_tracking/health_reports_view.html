@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Health Reports - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header with Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="h3 mb-0">Health Reports</h1>
+            <p class="text-muted">Comprehensive summaries of your health metrics, goals, and meal effectiveness</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="btn-group" role="group">
+                <a href="?generate=1&type=weekly" class="btn btn-primary btn-sm">
+                    <i class="fas fa-chart-line me-1"></i>Weekly Report
+                </a>
+                <a href="?generate=1&type=monthly" class="btn btn-primary btn-sm">
+                    <i class="fas fa-chart-bar me-1"></i>Monthly Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="row">
+        <div class="col-lg-12">
+            {% if reports %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Report Title</th>
+                                <th>Type</th>
+                                <th>Period</th>
+                                <th>Generated</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                                <tr>
+                                    <td>
+                                        <button type="button" class="btn btn-link text-start p-0" 
+                                                data-bs-toggle="modal" data-bs-target="#report{{ report.id }}">
+                                            <strong>{{ report.report_title|truncatewords:8 }}</strong>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ report.get_report_type_display }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {% now "Y-m-d" %} (Last 7 days)
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>{{ report.report_date|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if report.is_shared_with_nutritionist %}
+                                            <span class="badge bg-success"><i class="fas fa-share-alt"></i> Shared</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary"><i class="fas fa-lock"></i> Private</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    data-bs-toggle="modal" data-bs-target="#report{{ report.id }}">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <a href="#" class="btn btn-outline-secondary">
+                                                <i class="fas fa-download"></i> PDF
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Report Detail Modal -->
+                                <div class="modal fade modal-lg" id="report{{ report.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-scrollable">
+                                        <div class="modal-content">
+                                            <div class="modal-header border-bottom">
+                                                <div>
+                                                    <h5 class="modal-title">{{ report.report_title }}</h5>
+                                                    <small class="text-muted">Generated {{ report.report_date|date:"M d, Y" }}</small>
+                                                </div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <!-- Summary Section -->
+                                                <div class="mb-4">
+                                                    <h6 class="mb-3"><i class="fas fa-file-alt text-primary me-2"></i>Summary</h6>
+                                                    <p class="text-muted">{{ report.summary|default:"No summary available" }}</p>
+                                                </div>
+
+                                                <!-- Key Findings -->
+                                                {% if report.key_findings %}
+                                                    <div class="mb-4">
+                                                        <h6 class="mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Key Findings</h6>
+                                                        <div class="alert alert-light">
+                                                            {{ report.key_findings }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Metrics Summary Table -->
+                                                {% if report.metrics_summary %}
+                                                    <div class="mb-4">
+                                                        <h6 class="mb-3"><i class="fas fa-chart-line text-info me-2"></i>Metrics Summary</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm table-hover">
+                                                                <thead class="table-light">
+                                                                    <tr>
+                                                                        <th>Metric</th>
+                                                                        <th>Average</th>
+                                                                        <th>Min</th>
+                                                                        <th>Max</th>
+                                                                        <th>Status</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for metric, data in report.metrics_summary.items %}
+                                                                        <tr>
+                                                                            <td><strong>{{ metric }}</strong></td>
+                                                                            <td>{{ data.avg|floatformat:2 }}</td>
+                                                                            <td><small class="text-muted">{{ data.min|floatformat:2 }}</small></td>
+                                                                            <td><small class="text-muted">{{ data.max|floatformat:2 }}</small></td>
+                                                                            <td>
+                                                                                {% if data.status == 'normal' %}
+                                                                                    <span class="badge bg-success">✓ Normal</span>
+                                                                                {% elif data.status == 'alert' %}
+                                                                                    <span class="badge bg-warning">⚠ Alert</span>
+                                                                                {% else %}
+                                                                                    <span class="badge bg-secondary">–</span>
+                                                                                {% endif %}
+                                                                            </td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Goal Progress Section -->
+                                                {% if report.goal_progress %}
+                                                    <div class="mb-4">
+                                                        <h6 class="mb-3"><i class="fas fa-bullseye text-success me-2"></i>Goal Progress</h6>
+                                                        {% for goal, data in report.goal_progress.items %}
+                                                            <div class="mb-3">
+                                                                <div class="d-flex justify-content-between mb-2">
+                                                                    <span><strong>{{ goal }}</strong></span>
+                                                                    <small class="text-muted">{{ data.progress|floatformat:0 }}% Complete</small>
+                                                                </div>
+                                                                <div class="progress" style="height: 20px;">
+                                                                    <div class="progress-bar" style="width: {{ data.progress }}%;\"></div>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Meal Analysis -->
+                                                {% if report.meal_analysis %}
+                                                    <div class="mb-4">
+                                                        <h6 class="mb-3"><i class="fas fa-utensils text-info me-2"></i>Meal Effectiveness Analysis</h6>
+                                                        <div class="alert alert-light">
+                                                            {{ report.meal_analysis }}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Recommendations -->
+                                                {% if report.recommendations %}
+                                                    <div class="mb-4">
+                                                        <h6 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Recommendations</h6>
+                                                        <ul class="list-unstyled">
+                                                            {% for rec in report.recommendations|split:";" %}
+                                                                {% if rec.strip %}
+                                                                    <li class="mb-2">
+                                                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                                                        {{ rec.strip }}
+                                                                    </li>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                {% endif %}
+
+                                                <!-- Share Status -->
+                                                <div class="mb-4 pt-4 border-top">
+                                                    <small class="text-muted\">
+                                                        <strong>Share Status:</strong>
+                                                        {% if report.is_shared_with_nutritionist %}
+                                                            <span class=\"badge bg-success\">Shared with your nutritionist</span>
+                                                        {% else %}
+                                                            <span class=\"badge bg-secondary\">Private - Not shared</span>
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class=\"modal-footer\">
+                                                <button type=\"button\" class=\"btn btn-secondary\" data-bs-dismiss=\"modal\">Close</button>
+                                                <a href=\"#\" class=\"btn btn-primary\">
+                                                    <i class=\"fas fa-download me-1\"></i>Download PDF
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class=\"card border-0 shadow-sm\">
+                    <div class=\"card-body text-center py-5\">
+                        <i class=\"fas fa-chart-pie fa-3x text-muted mb-3 d-block\"></i>
+                        <h5 class=\"text-muted mb-2\">No Reports Yet</h5>
+                        <p class=\"text-muted mb-4\">You haven't generated any health reports yet. Create your first report to see your health insights.</p>
+                        <div class=\"d-grid gap-2 d-sm-flex justify-content-sm-center\">
+                            <a href=\"?generate=1&type=weekly\" class=\"btn btn-primary\">
+                                <i class=\"fas fa-chart-line me-2\"></i>Generate Weekly Report
+                            </a>
+                            <a href=\"?generate=1&type=monthly\" class=\"btn btn-outline-primary\">
+                                <i class=\"fas fa-chart-bar me-2\"></i>Generate Monthly Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

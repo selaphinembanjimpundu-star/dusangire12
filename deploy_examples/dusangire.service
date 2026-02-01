@@ -1,0 +1,14 @@
+[Unit]
+Description=gunicorn daemon for Dusangire
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/www/dusangire
+Environment=DJANGO_SETTINGS_MODULE=dusangire.settings_production
+Environment=PATH=/home/www/dusangire/venv/bin
+ExecStart=/home/www/dusangire/venv/bin/gunicorn --workers 3 --bind unix:/run/dusangire.sock dusangire.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

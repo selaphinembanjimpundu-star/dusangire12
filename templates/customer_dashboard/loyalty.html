@@ -1,0 +1,191 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-4">
+    <!-- VIP Tier Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+                style="background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);">
+                <div class="card-body p-5 text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="text-uppercase fw-bold opacity-75 mb-2">Current VIP Status</h6>
+                            <h1 class="display-4 fw-bold mb-3">{{ vip_tier.get_tier_level_display }} Member</h1>
+                            <p class="lead opacity-90 mb-0">You are enjoying {{ vip_tier.promotion_percentage }}% bonus
+                                points on all subscriptions!</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                            <div class="vip-badge-large">
+                                <i class="bi bi-gem display-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Points Balance -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="text-muted text-uppercase small fw-bold">Points Balance</h6>
+                            <h2 class="display-5 fw-bold mb-0">{{ loyalty_points.balance }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-4">
+                            <i class="bi bi-star-fill text-primary h3 mb-0"></i>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">Value: RWF {{ points_value_rwf|floatformat:0 }} (1 pt = 100 RWF)
+                    </p>
+                    <div class="mt-4">
+                        <button class="btn btn-primary w-100 rounded-pill py-2">Redeem Points</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referral Info -->
+        <div class="col-md-6 col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3">Refer & Earn</h6>
+                            <h4 class="fw-bold mb-3">Invite friends and get 500 points!</h4>
+                            <p class="text-muted mb-4">Share your unique referral code with friends. When they make
+                                their first purchase, you both get rewarded.</p>
+
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control bg-light border-0 py-3"
+                                    value="{{ user.username|upper }}2026" id="referralCode" readonly>
+                                <button class="btn btn-dark px-4" type="button"
+                                    onclick="copyReferralCode()">Copy</button>
+                            </div>
+                        </div>
+                        <div class="col-md-5 d-none d-md-flex align-items-center justify-content-center">
+                            <img src="{% static 'img/referral-illustration.svg' %}" alt="Referral" class="img-fluid"
+                                style="max-height: 180px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Points History -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Points History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Transaction</th>
+                                    <th>Type</th>
+                                    <th>Points</th>
+                                    <th class="text-end pe-4">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in transactions %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">{{ tx.description }}</div>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge rounded-pill bg-{% if tx.transaction_type == 'EARN' %}success{% elif tx.transaction_type == 'REDEEM' %}danger{% else %}info{% endif %} bg-opacity-10 text-{% if tx.transaction_type == 'EARN' %}success{% elif tx.transaction_type == 'REDEEM' %}danger{% else %}info{% endif %} px-3">
+                                            {{ tx.get_transaction_type_display }}
+                                        </span>
+                                    </td>
+                                    <td
+                                        class="fw-bold {% if tx.transaction_type == 'EARN' %}text-success{% elif tx.transaction_type == 'REDEEM' %}text-danger{% endif %}">
+                                        {% if tx.transaction_type == 'EARN' %}+{% else %}-{% endif %}{{ tx.points_amount
+                                        }}
+                                    </td>
+                                    <td class="text-end pe-4 text-muted small">
+                                        {{ tx.created_at|date:"M d, Y" }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5 text-muted">No transactions yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tier Progress -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-3">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Tier Progress</h5>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small text-muted">Lifetime Spending</span>
+                            <span class="small fw-bold">RWF {{ vip_tier.spending_total|floatformat:0 }}</span>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 10px;">
+                            {% if vip_tier.tier_level == 'bronze' %}
+                            <div class="progress-bar bg-warning" style="width: 25%"></div>
+                            {% elif vip_tier.tier_level == 'silver' %}
+                            <div class="progress-bar bg-info" style="width: 50%"></div>
+                            {% elif vip_tier.tier_level == 'gold' %}
+                            <div class="progress-bar bg-warning" style="width: 75%"></div>
+                            {% else %}
+                            <div class="progress-bar bg-primary" style="width: 100%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush small">
+                        <div class="list-group-item px-0 py-3 border-0 d-flex align-items-center">
+                            <div class="bg-light p-2 rounded-circle me-3">
+                                <i class="bi bi-shield-check text-success"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Silver Tier</div>
+                                <div class="text-muted">Spend RWF 500,000 to unlock 5% discount</div>
+                            </div>
+                        </div>
+                        <div class="list-group-item px-0 py-3 border-0 d-flex align-items-center">
+                            <div class="bg-light p-2 rounded-circle me-3">
+                                <i class="bi bi-shield-check text-warning"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Gold Tier</div>
+                                <div class="text-muted">Spend RWF 2,000,000 for 10% discount</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyReferralCode() {
+        var copyText = document.getElementById("referralCode");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        alert("Referral code copied: " + copyText.value);
+    }
+</script>
+{% endblock %}

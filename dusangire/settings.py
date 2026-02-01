@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,13 +21,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-40^5e(c&86(8ae3np5&ew%r!z1ifz&d)ex@0i2r3=w3%q3yko2'
+# SECURITY: read secret key from environment in production
+# Keep the hard-coded key as a fallback only for local development.
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-40^5e(c&86(8ae3np5&ew%r!z1ifz&d)ex@0i2r3=w3%q3yko2')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG should be switched off in production via environment variable
+# Example: export DEBUG=False
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts for development/testing (change in production)
+# ALLOWED_HOSTS must be configured in production. Provide a sensible default for dev.
+ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if h]
 
 
 # Application definition
@@ -37,10 +42,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     
     # Third party apps
     'crispy_forms',
     'crispy_bootstrap5',
+    'rest_framework',
+    'corsheaders',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    
     
     # Local apps
     'accounts',
@@ -51,19 +64,29 @@ INSTALLED_APPS = [
     'admin_dashboard',
     'subscriptions',
     'loyalty',
+    'corporate',
+    'catering',
     'notifications',
     'reviews',
     'support',
+    'patients',
+    'nutritionist_dashboard',
+    'customer_dashboard',
+    'health_profiles',
+    'analytics',
+    'health_tracking',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 # Security Settings
@@ -79,6 +102,8 @@ CSRF_COOKIE_SECURE = not DEBUG  # HTTPS only in production
 CSRF_COOKIE_HTTPONLY = True
 
 ROOT_URLCONF = 'dusangire.urls'
+
+
 
 TEMPLATES = [
     {
@@ -162,6 +187,24 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'menu:menu_list'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
+# Email Configuration for Password Reset & Notifications
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Console backend for development
+# For production, use:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'  # Use environment variables in production
+EMAIL_FROM_USER = 'noreply@dusangire.local'  # Default from email address
+DEFAULT_FROM_EMAIL = 'noreply@dusangire.local'
+CONTACT_EMAIL = 'support@dusangire.local'
+PASSWORD_RESET_TIMEOUT = 3600  # Password reset link valid for 1 hour (in seconds)
+
+# Site Configuration
+SITE_ID = 1
+SITE_NAME = 'Dusangire Health Platform'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -194,9 +237,54 @@ FLUTTERWAVE_PUBLIC_KEY = ''  # Set in environment variables
 FLUTTERWAVE_SECRET_KEY = ''  # Set in environment variables
 FLUTTERWAVE_SECRET_HASH = ''  # Set in environment variables (for webhook verification)
 
-# Payment Logo URL (for payment pages)
-PAYMENT_LOGO_URL = ''  # Optional: URL to hospital/restaurant logo
+# Site ID for allauth
+SITE_ID = 1
 
-# Hospital Acquisition Settings
-HOSPITAL_NAME = 'Hospital Meal Service'  # Update with actual hospital name
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    # Django backend
+    'django.contrib.auth.backends.ModelBackend',
+    
+    # Allauth specific authentication methods
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Allauth Settings
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_SIGNUP_FIELDS = [
+    'email*',
+    'password1*',
+    'password2*',
+]
+SOCIALACCOUNT_AUTO_SIGNUP = True
+
+# Google OAuth Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': config('GOOGLE_OAUTH_CLIENT_ID', default=''),
+            'secret': config('GOOGLE_OAUTH_CLIENT_SECRET', default=''),
+            'key': ''
+        }
+    }
+}
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+# Redirect URLs after OAuth
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 HOSPITAL_ACQUISITION_MODE = True  # Enable hospital-specific features

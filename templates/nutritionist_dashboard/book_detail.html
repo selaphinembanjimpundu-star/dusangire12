@@ -1,0 +1,281 @@
+{% extends 'nutritionist_dashboard/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- ===== Header & Breadcrumb ===== -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'nutritionist_dashboard:dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'nutritionist_dashboard:book_list' %}" class="text-decoration-none">Resources</a></li>
+                    <li class="breadcrumb-item active">{{ resource.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- ===== Left Column: Resource Info ===== -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 sticky-top" style="top: 20px;">
+                <!-- Resource Type Header -->
+                <div class="position-relative" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <span class="badge bg-warning rounded-pill">
+                            {% if resource.type == 'article' %}
+                                <i class="bi bi-file-text me-1"></i>Article
+                            {% elif resource.type == 'book' %}
+                                <i class="bi bi-book me-1"></i>Book
+                            {% elif resource.type == 'video' %}
+                                <i class="bi bi-play-circle me-1"></i>Video
+                            {% else %}
+                                <i class="bi bi-graph-up me-1"></i>Research
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Resource Details -->
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">{{ resource.title }}</h5>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted">Rating</small>
+                            <div class="d-flex gap-1">
+                                {% for i in "12345" %}
+                                    {% if i|add:"0" <= resource.rating|default:"4.5" %}
+                                        <i class="bi bi-star-fill text-warning" style="font-size: 0.9rem;"></i>
+                                    {% else %}
+                                        <i class="bi bi-star text-warning" style="font-size: 0.9rem;"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ resource.rating|default:"4.5" }}/5 ({{ resource.reviews_count|default:"128" }} reviews)</small>
+                    </div>
+
+                    <hr>
+
+                    <!-- Resource Info -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Details</h6>
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Author</small>
+                            <small class="fw-bold">{{ resource.author }}</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Published</small>
+                            <small class="fw-bold">{{ resource.published_date|date:"M d, Y" }}</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Category</small>
+                            <small class="fw-bold">{{ resource.category }}</small>
+                        </div>
+                        {% if resource.duration %}
+                        <div>
+                            <small class="text-muted d-block">Duration</small>
+                            <small class="fw-bold">{{ resource.duration }} minutes</small>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary rounded-3">
+                            <i class="bi bi-bookmark me-2"></i> Save Resource
+                        </button>
+                        <button class="btn btn-outline-primary rounded-3">
+                            <i class="bi bi-share me-2"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Resources -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <h6 class="mb-0 fw-bold">Related Resources</h6>
+                </div>
+                <div class="card-body p-4">
+                    {% for related in related_resources %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="small fw-bold mb-1">{{ related.title }}</h6>
+                        <small class="text-muted d-block">{{ related.author }}</small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted small mb-0">No related resources found</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Right Column: Content ===== -->
+        <div class="col-lg-8">
+            <!-- Main Content Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Overview</h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-3">
+                                <i class="bi bi-download"></i> Download
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-3">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">{{ resource.description }}</p>
+                    
+                    <!-- Key Takeaways -->
+                    <h6 class="fw-bold mb-3">Key Takeaways</h6>
+                    <ul class="mb-4">
+                        <li class="mb-2">Evidence-based strategies for optimizing nutrition</li>
+                        <li class="mb-2">Practical implementation tips for your practice</li>
+                        <li class="mb-2">Latest research findings and recommendations</li>
+                        <li class="mb-2">Real-world client case studies</li>
+                        <li>Tools and resources for immediate use</li>
+                    </ul>
+
+                    <!-- Content Preview -->
+                    <div class="alert alert-light rounded-4 p-4 mb-4">
+                        <h6 class="fw-bold mb-3">Preview</h6>
+                        <div class="position-relative" style="height: 300px; background: #f8f9fa; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
+                            <div class="text-center text-muted">
+                                {% if resource.type == 'video' %}
+                                    <i class="bi bi-play-circle" style="font-size: 3rem;"></i>
+                                    <p class="mt-2">Video Content Preview</p>
+                                {% else %}
+                                    <i class="bi bi-file-earmark-pdf" style="font-size: 3rem;"></i>
+                                    <p class="mt-2">Document Preview Available</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Reviews Section -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i> User Reviews ({{ resource.reviews_count|default:"128" }})</h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Review Summary -->
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="row g-4 text-center">
+                            <div class="col-md-3">
+                                <h3 class="fw-bold">{{ resource.rating|default:"4.5" }}</h3>
+                                <div class="d-flex justify-content-center gap-1 mb-2">
+                                    {% for i in "12345" %}
+                                        <i class="bi bi-star-fill text-warning" style="font-size: 0.9rem;"></i>
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted">{{ resource.reviews_count|default:"128" }} reviews</small>
+                            </div>
+                            <div class="col-md-9">
+                                {% for rating in "543210" %}
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <small style="width: 40px;">{{ rating }} <i class="bi bi-star-fill text-warning"></i></small>
+                                    <div class="progress flex-grow-1" style="height: 8px;">
+                                        <div class="progress-bar" style="width: {% if rating == "5" %}70{% elif rating == "4" %}20{% elif rating == "3" %}5{% elif rating == "2" %}3{% else %}2{% endif %}%;"></div>
+                                    </div>
+                                    <small class="text-muted">{{ rating }}%</small>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Individual Reviews -->
+                    <div>
+                        <h6 class="fw-bold mb-3">Recent Reviews</h6>
+                        {% for review in reviews %}
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="fw-bold small mb-1">{{ review.reviewer_name }}</h6>
+                                    <div class="d-flex gap-1 mb-2">
+                                        {% for i in "12345" %}
+                                            {% if i|add:"0" <= review.rating %}
+                                                <i class="bi bi-star-fill text-warning" style="font-size: 0.8rem;"></i>
+                                            {% else %}
+                                                <i class="bi bi-star text-warning" style="font-size: 0.8rem;"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="small mb-0">{{ review.comment }}</p>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted small">No reviews yet. Be the first to review!</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Write Review Section -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-light border-bottom-0 p-4">
+                    <h5 class="mb-0">Share Your Review</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'nutritionist_dashboard:add_review' resource.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Rating</label>
+                            <div class="d-flex gap-2">
+                                {% for i in "12345" %}
+                                <input type="radio" class="btn-check" name="rating" id="rating_{{ i }}" value="{{ i }}">
+                                <label class="btn btn-outline-warning rounded-3" for="rating_{{ i }}">
+                                    <i class="bi bi-star-fill"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="comment" class="form-label fw-bold">Your Review</label>
+                            <textarea class="form-control rounded-3" id="comment" name="comment" rows="4" placeholder="Share your thoughts about this resource..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary rounded-3">
+                            <i class="bi bi-send me-2"></i> Post Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sticky-top {
+        transition: all 0.3s ease;
+    }
+
+    .btn-check:checked + .btn-outline-warning {
+        background-color: #ffc107;
+        color: #000;
+        border-color: #ffc107;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+{% endblock %}

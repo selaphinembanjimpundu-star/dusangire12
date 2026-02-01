@@ -1,0 +1,318 @@
+<!-- Table Component Template -->
+<!-- Usage: {% include 'components/table.html' with headers=headers rows=rows %} -->
+
+<div class="table-container">
+    {% if title %}
+    <div class="table-header">
+        <h3>{{ title }}</h3>
+        {% if actions %}
+        <div class="table-actions">
+            {% for action in actions %}
+            <a href="{{ action.url }}" class="table-action-btn">{{ action.label }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if rows %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th class="table-header-cell" 
+                    {% if header.sortable %}data-sortable="true" data-field="{{ header.field }}"{% endif %}>
+                    <div class="header-content">
+                        <span>{{ header.label }}</span>
+                        {% if header.sortable %}
+                        <span class="sort-icon">⇅</span>
+                        {% endif %}
+                    </div>
+                </th>
+                {% endfor %}
+                {% if row_actions %}
+                <th class="table-header-cell">Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr class="table-row">
+                {% for cell in row.cells %}
+                <td class="table-cell">
+                    {% if cell.badge %}
+                    <span class="cell-badge badge-{{ cell.badge }}">{{ cell.value }}</span>
+                    {% elif cell.link %}
+                    <a href="{{ cell.link }}" class="cell-link">{{ cell.value }}</a>
+                    {% else %}
+                    {{ cell.value }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% if row_actions %}
+                <td class="table-cell table-actions-cell">
+                    {% for action in row_actions %}
+                    <a href="{{ action.url|replace:'ID':row.id }}" 
+                       class="row-action-btn row-action-{{ action.type }}" 
+                       title="{{ action.label }}"
+                       {% if action.confirm %}onclick="return confirm('{{ action.confirm }}');"{% endif %}>
+                        {{ action.label }}
+                    </a>
+                    {% endfor %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>{{ empty_message|default:"No data available" }}</p>
+    </div>
+    {% endif %}
+
+    {% if pagination %}
+    {% include 'utils/pagination.html' with page_obj=pagination %}
+    {% endif %}
+</div>
+
+<style>
+.table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.table-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.table-action-btn {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.table-action-btn:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header-cell {
+    padding: 15px 20px;
+    background: #f9f9f9;
+    color: #333;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 2px solid #eee;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.3s;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+.table-header-cell:hover {
+    background: #f0f0f0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-icon {
+    font-size: 12px;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.table-header-cell:hover .sort-icon {
+    opacity: 1;
+}
+
+.table-row {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.3s;
+}
+
+.table-row:hover {
+    background: #f9f9f9;
+}
+
+.table-cell {
+    padding: 15px 20px;
+    color: #666;
+    font-size: 13px;
+}
+
+.cell-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-pending {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.cell-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.cell-link:hover {
+    color: #5568d3;
+    text-decoration: underline;
+}
+
+.table-actions-cell {
+    white-space: nowrap;
+}
+
+.row-action-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 5px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.row-action-btn:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+.row-action-delete {
+    background: #dc3545;
+}
+
+.row-action-delete:hover {
+    background: #c82333;
+}
+
+.row-action-edit {
+    background: #667eea;
+}
+
+.row-action-view {
+    background: #6c757d;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+    .data-table {
+        font-size: 12px;
+    }
+
+    .table-header-cell,
+    .table-cell {
+        padding: 12px 15px;
+    }
+
+    .row-action-btn {
+        padding: 4px 8px;
+        font-size: 10px;
+        margin: 0 3px;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .table-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .data-table {
+        font-size: 11px;
+    }
+
+    .table-header-cell,
+    .table-cell {
+        padding: 10px 12px;
+    }
+
+    .header-content {
+        gap: 5px;
+    }
+}
+</style>

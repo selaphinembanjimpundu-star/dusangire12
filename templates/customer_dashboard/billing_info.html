@@ -1,0 +1,133 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div>
+    <!-- ===== BREADCRUMB ===== -->
+    <nav class="breadcrumb" style="margin-bottom: 1.5rem;">
+        <span class="breadcrumb-item">
+            <a href="{% url 'customer_dashboard:dashboard' %}" style="text-decoration: none;">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </span>
+        <span class="breadcrumb-item active">
+            <i class="bi bi-credit-card me-2"></i> Billing Information
+        </span>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-credit-card"></i> Billing Information</h1>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+            Manage your payment methods and billing settings
+        </p>
+    </div>
+
+    <!-- ===== DEFAULT PAYMENT METHOD ===== -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-wallet2"></i> Default Payment Method</h2>
+            <a href="#" class="btn-custom btn-primary-custom">
+                <i class="bi bi-plus-circle"></i> Add Method
+            </a>
+        </div>
+
+        <div style="padding: 1.5rem; background: var(--light-bg); border-radius: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; background: white; border-radius: 0.6rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <i class="bi bi-phone" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                </div>
+                <div>
+                    <h5 style="margin: 0; color: var(--text-primary); font-weight: 600;">Mobile Money</h5>
+                    <p style="margin: 0.3rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Primary method for payments</p>
+                </div>
+            </div>
+            <span class="badge-custom badge-success">Active</span>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <a href="#" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-pencil"></i> Change
+            </a>
+            <a href="{% url 'customer_dashboard:payment_history' %}" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-receipt"></i> View History
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== BILLING ADDRESS ===== -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-geo-alt"></i> Billing Address</h2>
+            <a href="#" class="btn-custom btn-primary-custom">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+        </div>
+
+        <div style="padding: 1.5rem; background: var(--light-bg); border-radius: 0.8rem; border: 1px solid var(--border-color);">
+            <h5 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600;">{{ user.get_full_name|default:user.username }}</h5>
+            <div style="color: var(--text-secondary); line-height: 1.8;">
+                <p style="margin: 0;">Kigali, Rwanda</p>
+                <p style="margin: 0;">KN 2 St, Nyarugenge</p>
+                <p style="margin: 0;">
+                    <i class="bi bi-telephone"></i> {{ user.profile.phone_number|default:"Not provided" }}
+                </p>
+                <p style="margin: 0;">
+                    <i class="bi bi-envelope"></i> {{ user.email }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUBSCRIPTION SETTINGS ===== -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-gear"></i> Subscription Settings</h2>
+        </div>
+
+        <div style="display: grid; gap: 1.5rem;">
+            <!-- Auto-Renewal -->
+            <div style="padding: 1rem; background: var(--light-bg); border-radius: 0.6rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h6 style="margin: 0 0 0.3rem 0; color: var(--text-primary); font-weight: 600;">Auto-Renewal</h6>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Automatically renew subscriptions at the end of each billing cycle</p>
+                </div>
+                <div style="display: inline-block; width: 50px; height: 26px; background: var(--success-color); border-radius: 13px; position: relative; cursor: pointer; flex-shrink: 0;">
+                    <div style="position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+                </div>
+            </div>
+
+            <!-- Email Invoices -->
+            <div style="padding: 1rem; background: var(--light-bg); border-radius: 0.6rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h6 style="margin: 0 0 0.3rem 0; color: var(--text-primary); font-weight: 600;">Email Invoices</h6>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Receive PDF copies of invoices via email after every payment</p>
+                </div>
+                <div style="display: inline-block; width: 50px; height: 26px; background: var(--success-color); border-radius: 13px; position: relative; cursor: pointer; flex-shrink: 0;">
+                    <div style="position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+                </div>
+            </div>
+
+            <!-- Payment Reminders -->
+            <div style="padding: 1rem; background: var(--light-bg); border-radius: 0.6rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h6 style="margin: 0 0 0.3rem 0; color: var(--text-primary); font-weight: 600;">Payment Reminders</h6>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.85rem;">Get notified 3 days before your subscription renewal</p>
+                </div>
+                <div style="display: inline-block; width: 50px; height: 26px; background: var(--success-color); border-radius: 13px; position: relative; cursor: pointer; flex-shrink: 0;">
+                    <div style="position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <a href="#" class="btn-custom btn-primary-custom">
+                <i class="bi bi-check-circle"></i> Save Changes
+            </a>
+            <a href="{% url 'customer_dashboard:payment_history' %}" class="btn-custom btn-secondary-custom">
+                <i class="bi bi-receipt"></i> Payment History
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

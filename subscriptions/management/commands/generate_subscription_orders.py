@@ -4,7 +4,7 @@ from django.db import transaction
 from datetime import date, timedelta
 from decimal import Decimal
 
-from subscriptions.models import UserSubscription, SubscriptionStatus, SubscriptionOrder
+from subscriptions.models import Subscription, SubscriptionStatus, SubscriptionOrder
 from orders.models import Order, OrderItem, OrderStatus
 from payments.models import Payment, PaymentMethod, PaymentStatus
 from menu.models import MenuItem
@@ -25,7 +25,7 @@ class Command(BaseCommand):
         today = timezone.now().date()
         
         # Get active subscriptions with auto-order enabled
-        active_subscriptions = UserSubscription.objects.filter(
+        active_subscriptions = Subscription.objects.filter(
             status=SubscriptionStatus.ACTIVE,
             auto_order_enabled=True,
             start_date__lte=today,
@@ -72,14 +72,14 @@ class Command(BaseCommand):
                 try:
                     if not dry_run:
                         with transaction.atomic():
-                            # Get menu items for this subscription
-                            if subscription.plan.menu_items.exists():
-                                menu_items = subscription.plan.menu_items.filter(is_available=True)
-                            else:
-                                # Use all available items or random selection
-                                menu_items = MenuItem.objects.filter(is_available=True)[:subscription.plan.meals_per_cycle]
+                            # Use smart meal selection service
+                            from subscriptions.services import MealSelectionService
+                            menu_items = MealSelectionService.select_meals_for_subscription(
+                                subscription,
+                                count=subscription.plan.meals_per_cycle
+                            )
                             
-                            if not menu_items.exists():
+                            if not menu_items:
                                 self.stdout.write(
                                     self.style.WARNING(
                                         f'No available menu items for subscription {subscription.id}'
@@ -180,6 +180,20 @@ class Command(BaseCommand):
                     f'Successfully created {orders_created} subscription orders'
                 )
             )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

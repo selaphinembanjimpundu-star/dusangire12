@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Dusangire{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .priority-low {
+        border-left: 5px solid #6c757d;
+    }
+
+    .priority-medium {
+        border-left: 5px solid #ffc107;
+    }
+
+    .priority-high {
+        border-left: 5px solid #fd7e14;
+    }
+
+    .priority-urgent {
+        border-left: 5px solid #dc3545;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 fw-bold mb-0"><i class="bi bi-headset text-primary me-2"></i> Support Operations</h1>
+            <p class="text-muted">Monitor and manage customer support activities</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'support:staff_ticket_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-list-task me-1"></i> All Tickets
+            </a>
+            <a href="{% url 'support:faq' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-question-circle me-1"></i> Manage FAQs
+            </a>
+        </div>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card h-100 p-3 bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase small opacity-75">Total Tickets</h6>
+                    <h2 class="display-6 fw-bold mb-0">{{ total_tickets }}</h2>
+                    <div class="mt-3 small">
+                        <i class="bi bi-arrow-up-right me-1"></i> All time
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 p-3 bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="text-uppercase small opacity-75">Open Tickets</h6>
+                    <h2 class="display-6 fw-bold mb-0">{{ open_tickets }}</h2>
+                    <div class="mt-3 small">
+                        <i class="bi bi-clock me-1"></i> Needs attention
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 p-3 bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase small opacity-75">Resolved</h6>
+                    <h2 class="display-6 fw-bold mb-0">{{ resolved_tickets }}</h2>
+                    <div class="mt-3 small">
+                        <i class="bi bi-check-circle me-1"></i> Successfully closed
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 p-3 bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-uppercase small opacity-75">Avg Resolution</h6>
+                    <h2 class="h3 fw-bold mb-0">
+                        {% if avg_resolution_time %}
+                        {{ avg_resolution_time.days }}d {{ avg_resolution_time.seconds|divisibleby:3600 }}h
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </h2>
+                    <div class="mt-3 small">
+                        <i class="bi bi-speedometer2 me-1"></i> Efficiency metric
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Tickets -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Recent Support Requests</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Ticket</th>
+                                    <th>Customer</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ticket in recent_tickets %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">#{{ ticket.id }}</div>
+                                        <div class="small text-muted">{{ ticket.subject|truncatechars:30 }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="small">{{ ticket.user.get_full_name|default:ticket.user.username }}
+                                        </div>
+                                        <div class="text-xs text-muted">{{ ticket.created_at|date:"M d, H:i" }}</div>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge bg-{% if ticket.priority == 'urgent' %}danger{% elif ticket.priority == 'high' %}warning{% else %}secondary{% endif %}">
+                                            {{ ticket.get_priority_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status-badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'resolved' %}success{% else %}info{% endif %} text-{% if ticket.status == 'open' %}dark{% else %}white{% endif %}">
+                                            {{ ticket.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a href="{% url 'support:staff_ticket_detail' ticket.id %}"
+                                            class="btn btn-sm btn-light">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No recent tickets</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Performance -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Staff Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% for staff in staff_stats %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">{{ staff.assigned_to__username }}</span>
+                            <span class="text-muted small">{{ staff.resolved }}/{{ staff.total }} resolved</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            {% widthratio staff.resolved staff.total 100 as percent %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ percent }}%;"
+                                aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center text-muted py-3">No staff assignments yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Priority Distribution -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Priority Distribution</h5>
+                </div>
+                <div class="card-body">
+                    {% for stat in priority_stats %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-capitalize">{{ stat.priority }}</span>
+                        <span class="badge bg-light text-dark rounded-pill">{{ stat.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

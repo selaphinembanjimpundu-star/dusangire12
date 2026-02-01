@@ -10,7 +10,22 @@ urlpatterns = [
     path('orders/<int:order_id>/update-status/', views.update_order_status, name='update_order_status'),
     path('kitchen/', views.kitchen_dashboard, name='kitchen_dashboard'),
     path('reports/', views.reports, name='reports'),
+    path('bi-dashboard/', views.bi_dashboard, name='bi_dashboard'),
 ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,12 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from .models import SupportTicket, SupportMessage
 from .forms import SupportTicketForm, SupportMessageForm, FeedbackForm
+from django.db.models import Q
+
+def is_staff_or_admin(user):
+    """Check if user is staff or admin"""
+    return user.is_authenticated and (user.is_staff or (hasattr(user, 'profile') and user.profile.role in ['admin', 'staff']))
 
 
 @login_required
@@ -257,3 +263,53 @@ def faq(request):
         'faqs': faqs,
     }
     return render(request, 'support/faq.html', context)
+@login_required
+@user_passes_test(is_staff_or_admin)
+def staff_dashboard(request):
+    """Dashboard for support staff with metrics"""
+    from django.db.models import Count, Avg, F
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Basic counts
+    total_tickets = SupportTicket.objects.count()
+    open_tickets = SupportTicket.objects.filter(status='open').count()
+    in_progress_tickets = SupportTicket.objects.filter(status='in_progress').count()
+    resolved_tickets = SupportTicket.objects.filter(status='resolved').count()
+    
+    # Average resolution time
+    resolved_with_time = SupportTicket.objects.filter(
+        status='resolved', 
+        resolved_at__isnull=False
+    ).annotate(
+        resolution_time=F('resolved_at') - F('created_at')
+    ).aggregate(avg_time=Avg('resolution_time'))
+    
+    avg_resolution_time = resolved_with_time['avg_time']
+    
+    # Tickets by priority
+    priority_stats = SupportTicket.objects.values('priority').annotate(count=Count('id'))
+    
+    # Recent tickets
+    recent_tickets = SupportTicket.objects.select_related('user', 'assigned_to').order_by('-created_at')[:10]
+    
+    # Staff performance
+    staff_stats = SupportTicket.objects.filter(assigned_to__isnull=False).values(
+        'assigned_to__username'
+    ).annotate(
+        total=Count('id'),
+        resolved=Count('id', filter=Q(status='resolved'))
+    ).order_by('-total')
+
+    context = {
+        'total_tickets': total_tickets,
+        'open_tickets': open_tickets,
+        'in_progress_tickets': in_progress_tickets,
+        'resolved_tickets': resolved_tickets,
+        'avg_resolution_time': avg_resolution_time,
+        'priority_stats': priority_stats,
+        'recent_tickets': recent_tickets,
+        'staff_stats': staff_stats,
+        'title': _('Support Dashboard'),
+    }
+    return render(request, 'support/staff_dashboard.html', context)

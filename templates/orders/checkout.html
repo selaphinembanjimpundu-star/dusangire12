@@ -1,17 +1,89 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Checkout - NOURISH LINK{% endblock %}
+{% block title %}Checkout - Dusangire{% endblock %}
 
 {% block extra_css %}
 <style>
     .checkout-summary {
-        background: #f8f9fa;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
         padding: 1.5rem;
         position: sticky;
         top: 20px;
+        color: white;
+        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
     }
+
+    .loyalty-badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    }
+
+    .vip-tier-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .loyalty-points-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .discount-item {
+        background: rgba(76, 175, 80, 0.1);
+        border-left: 3px solid #4CAF50;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 4px;
+        color: #1b5e20;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .savings-total {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
     .address-card {
         border: 2px solid #dee2e6;
         border-radius: 8px;
@@ -20,35 +92,77 @@
         cursor: pointer;
         transition: all 0.2s;
     }
+
     .address-card:hover {
-        border-color: #0d6efd;
+        border-color: #667eea;
         background: #f0f7ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
     }
+
     .address-card.selected {
-        border-color: #0d6efd;
+        border-color: #667eea;
         background: #e7f1ff;
     }
+
     .new-address-form {
         display: none;
     }
+
     .new-address-form.show {
         display: block;
     }
+
     .payment-method-card {
         border: 2px solid #dee2e6;
         border-radius: 8px;
         padding: 1rem;
         transition: all 0.2s;
     }
+
     .payment-method-card:hover {
-        border-color: #0d6efd;
+        border-color: #667eea;
         background: #f0f7ff;
     }
-    .payment-method-card input:checked ~ label {
-        color: #0d6efd;
+
+    .points-input-group {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
     }
-    .payment-method-card input:checked {
-        border-color: #0d6efd;
+
+    .points-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 5px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        outline: none;
+        opacity: 0.9;
+        transition: opacity 0.2s;
+    }
+
+    .points-slider:hover {
+        opacity: 1;
+    }
+
+    .referral-badge {
+        background: linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            box-shadow: 0 0 10px rgba(251, 139, 255, 0.5);
+        }
+
+        to {
+            box-shadow: 0 0 20px rgba(43, 210, 255, 0.7);
+        }
     }
 </style>
 {% endblock %}
@@ -56,7 +170,7 @@
 {% block content %}
 <div class="container mt-4 mb-5">
     <h1 class="mb-4"><i class="bi bi-credit-card"></i> Checkout</h1>
-    
+
     <div class="row">
         <div class="col-lg-8">
             <div class="card mb-4">
@@ -66,108 +180,102 @@
                 <div class="card-body">
                     <form method="post" id="checkout-form" novalidate>
                         {% csrf_token %}
-                        <input type="hidden" name="use_saved_address" id="use_saved_address" value="{% if delivery_addresses and default_address %}true{% else %}false{% endif %}">
-                        
+                        <input type="hidden" name="use_saved_address" id="use_saved_address"
+                            value="{% if delivery_addresses and default_address %}true{% else %}false{% endif %}">
+                        <input type="hidden" name="loyalty_points_redeem" id="loyalty_points_redeem" value="0">
+
                         <!-- Saved Addresses -->
                         {% if delivery_addresses %}
-                            <div class="mb-4">
-                                <h6 class="mb-3">Select a Saved Address</h6>
-                                <div id="saved-addresses">
-                                    {% for address in delivery_addresses %}
-                                        <div class="address-card" data-address-id="{{ address.id }}">
-                                            <div class="form-check">
-                                                <input class="form-check-input" 
-                                                       type="radio" 
-                                                       name="saved_address_id" 
-                                                       id="address_{{ address.id }}" 
-                                                       value="{{ address.id }}"
-                                                       {% if address.is_default %}checked{% endif %}>
-                                                <label class="form-check-label w-100" for="address_{{ address.id }}">
-                                                    <strong>{{ address.label }}</strong>
-                                                    {% if address.is_default %}
-                                                        <span class="badge bg-primary ms-2">Default</span>
-                                                    {% endif %}
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        {{ address.full_name }} | {{ address.phone }}<br>
-                                                        {{ address.get_full_address }}
-                                                        {% if address.zone %}
-                                                            <br><span class="badge bg-info">{{ address.zone.name }} - RWF {{ address.get_delivery_charge }}</span>
-                                                        {% endif %}
-                                                    </small>
-                                                </label>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
+                        <div class="mb-4">
+                            <h6 class="mb-3">Select a Saved Address</h6>
+                            <div id="saved-addresses">
+                                {% for address in delivery_addresses %}
+                                <div class="address-card" data-address-id="{{ address.id }}">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="saved_address_id"
+                                            id="address_{{ address.id }}" value="{{ address.id }}" {% if
+                                            address.is_default %}checked{% endif %}>
+                                        <label class="form-check-label w-100" for="address_{{ address.id }}">
+                                            <strong>{{ address.label }}</strong>
+                                            {% if address.is_default %}
+                                            <span class="badge bg-primary ms-2">Default</span>
+                                            {% endif %}
+                                            <br>
+                                            <small class="text-muted">
+                                                {{ address.full_name }} | {{ address.phone }}<br>
+                                                {{ address.get_full_address }}
+                                                {% if address.zone %}
+                                                <br><span class="badge bg-info">{{ address.zone.name }} - RWF {{
+                                                    address.get_delivery_charge }}</span>
+                                                {% endif %}
+                                            </small>
+                                        </label>
+                                    </div>
                                 </div>
-                                <a href="{% url 'delivery:address_create' %}" class="btn btn-outline-primary btn-sm mb-3">
-                                    <i class="bi bi-plus-circle"></i> Add New Address
-                                </a>
+                                {% empty %}
+                                <div class="alert alert-info">
+                                    No saved addresses found. Please add a delivery address.
+                                </div>
+                                {% endfor %}
                             </div>
-                            
-                            <div class="mb-3">
-                                <button type="button" class="btn btn-link p-0" id="toggle-new-address">
-                                    <i class="bi bi-plus-circle"></i> Or enter a new address
-                                </button>
-                            </div>
+                            <a href="{% url 'delivery:address_create' %}" class="btn btn-outline-primary btn-sm mb-3">
+                                <i class="bi bi-plus-circle"></i> Add New Address
+                            </a>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-link p-0" id="toggle-new-address">
+                                <i class="bi bi-plus-circle"></i> Or enter a new address
+                            </button>
+                        </div>
                         {% endif %}
-                        
+
                         <!-- New Address Form -->
-                        <div class="new-address-form {% if not delivery_addresses %}show{% endif %}" id="new-address-form">
+                        <div class="new-address-form {% if not delivery_addresses %}show{% endif %}"
+                            id="new-address-form">
                             <div class="mb-3">
                                 <label for="customer_name" class="form-label">Full Name *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="customer_name" 
-                                       name="customer_name" 
-                                       value="{% if profile %}{{ user.get_full_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}" 
-                                       required>
+                                <input type="text" class="form-control" id="customer_name" name="customer_name"
+                                    value="{% if profile %}{{ user.get_full_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}"
+                                    required>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="customer_phone" class="form-label">Phone Number *</label>
-                                <input type="tel" 
-                                       class="form-control" 
-                                       id="customer_phone" 
-                                       name="customer_phone" 
-                                       value="{% if profile %}{{ profile.phone }}{% endif %}" 
-                                       required>
+                                <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
+                                    value="{% if profile %}{{ profile.phone }}{% endif %}" required>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="delivery_address" class="form-label">Delivery Address *</label>
-                                <textarea class="form-control" 
-                                          id="delivery_address" 
-                                          name="delivery_address" 
-                                          rows="3" 
-                                          required 
-                                          placeholder="Enter your delivery address (e.g., Ward 3, Room 205, Hospital Building)"></textarea>
-                                <div class="form-text">Please provide detailed address including ward, room number, or building</div>
+                                <textarea class="form-control" id="delivery_address" name="delivery_address" rows="3"
+                                    required
+                                    placeholder="Enter your delivery address (e.g., Ward 3, Room 205, Hospital Building)"></textarea>
+                                <div class="form-text">Please provide detailed address including ward, room number, or
+                                    building</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="delivery_zone" class="form-label">Delivery Zone</label>
                                 <select class="form-select" id="delivery_zone" name="delivery_zone">
                                     <option value="">Select zone (optional)</option>
                                     {% for zone in delivery_zones %}
-                                        <option value="{{ zone.id }}" data-charge="{{ zone.delivery_charge }}">
-                                            {{ zone.name }} - RWF {{ zone.delivery_charge }}
-                                        </option>
+                                    <option value="{{ zone.id }}" data-charge="{{ zone.delivery_charge }}">
+                                        {{ zone.name }} - RWF {{ zone.delivery_charge }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                                 <div class="form-text">Select delivery zone to calculate delivery charge</div>
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="delivery_instructions" class="form-label">Delivery Instructions (Optional)</label>
-                                <textarea class="form-control" 
-                                          id="delivery_instructions" 
-                                          name="delivery_instructions" 
-                                          rows="2" 
-                                          placeholder="Any special instructions for delivery..."></textarea>
+                                <label for="delivery_instructions" class="form-label">Delivery Instructions
+                                    (Optional)</label>
+                                <textarea class="form-control" id="delivery_instructions" name="delivery_instructions"
+                                    rows="2" placeholder="Any special instructions for delivery..."></textarea>
                             </div>
                         </div>
-                        
+
                         <!-- Payment Method Selection -->
                         <div class="card mb-4">
                             <div class="card-header">
@@ -179,7 +287,8 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="form-check payment-method-card">
-                                                <input class="form-check-input" type="radio" name="payment_method" id="cash_on_delivery" value="cash_on_delivery" checked>
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                    id="cash_on_delivery" value="cash_on_delivery" checked>
                                                 <label class="form-check-label w-100" for="cash_on_delivery">
                                                     <i class="bi bi-cash-coin"></i> <strong>Cash on Delivery</strong>
                                                     <br><small class="text-muted">Pay when your order arrives</small>
@@ -188,7 +297,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check payment-method-card">
-                                                <input class="form-check-input" type="radio" name="payment_method" id="mtn_mobile_money" value="mtn_mobile_money">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                    id="mtn_mobile_money" value="mtn_mobile_money">
                                                 <label class="form-check-label w-100" for="mtn_mobile_money">
                                                     <i class="bi bi-phone"></i> <strong>MTN Mobile Money</strong>
                                                     <br><small class="text-muted">Pay via MTN Mobile Money</small>
@@ -197,7 +307,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check payment-method-card">
-                                                <input class="form-check-input" type="radio" name="payment_method" id="airtel_money" value="airtel_money">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                    id="airtel_money" value="airtel_money">
                                                 <label class="form-check-label w-100" for="airtel_money">
                                                     <i class="bi bi-phone"></i> <strong>Airtel Money</strong>
                                                     <br><small class="text-muted">Pay via Airtel Money</small>
@@ -206,7 +317,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check payment-method-card">
-                                                <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                                <input class="form-check-input" type="radio" name="payment_method"
+                                                    id="bank_transfer" value="bank_transfer">
                                                 <label class="form-check-label w-100" for="bank_transfer">
                                                     <i class="bi bi-bank"></i> <strong>Bank Transfer</strong>
                                                     <br><small class="text-muted">Pay via bank transfer</small>
@@ -215,42 +327,50 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Mobile Money Fields -->
                                 <div class="payment-details" id="mobile_money_details" style="display: none;">
                                     <div class="mb-3">
                                         <label for="phone_number" class="form-label">Phone Number *</label>
-                                        <input type="tel" class="form-control" id="phone_number" name="phone_number" placeholder="e.g., 0781234567">
+                                        <input type="tel" class="form-control" id="phone_number" name="phone_number"
+                                            placeholder="e.g., 0781234567">
                                         <div class="form-text">Enter your mobile money phone number</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="transaction_id" class="form-label">Transaction ID (Optional)</label>
-                                        <input type="text" class="form-control" id="transaction_id" name="transaction_id" placeholder="Enter transaction ID if already paid">
-                                        <div class="form-text">If you've already made the payment, enter the transaction ID</div>
+                                        <input type="text" class="form-control" id="transaction_id"
+                                            name="transaction_id" placeholder="Enter transaction ID if already paid">
+                                        <div class="form-text">If you've already made the payment, enter the transaction
+                                            ID</div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Bank Transfer Fields -->
                                 <div class="payment-details" id="bank_transfer_details" style="display: none;">
                                     <div class="mb-3">
-                                        <label for="account_number" class="form-label">Account Number / Reference *</label>
-                                        <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Enter account number or reference">
+                                        <label for="account_number" class="form-label">Account Number / Reference
+                                            *</label>
+                                        <input type="text" class="form-control" id="account_number"
+                                            name="account_number" placeholder="Enter account number or reference">
                                         <div class="form-text">Enter your account number or transfer reference</div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="transaction_id_bank" class="form-label">Transaction ID (Optional)</label>
-                                        <input type="text" class="form-control" id="transaction_id_bank" name="transaction_id" placeholder="Enter transaction ID if already paid">
+                                        <label for="transaction_id_bank" class="form-label">Transaction ID
+                                            (Optional)</label>
+                                        <input type="text" class="form-control" id="transaction_id_bank"
+                                            name="transaction_id" placeholder="Enter transaction ID if already paid">
                                     </div>
                                 </div>
-                                
+
                                 <!-- Payment Notes -->
                                 <div class="mb-3">
                                     <label for="payment_notes" class="form-label">Payment Notes (Optional)</label>
-                                    <textarea class="form-control" id="payment_notes" name="payment_notes" rows="2" placeholder="Any additional payment information..."></textarea>
+                                    <textarea class="form-control" id="payment_notes" name="payment_notes" rows="2"
+                                        placeholder="Any additional payment information..."></textarea>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'orders:cart' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Back to Cart
@@ -263,37 +383,141 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             <div class="checkout-summary">
-                <h5 class="mb-3">Order Summary</h5>
-                
+                <h5 class="mb-3 text-white"><i class="bi bi-receipt"></i> Order Summary</h5>
+
+                <!-- VIP Tier Badge -->
+                {% if loyalty_info.vip_tier %}
+                <div class="loyalty-badge text-center">
+                    <div class="vip-tier-icon">
+                        {% if loyalty_info.vip_tier_name == "Bronze" %}🥉
+                        {% elif loyalty_info.vip_tier_name == "Silver" %}🥈
+                        {% elif loyalty_info.vip_tier_name == "Gold" %}🥇
+                        {% elif loyalty_info.vip_tier_name == "Platinum" %}💎
+                        {% endif %}
+                    </div>
+                    <strong>{{ loyalty_info.vip_tier_name }} Member</strong>
+                    {% if loyalty_info.vip_discount > 0 %}
+                    <div class="mt-2">
+                        <span class="badge bg-success">{{ loyalty_info.vip_discount }}% Discount Applied!</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Referral Discount Banner -->
+                {% if loyalty_info.has_referral_discount %}
+                <div class="referral-badge text-center">
+                    <i class="bi bi-gift-fill"></i> <strong>First Order Bonus!</strong>
+                    <div class="mt-1">
+                        <small>{{ loyalty_info.referral_discount_percent }}% Referral Discount Applied</small>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Loyalty Points Redemption -->
+                {% if loyalty_info.loyalty_balance > 0 %}
+                <div class="loyalty-points-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-star-fill text-warning"></i> <strong>Your Points</strong>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold">{{ loyalty_info.loyalty_balance }} pts</div>
+                            <small>= RWF {{ loyalty_info.loyalty_value_rwf|floatformat:0 }}</small>
+                        </div>
+                    </div>
+
+                    <div class="points-input-group">
+                        <label for="points_slider" class="form-label text-white mb-2">
+                            <small>Redeem Points:</small>
+                        </label>
+                        <input type="range" class="form-range points-slider" id="points_slider" min="0"
+                            max="{{ loyalty_info.loyalty_balance }}" value="0" step="10">
+                        <div class="d-flex justify-content-between mt-2">
+                            <small id="points_display" class="text-white">0 points</small>
+                            <small id="points_value" class="text-white">-RWF 0</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Items List -->
                 <div class="mb-3">
-                    <strong>Items:</strong>
-                    <ul class="list-unstyled mt-2">
+                    <strong class="text-white">Items:</strong>
+                    <ul class="list-unstyled mt-2 text-white-50">
                         {% for item in cart_items %}
-                            <li class="d-flex justify-content-between mb-2">
-                                <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
-                                <span>RWF {{ item.get_subtotal }}</span>
-                            </li>
+                        <li class="d-flex justify-content-between mb-2">
+                            <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+                            <span>RWF {{ item.get_subtotal }}</span>
+                        </li>
+                        {% empty %}
+                        <li class="text-warning">Your cart is empty</li>
                         {% endfor %}
                     </ul>
                 </div>
-                
-                <hr>
-                
-                <div class="d-flex justify-content-between mb-2">
+
+                <hr class="bg-white">
+
+                <!-- Pricing Breakdown -->
+                <div class="d-flex justify-content-between mb-2 text-white">
                     <span>Subtotal:</span>
-                    <strong>RWF <span id="subtotal">{{ subtotal }}</span></strong>
+                    <strong>RWF <span id="subtotal">{{ pricing.subtotal }}</span></strong>
                 </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Delivery Charge:</span>
-                    <strong>RWF <span id="delivery-charge">{{ delivery_charge }}</span></strong>
+
+                <!-- Discounts -->
+                <div id="discounts-section">
+                    {% if pricing.vip_discount_amount > 0 %}
+                    <div class="discount-item text-white bg-success bg-opacity-25">
+                        <small>VIP {{ loyalty_info.vip_tier_name }} ({{ pricing.vip_discount_percent }}%)</small>
+                        <div class="float-end">-RWF {{ pricing.vip_discount_amount }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if pricing.corporate_discount_amount > 0 %}
+                    <div class="discount-item text-white bg-success bg-opacity-25">
+                        <small>Corporate: {{ loyalty_info.corporate_partner }} ({{ pricing.corporate_discount_percent
+                            }}%)</small>
+                        <div class="float-end">-RWF {{ pricing.corporate_discount_amount }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if pricing.referral_discount_amount > 0 %}
+                    <div class="discount-item text-white bg-success bg-opacity-25">
+                        <small>Referral Discount ({{ pricing.referral_discount_percent }}%)</small>
+                        <div class="float-end">-RWF {{ pricing.referral_discount_amount }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div id="loyalty_discount_display" style="display: none;"
+                        class="discount-item text-white bg-success bg-opacity-25">
+                        <small>Loyalty Points</small>
+                        <div class="float-end">-RWF <span id="loyalty_discount">0</span></div>
+                    </div>
                 </div>
-                <hr>
+
+                <!-- Delivery Charge -->
+                <div class="d-flex justify-content-between mb-2 mt-3 text-white">
+                    <span>Delivery:</span>
+                    <strong>RWF <span id="delivery-charge">{{ pricing.delivery_charge }}</span></strong>
+                </div>
+
+                <!-- Total Savings -->
+                {% if pricing.total_discount > 0 %}
+                <div class="savings-total">
+                    🎉 You're Saving:<br>
+                    <span class="fs-4">RWF <span id="total_savings">{{ pricing.total_discount }}</span></span>
+                </div>
+                {% endif %}
+
+                <hr class="bg-white">
+
+                <!-- Grand Total -->
                 <div class="d-flex justify-content-between mb-3">
-                    <strong>Total:</strong>
-                    <strong class="text-primary fs-5">RWF <span id="total">{{ total }}</span></strong>
+                    <strong class="text-white fs-5">Total:</strong>
+                    <strong class="text-warning fs-4">RWF <span id="total">{{ pricing.grand_total }}</span></strong>
                 </div>
             </div>
         </div>
@@ -303,170 +527,133 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const savedAddresses = document.getElementById('saved-addresses');
-    const newAddressForm = document.getElementById('new-address-form');
-    const useSavedAddressInput = document.getElementById('use_saved_address');
-    const toggleNewAddressBtn = document.getElementById('toggle-new-address');
-    const deliveryZoneSelect = document.getElementById('delivery_zone');
-    const savedAddressRadios = document.querySelectorAll('input[name="saved_address_id"]');
-    
-    // Toggle between saved addresses and new address
-    if (toggleNewAddressBtn) {
-        toggleNewAddressBtn.addEventListener('click', function() {
-            newAddressForm.classList.toggle('show');
-            // Uncheck all saved addresses
-            savedAddressRadios.forEach(radio => radio.checked = false);
-            useSavedAddressInput.value = 'false';
-            updateDeliveryCharge();
-        });
-    }
-    
-    // Handle saved address selection
-    savedAddressRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.checked) {
-                useSavedAddressInput.value = 'true';
-                if (newAddressForm) {
-                    newAddressForm.classList.remove('show');
-                }
-                // Disable required fields in new address form
-                const newAddressFields = document.querySelectorAll('#new-address-form input[required], #new-address-form textarea[required]');
-                newAddressFields.forEach(field => {
-                    field.removeAttribute('required');
-                });
-                // Get delivery charge from selected address
-                const addressCard = this.closest('.address-card');
-                const addressId = addressCard.dataset.addressId;
-                updateDeliveryChargeFromAddress(addressId);
-            }
-        });
-    });
-    
-    // If default address is selected on page load, set use_saved_address to true
-    const defaultAddressRadio = document.querySelector('input[name="saved_address_id"]:checked');
-    if (defaultAddressRadio) {
-        useSavedAddressInput.value = 'true';
-        const addressId = defaultAddressRadio.value;
-        updateDeliveryChargeFromAddress(addressId);
-    }
-    
-    // Handle delivery zone change for new address
-    if (deliveryZoneSelect) {
-        deliveryZoneSelect.addEventListener('change', function() {
-            if (this.value) {
-                const selectedOption = this.options[this.selectedIndex];
-                const charge = selectedOption.dataset.charge;
-                updateDeliveryCharge(parseFloat(charge));
-            } else {
-                updateDeliveryCharge(2.00); // Default
-            }
-        });
-    }
-    
-    function updateDeliveryChargeFromAddress(addressId) {
-        // This would need to fetch from server or store in data attribute
-        // For now, we'll use a default calculation
-        updateDeliveryCharge(2.00);
-    }
-    
-    function updateDeliveryCharge(charge = null) {
-        const subtotal = parseFloat(document.getElementById('subtotal').textContent);
-        const deliveryChargeEl = document.getElementById('delivery-charge');
-        const totalEl = document.getElementById('total');
-        
-        if (charge === null) {
-            charge = parseFloat(deliveryChargeEl.textContent);
-        }
-        
-        deliveryChargeEl.textContent = charge.toFixed(2);
-        totalEl.textContent = (subtotal + charge).toFixed(2);
-    }
-    
-    // Payment method selection
-    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
-    const mobileMoneyDetails = document.getElementById('mobile_money_details');
-    const bankTransferDetails = document.getElementById('bank_transfer_details');
-    
-    paymentMethods.forEach(method => {
-        method.addEventListener('change', function() {
-            // Hide all payment details
-            mobileMoneyDetails.style.display = 'none';
-            bankTransferDetails.style.display = 'none';
-            
-            // Show relevant payment details
-            if (this.value === 'mtn_mobile_money' || this.value === 'airtel_money') {
-                mobileMoneyDetails.style.display = 'block';
-                document.getElementById('phone_number').required = true;
-            } else {
-                document.getElementById('phone_number').required = false;
-            }
-            
-            if (this.value === 'bank_transfer') {
-                bankTransferDetails.style.display = 'block';
-                document.getElementById('account_number').required = true;
-            } else {
-                document.getElementById('account_number').required = false;
-            }
-        });
-    });
-    
-    // Form submission handling - prevent double submission
-    const checkoutForm = document.getElementById('checkout-form');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', function(e) {
-            const submitButton = this.querySelector('button[type="submit"]');
-            if (submitButton) {
-                // Disable submit button to prevent double submission
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
-                
-                // Validate form before submission
-                if (!this.checkValidity()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
-                    this.classList.add('was-validated');
-                    return false;
-                }
-                
-                // Ensure use_saved_address is set correctly
-                const hasCheckedSavedAddress = document.querySelector('input[name="saved_address_id"]:checked');
-                if (hasCheckedSavedAddress) {
-                    useSavedAddressInput.value = 'true';
+    document.addEventListener('DOMContentLoaded', function () {
+        const savedAddresses = document.getElementById('saved-addresses');
+        const newAddressForm = document.getElementById('new-address-form');
+        const useSavedAddressInput = document.getElementById('use_saved_address');
+        const toggleNewAddressBtn = document.getElementById('toggle-new-address');
+        const savedAddressRadios = document.querySelectorAll('input[name="saved_address_id"]');
+        const pointsSlider = document.getElementById('points_slider');
+        const loyaltyPointsRedeemInput = document.getElementById('loyalty_points_redeem');
+
+        // Loyalty Points Slider
+        if (pointsSlider) {
+            pointsSlider.addEventListener('input', function () {
+                const points = parseInt(this.value);
+                const rwfValue = points * 100;
+
+                document.getElementById('points_display').textContent = `${points} points`;
+                document.getElementById('points_value').textContent = `-RWF ${rwfValue.toLocaleString()}`;
+                document.getElementById('loyalty_discount').textContent = rwfValue.toLocaleString();
+                loyaltyPointsRedeemInput.value = points;
+
+                // Show/hide loyalty discount display
+                const loyaltyDiscountDisplay = document.getElementById('loyalty_discount_display');
+                if (points > 0) {
+                    loyaltyDiscountDisplay.style.display = 'block';
                 } else {
-                    useSavedAddressInput.value = 'false';
-                    // Validate new address fields are filled
-                    const customerName = document.getElementById('customer_name');
-                    const customerPhone = document.getElementById('customer_phone');
-                    const deliveryAddress = document.getElementById('delivery_address');
-                    
-                    if (!customerName || !customerName.value.trim()) {
-                        e.preventDefault();
-                        alert('Please enter your full name');
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
-                        return false;
-                    }
-                    if (!customerPhone || !customerPhone.value.trim()) {
-                        e.preventDefault();
-                        alert('Please enter your phone number');
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
-                        return false;
-                    }
-                    if (!deliveryAddress || !deliveryAddress.value.trim()) {
-                        e.preventDefault();
-                        alert('Please enter your delivery address');
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
-                        return false;
+                    loyaltyDiscountDisplay.style.display = 'none';
+                }
+
+                // Recalculate total
+                updateTotal(rwfValue);
+            });
+        }
+
+        function updateTotal(loyaltyDiscount = 0) {
+            const subtotal = parseFloat("{{ pricing.subtotal }}");
+            const vipDiscount = parseFloat("{{ pricing.vip_discount_amount }}") || 0;
+            const corporateDiscount = parseFloat("{{ pricing.corporate_discount_amount }}") || 0;
+            const referralDiscount = parseFloat("{{ pricing.referral_discount_amount }}") || 0;
+            const deliveryCharge = parseFloat("{{ pricing.delivery_charge }}") || 0;
+
+            const totalDiscount = vipDiscount + corporateDiscount + referralDiscount + loyaltyDiscount;
+            const subtotalAfterDiscounts = Math.max(0, subtotal - totalDiscount);
+            const grandTotal = subtotalAfterDiscounts + deliveryCharge;
+
+            document.getElementById('total_savings').textContent = totalDiscount.toLocaleString();
+            document.getElementById('total').textContent = grandTotal.toLocaleString();
+        }
+
+        // Toggle between saved addresses and new address
+        if (toggleNewAddressBtn) {
+            toggleNewAddressBtn.addEventListener('click', function () {
+                newAddressForm.classList.toggle('show');
+                savedAddressRadios.forEach(radio => radio.checked = false);
+                useSavedAddressInput.value = 'false';
+            });
+        }
+
+        // Handle saved address selection
+        savedAddressRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.checked) {
+                    useSavedAddressInput.value = 'true';
+                    if (newAddressForm) {
+                        newAddressForm.classList.remove('show');
                     }
                 }
-            }
+            });
         });
-    }
-});
+
+        // If default address is selected on page load
+        const defaultAddressRadio = document.querySelector('input[name="saved_address_id"]:checked');
+        if (defaultAddressRadio) {
+            useSavedAddressInput.value = 'true';
+        }
+
+        // Payment method selection
+        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+        const mobileMoneyDetails = document.getElementById('mobile_money_details');
+        const bankTransferDetails = document.getElementById('bank_transfer_details');
+
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function () {
+                mobileMoneyDetails.style.display = 'none';
+                bankTransferDetails.style.display = 'none';
+
+                if (this.value === 'mtn_mobile_money' || this.value === 'airtel_money') {
+                    mobileMoneyDetails.style.display = 'block';
+                    document.getElementById('phone_number').required = true;
+                } else {
+                    document.getElementById('phone_number').required = false;
+                }
+
+                if (this.value === 'bank_transfer') {
+                    bankTransferDetails.style.display = 'block';
+                    document.getElementById('account_number').required = true;
+                } else {
+                    document.getElementById('account_number').required = false;
+                }
+            });
+        });
+
+        // Form submission
+        const checkoutForm = document.getElementById('checkout-form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function (e) {
+                const submitButton = this.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+
+                    if (!this.checkValidity()) {
+                        e.preventDefault();
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Place Order';
+                        this.classList.add('was-validated');
+                        return false;
+                    }
+
+                    const hasCheckedSavedAddress = document.querySelector('input[name="saved_address_id"]:checked');
+                    if (hasCheckedSavedAddress) {
+                        useSavedAddressInput.value = 'true';
+                    } else {
+                        useSavedAddressInput.value = 'false';
+                    }
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

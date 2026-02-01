@@ -1,0 +1,185 @@
+{% extends 'customer_dashboard/base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div>
+    <!-- ===== BREADCRUMB ===== -->
+    <nav class="breadcrumb" style="margin-bottom: 1.5rem;">
+        <span class="breadcrumb-item">
+            <a href="{% url 'customer_dashboard:dashboard' %}" style="text-decoration: none;">
+                <i class="bi bi-house-door"></i> Dashboard
+            </a>
+        </span>
+        <span class="breadcrumb-item active">
+            <i class="bi bi-calendar2-check me-2"></i> My Subscriptions
+        </span>
+    </nav>
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="dashboard-header">
+        <h1><i class="bi bi-calendar2-check"></i> My Subscriptions</h1>
+        <p style="margin-top: 0.5rem; margin-bottom: 0;">
+            Manage your meal plans and delivery schedules
+        </p>
+    </div>
+
+    <!-- ===== ACTIVE SUBSCRIPTION ===== -->
+    {% if active_subscription %}
+    <div class="dashboard-card" style="margin-bottom: 2.5rem; position: relative; overflow: hidden;">
+        <!-- Gradient background decoration -->
+        <div style="position: absolute; top: 0; right: 0; width: 300px; height: 300px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 50%; opacity: 0.5; pointer-events: none;"></div>
+
+        <div style="position: relative; z-index: 1;">
+            <!-- Status Badge -->
+            <div style="display: inline-block; background: linear-gradient(135deg, var(--success-color), #38a169); color: white; padding: 0.5rem 1rem; border-radius: 2rem; margin-bottom: 1.5rem;">
+                <i class="bi bi-check-circle me-1"></i> Active Subscription
+            </div>
+
+            <!-- Subscription Details Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <!-- Plan Info -->
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Current Plan</div>
+                    <h3 style="margin: 0; color: var(--primary-color); font-size: 1.8rem; font-weight: 700;">{{ active_subscription.plan.name }}</h3>
+                    <div style="color: var(--text-secondary); margin-top: 0.3rem;">{{ active_subscription.plan.get_plan_type_display }} Plan</div>
+                </div>
+
+                <!-- Start Date -->
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Started</div>
+                    <div style="color: var(--text-primary); font-size: 1.2rem; font-weight: 700;">{{ active_subscription.start_date|date:"M d, Y" }}</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.3rem;">Active since</div>
+                </div>
+
+                <!-- Next Billing -->
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Next Billing</div>
+                    <div style="color: var(--text-primary); font-size: 1.2rem; font-weight: 700;">{{ active_subscription.next_billing_date|date:"M d, Y" }}</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.3rem;">Renewal date</div>
+                </div>
+
+                <!-- Delivery Time -->
+                <div>
+                    <div style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">Delivery Time</div>
+                    <div style="color: var(--text-primary); font-size: 1.2rem; font-weight: 700;">{{ active_subscription.preferred_delivery_time|default:"Not Set" }}</div>
+                    <div style="color: var(--text-secondary); margin-top: 0.3rem;">Preferred time</div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 0.8rem; margin-bottom: 2rem;">
+                <h6 style="margin: 0 0 1rem 0; color: var(--text-primary); font-weight: 600;">Subscription Settings</h6>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label style="color: var(--text-primary); margin: 0;">Auto-Renewal</label>
+                        <div style="display: inline-block; width: 50px; height: 26px; background: {% if active_subscription.auto_renewal_enabled %}var(--success-color){% else %}var(--border-color){% endif %}; border-radius: 13px; position: relative; cursor: pointer;">
+                            <div style="position: absolute; {% if active_subscription.auto_renewal_enabled %}right{% else %}left{% endif %}: 3px; top: 3px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label style="color: var(--text-primary); margin: 0;">Notifications</label>
+                        <span class="badge-custom badge-success">Enabled</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                <a href="{% url 'subscriptions:subscription_detail' active_subscription.id %}" class="btn-custom btn-primary-custom">
+                    <i class="bi bi-eye"></i> View Details
+                </a>
+                <a href="{% url 'customer_dashboard:pause_subscription' active_subscription.id %}" class="btn-custom btn-secondary-custom" style="color: var(--warning-color); border-color: var(--warning-color);">
+                    <i class="bi bi-pause-circle"></i> Pause
+                </a>
+                <a href="{% url 'customer_dashboard:cancel_subscription' active_subscription.id %}" class="btn-custom btn-secondary-custom" style="color: var(--danger-color); border-color: var(--danger-color);">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-secondary-custom">
+                    <i class="bi bi-arrow-right"></i> Upgrade Plan
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- ===== NO ACTIVE SUBSCRIPTION ===== -->
+    <div class="dashboard-card" style="text-align: center; padding: 3rem 2rem; margin-bottom: 2.5rem;">
+        <i class="bi bi-calendar-x" style="font-size: 4rem; color: var(--primary-color); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">No Active Subscription</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Subscribe to a meal plan to enjoy healthy, medically-approved meals delivered daily.</p>
+        <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-primary-custom">
+            <i class="bi bi-plus-circle"></i> Browse Meal Plans
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- ===== SUBSCRIPTION PLANS SUMMARY ===== -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="bi bi-list-ul"></i> Available Meal Plans</h2>
+            <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-primary-custom">
+                <i class="bi bi-arrow-right"></i> View All Plans
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <!-- Example Plan Cards -->
+            <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 0.8rem; border: 1px solid var(--border-color);">
+                <h5 style="color: var(--text-primary); margin: 0 0 0.5rem 0;">Basic Plan</h5>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Weekday meals</div>
+                <div style="color: var(--primary-color); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">RWF 25,000<span style="font-size: 0.8rem; color: var(--text-secondary);">/week</span></div>
+                <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-secondary-custom" style="width: 100%; text-align: center;">
+                    Subscribe
+                </a>
+            </div>
+
+            <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 0.8rem; border: 1px solid var(--border-color);">
+                <h5 style="color: var(--text-primary); margin: 0 0 0.5rem 0;">Premium Plan</h5>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Daily meals + consultations</div>
+                <div style="color: var(--primary-color); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">RWF 45,000<span style="font-size: 0.8rem; color: var(--text-secondary);">/week</span></div>
+                <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-secondary-custom" style="width: 100%; text-align: center;">
+                    Subscribe
+                </a>
+            </div>
+
+            <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 0.8rem; border: 1px solid var(--border-color);">
+                <h5 style="color: var(--text-primary); margin: 0 0 0.5rem 0;">Elite Plan</h5>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Full service + priority</div>
+                <div style="color: var(--primary-color); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">RWF 65,000<span style="font-size: 0.8rem; color: var(--text-secondary);">/week</span></div>
+                <a href="{% url 'subscriptions:subscription_plans' %}" class="btn-custom btn-secondary-custom" style="width: 100%; text-align: center;">
+                    Subscribe
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUBSCRIPTION HISTORY ===== -->
+    {% if subscriptions %}
+    <div class="dashboard-card" style="margin-top: 2.5rem;">
+        <div class="card-header">
+            <h2><i class="bi bi-clock-history"></i> Subscription History</h2>
+        </div>
+
+        <div style="display: grid; gap: 1rem;">
+            {% for sub in subscriptions %}
+            <div style="padding: 1rem; background: var(--light-bg); border-radius: 0.6rem; border-left: 4px solid {% if sub.status == 'active' %}var(--success-color){% elif sub.status == 'paused' %}var(--warning-color){% else %}var(--danger-color){% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h5 style="margin: 0; color: var(--text-primary);">{{ sub.plan.name }}</h5>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.3rem;">
+                            {{ sub.start_date|date:"M d, Y" }} - {{ sub.end_date|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    <span class="badge-custom badge-{% if sub.status == 'active' %}success{% elif sub.status == 'paused' %}warning{% else %}danger{% endif %}">
+                        {{ sub.get_status_display }}
+                    </span>
+                    <a href="{% url 'subscriptions:subscription_detail' sub.id %}" class="btn-custom btn-secondary-custom">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

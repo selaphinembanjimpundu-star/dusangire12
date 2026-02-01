@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,34 +12,42 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .header {
             text-align: center;
             border-bottom: 2px solid #000;
             padding-bottom: 20px;
             margin-bottom: 20px;
         }
+
         .receipt-info {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .total-row {
             font-weight: bold;
             background-color: #f9f9f9;
         }
+
         .footer {
             margin-top: 30px;
             text-align: center;
@@ -47,13 +56,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
-        <h1>NOURISH LINK</h1>
+        <h1>Dusangire</h1>
         <p>Hospital E-Commerce Restaurant</p>
         <p>Receipt</p>
     </div>
-    
+
     <div class="receipt-info">
         <div>
             <p><strong>Order Number:</strong> {{ order.order_number }}</p>
@@ -65,19 +75,19 @@
             <p><strong>Payment Method:</strong> {{ payment.get_payment_method_display }}</p>
             <p><strong>Payment Status:</strong> {{ payment.get_status_display }}</p>
             {% if payment.transaction_id %}
-                <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
+            <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
             {% endif %}
         </div>
     </div>
-    
+
     <div>
         <p><strong>Delivery Address:</strong></p>
         <p>{{ order.delivery_address }}</p>
         {% if order.delivery_instructions %}
-            <p><strong>Instructions:</strong> {{ order.delivery_instructions }}</p>
+        <p><strong>Instructions:</strong> {{ order.delivery_instructions }}</p>
         {% endif %}
     </div>
-    
+
     <table>
         <thead>
             <tr>
@@ -89,12 +99,12 @@
         </thead>
         <tbody>
             {% for item in order_items %}
-                <tr>
-                    <td>{{ item.menu_item.name }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>${{ item.price }}</td>
-                    <td>${{ item.subtotal }}</td>
-                </tr>
+            <tr>
+                <td>{{ item.menu_item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price }}</td>
+                <td>${{ item.subtotal }}</td>
+            </tr>
             {% endfor %}
         </tbody>
         <tfoot>
@@ -112,12 +122,12 @@
             </tr>
         </tfoot>
     </table>
-    
+
     <div class="footer">
         <p>Thank you for your order!</p>
         <p>For inquiries, please contact us.</p>
         <p>This is a computer-generated receipt.</p>
     </div>
 </body>
-</html>
 
+</html>
