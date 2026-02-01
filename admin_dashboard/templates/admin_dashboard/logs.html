@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Activity Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-history"></i> Admin Activity Logs
+            </h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <div class="btn-group">
+                <a href="{% url 'admin_dashboard:export_logs' %}?format=csv" class="btn btn-info btn-sm">
+                    <i class="fas fa-download"></i> Export CSV
+                </a>
+                <a href="{% url 'admin_dashboard:export_logs' %}?format=json" class="btn btn-info btn-sm">
+                    <i class="fas fa-download"></i> Export JSON
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="form-inline" id="filter-form">
+                <div class="form-group mr-3">
+                    <label for="action" class="mr-2">Action:</label>
+                    <select name="action" id="action" class="form-control form-control-sm">
+                        <option value="">-- All Actions --</option>
+                        {% for action_code, action_name in action_choices %}
+                            <option value="{{ action_code }}" {% if current_action == action_code %}selected{% endif %}>
+                                {{ action_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mr-3">
+                    <label for="user" class="mr-2">Admin User:</label>
+                    <select name="user" id="user" class="form-control form-control-sm">
+                        <option value="">-- All Users --</option>
+                        {% for user in admin_users %}
+                            <option value="{{ user.id }}" {% if current_user == user.id|stringformat:"s" %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group mr-3">
+                    <label for="status" class="mr-2">Status:</label>
+                    <select name="status" id="status" class="form-control form-control-sm">
+                        <option value="">-- All Status --</option>
+                        <option value="SUCCESS" {% if current_status == "SUCCESS" %}selected{% endif %}>Success</option>
+                        <option value="FAILED" {% if current_status == "FAILED" %}selected{% endif %}>Failed</option>
+                        <option value="PENDING" {% if current_status == "PENDING" %}selected{% endif %}>Pending</option>
+                        <option value="WARNING" {% if current_status == "WARNING" %}selected{% endif %}>Warning</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'admin_dashboard:view_logs' %}" class="btn btn-secondary btn-sm ml-2">
+                    <i class="fas fa-redo"></i> Reset
+                </a>
+            </form>
+
+            <div class="form-group mt-3">
+                <label for="search" class="mr-2">Search:</label>
+                <form method="GET" class="form-inline">
+                    <input type="text" name="search" id="search" class="form-control form-control-sm" 
+                           placeholder="Search description, model, or error..." value="{{ search_query }}">
+                    <button type="submit" class="btn btn-primary btn-sm ml-2">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total Logs</h5>
+                    <h2>{{ total_logs }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Activity Log Entries</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Timestamp</th>
+                        <th>Admin User</th>
+                        <th>Action</th>
+                        <th>Model</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in page_obj %}
+                    <tr>
+                        <td>{{ log.id }}</td>
+                        <td>
+                            <small>{{ log.timestamp|date:"Y-m-d H:i:s" }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ log.admin_user.username }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ log.get_action_display }}</span>
+                        </td>
+                        <td>
+                            <code>{{ log.model_name }}</code>
+                        </td>
+                        <td>
+                            <small>{{ log.description|truncatewords:10 }}</small>
+                        </td>
+                        <td>
+                            {% if log.status == "SUCCESS" %}
+                                <span class="badge badge-success">Success</span>
+                            {% elif log.status == "FAILED" %}
+                                <span class="badge badge-danger">Failed</span>
+                            {% elif log.status == "PENDING" %}
+                                <span class="badge badge-warning">Pending</span>
+                            {% elif log.status == "WARNING" %}
+                                <span class="badge badge-warning">Warning</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.duration_ms %}
+                                <small>{{ log.duration_ms }}ms</small>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_dashboard:log_detail' log.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-3">
+                            No logs found matching the criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        border: none;
+    }
+    .badge {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Activity Summary{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-chart-bar"></i> Admin Activity Summary
+            </h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'admin_dashboard:view_logs' %}" class="btn btn-primary">
+                <i class="fas fa-list"></i> View All Logs
+            </a>
+        </div>
+    </div>
+
+    <!-- Activity Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Today's Activities</h6>
+                    <h2 class="mb-0">{{ today_logs }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">This Week</h6>
+                    <h2 class="mb-0">{{ week_logs }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">This Month</h6>
+                    <h2 class="mb-0">{{ month_logs }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title text-uppercase">Failed Actions</h6>
+                    <h2 class="mb-0">{{ failed_actions }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Charts -->
+    <div class="row mb-4">
+        <!-- Top Actions -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-fire"></i> Top Actions</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Action</th>
+                                <th>Count</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in top_actions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ action.action }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">{{ action.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {% widthratio action.count 100 100 %}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">
+                                    No data available
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Modified Models -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-database"></i> Most Modified Models</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Model</th>
+                                <th>Changes</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for model in most_modified %}
+                            <tr>
+                                <td>
+                                    <code>{{ model.model_name }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ model.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-info" role="progressbar" 
+                                             style="width: {% widthratio model.count 100 100 %}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">
+                                    No data available
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Activity -->
+    <div class="row mb-4">
+        <!-- Top Admins -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Most Active Admins</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Admin</th>
+                                <th>Actions</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for admin in top_admins %}
+                            <tr>
+                                <td>
+                                    <strong>{{ admin.admin_user__username }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success">{{ admin.count }}</span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {% widthratio admin.count 100 100 %}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">
+                                    No data available
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty Card for Balance -->
+        <div class="col-md-6">
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activities</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Model</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>
+                            <small>{{ log.timestamp|date:"Y-m-d H:i:s" }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ log.admin_user.username }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge badge-primary">{{ log.get_action_display }}</span>
+                        </td>
+                        <td>
+                            <code>{{ log.model_name }}</code>
+                        </td>
+                        <td>
+                            {% if log.status == "SUCCESS" %}
+                                <span class="badge badge-success">Success</span>
+                            {% elif log.status == "FAILED" %}
+                                <span class="badge badge-danger">Failed</span>
+                            {% elif log.status == "PENDING" %}
+                                <span class="badge badge-warning">Pending</span>
+                            {% elif log.status == "WARNING" %}
+                                <span class="badge badge-warning">Warning</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_dashboard:log_detail' log.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-3">
+                            No recent activities
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+    }
+    .badge {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    code {
+        background-color: #f4f4f4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}

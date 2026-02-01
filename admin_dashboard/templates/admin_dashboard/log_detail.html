@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Log Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">
+                <i class="fas fa-file-alt"></i> Log Detail
+            </h1>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'admin_dashboard:view_logs' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Logs
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Log Info -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle"></i> 
+                {{ log.get_action_display }} - {{ log.timestamp|date:"Y-m-d H:i:s" }}
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Log ID</h6>
+                    <p><strong>{{ log.id }}</strong></p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Status</h6>
+                    <p>
+                        {% if log.status == "SUCCESS" %}
+                            <span class="badge badge-success badge-lg">Success</span>
+                        {% elif log.status == "FAILED" %}
+                            <span class="badge badge-danger badge-lg">Failed</span>
+                        {% elif log.status == "PENDING" %}
+                            <span class="badge badge-warning badge-lg">Pending</span>
+                        {% elif log.status == "WARNING" %}
+                            <span class="badge badge-warning badge-lg">Warning</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Admin User</h6>
+                    <p>
+                        <strong>{{ log.admin_user.username }}</strong>
+                        <br>
+                        <small class="text-muted">{{ log.admin_user.email }}</small>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Action Type</h6>
+                    <p>
+                        <span class="badge badge-primary">{{ log.get_action_display }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Model Name</h6>
+                    <p><code>{{ log.model_name }}</code></p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Object ID</h6>
+                    <p>
+                        {% if log.object_id %}
+                            <strong>{{ log.object_id }}</strong>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-align-left"></i> Description</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ log.description }}</p>
+        </div>
+    </div>
+
+    <!-- Request Information -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-globe"></i> Request Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted">IP Address</h6>
+                    <p>
+                        {% if log.ip_address %}
+                            <code>{{ log.ip_address }}</code>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted">Duration</h6>
+                    <p>
+                        {% if log.duration_ms %}
+                            <strong>{{ log.duration_ms }} ms</strong>
+                        {% else %}
+                            <span class="text-muted">Not recorded</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if log.user_agent %}
+            <h6 class="text-muted">User Agent</h6>
+            <p>
+                <small class="text-break">{{ log.user_agent }}</small>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Changes (Old vs New Values) -->
+    {% if log.old_values or log.new_values %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Changes</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% if log.old_values %}
+                <div class="col-md-6">
+                    <h6 class="text-muted">Previous Values</h6>
+                    <div class="bg-light p-3 rounded">
+                        {% for key, value in log.old_values.items %}
+                        <div class="mb-2">
+                            <strong>{{ key }}:</strong>
+                            <div class="text-break">
+                                <code>{{ value }}</code>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if log.new_values %}
+                <div class="col-md-6">
+                    <h6 class="text-muted">New Values</h6>
+                    <div class="bg-light p-3 rounded">
+                        {% for key, value in log.new_values.items %}
+                        <div class="mb-2">
+                            <strong>{{ key }}:</strong>
+                            <div class="text-break">
+                                <code>{{ value }}</code>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Error Information -->
+    {% if log.status == "FAILED" and log.error_message %}
+    <div class="card mb-4 shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Error Information</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-danger">
+                <strong>Error:</strong>
+            </p>
+            <div class="bg-light p-3 rounded border border-danger">
+                <small class="text-break">{{ log.error_message }}</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Additional Info -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-clock"></i> Timestamp Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted">Created At</h6>
+                    <p>
+                        <strong>{{ log.timestamp|date:"Y-m-d H:i:s" }}</strong>
+                        <br>
+                        <small class="text-muted">{{ log.timestamp|timesince }} ago</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+    }
+    .badge-lg {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    code {
+        background-color: #f4f4f4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        word-break: break-all;
+    }
+</style>
+{% endblock %}

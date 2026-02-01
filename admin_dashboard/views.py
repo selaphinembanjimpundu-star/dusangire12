@@ -374,3 +374,200 @@ def bi_dashboard(request):
         'title': ('Business Intelligence Dashboard'),
     }
     return render(request, 'admin_dashboard/bi_dashboard.html', context)
+
+
+# ============================================================================
+# ADMIN LOGGING VIEWS
+# ============================================================================
+
+@login_required
+@user_passes_test(is_staff_or_admin)
+def view_admin_logs(request):
+    """Display admin activity logs with filtering and pagination"""
+    from .models import AdminLog
+    from .logger import get_recent_logs
+    
+    # Get all logs
+    logs = AdminLog.objects.all()
+    
+    # Apply filters
+    action_filter = request.GET.get('action')
+    user_filter = request.GET.get('user')
+    model_filter = request.GET.get('model_name')
+    status_filter = request.GET.get('status')
+    search_query = request.GET.get('search')
+    
+    if action_filter:
+        logs = logs.filter(action=action_filter)
+    
+    if user_filter:
+        logs = logs.filter(admin_user_id=user_filter)
+    
+    if model_filter:
+        logs = logs.filter(model_name__icontains=model_filter)
+    
+    if status_filter:
+        logs = logs.filter(status=status_filter)
+    
+    if search_query:
+        logs = logs.filter(
+            Q(description__icontains=search_query) |
+            Q(model_name__icontains=search_query) |
+            Q(error_message__icontains=search_query)
+        )
+    
+    # Get unique values for filter dropdowns
+    action_choices = AdminLog.ACTION_CHOICES
+    admin_users = User.objects.filter(is_staff=True).order_by('username')
+    
+    # Pagination
+    paginator = Paginator(logs, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'action_choices': action_choices,
+        'admin_users': admin_users,
+        'current_action': action_filter,
+        'current_user': user_filter,
+        'current_model': model_filter,
+        'current_status': status_filter,
+        'search_query': search_query,
+        'total_logs': logs.count(),
+        'title': 'Admin Activity Logs',
+    }
+    
+    return render(request, 'admin_dashboard/logs.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_or_admin)
+def log_detail(request, log_id):
+    """Display detailed view of a specific log entry"""
+    from .models import AdminLog
+    
+    log = get_object_or_404(AdminLog, id=log_id)
+    
+    context = {
+        'log': log,
+        'title': f'Log Detail - {log.get_action_display()}',
+    }
+    
+    return render(request, 'admin_dashboard/log_detail.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_or_admin)
+def admin_activity_summary(request):
+    """Display summary statistics of admin activities"""
+    from .models import AdminLog
+    from django.db.models import Count
+    
+    today = timezone.now().date()
+    week_ago = today - timedelta(days=7)
+    month_ago = today - timedelta(days=30)
+    
+    # Activity statistics
+    today_logs = AdminLog.objects.filter(timestamp__date=today).count()
+    week_logs = AdminLog.objects.filter(timestamp__date__gte=week_ago).count()
+    month_logs = AdminLog.objects.filter(timestamp__date__gte=month_ago).count()
+    
+    # Failed actions
+    failed_actions = AdminLog.objects.filter(status='FAILED').count()
+    
+    # Top actions
+    top_actions = AdminLog.objects.values('action').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]
+    
+    # Top admins
+    top_admins = AdminLog.objects.values(
+        'admin_user__username',
+        'admin_user__id'
+    ).annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]
+    
+    # Most modified models
+    most_modified = AdminLog.objects.values('model_name').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]
+    
+    # Recent logs
+    recent_logs = AdminLog.objects.select_related('admin_user').order_by('-timestamp')[:20]
+    
+    context = {
+        'today_logs': today_logs,
+        'week_logs': week_logs,
+        'month_logs': month_logs,
+        'failed_actions': failed_actions,
+        'top_actions': top_actions,
+        'top_admins': top_admins,
+        'most_modified': most_modified,
+        'recent_logs': recent_logs,
+        'title': 'Admin Activity Summary',
+    }
+    
+    return render(request, 'admin_dashboard/activity_summary.html', context)
+
+
+@login_required
+@user_passes_test(is_staff_or_admin)
+def export_logs(request):
+    """Export admin logs to CSV or JSON"""
+    from .models import AdminLog
+    from .logger import export_logs_to_json
+    import csv
+    from django.http import HttpResponse
+    
+    # Get filtered logs
+    logs = AdminLog.objects.all()
+    
+    action_filter = request.GET.get('action')
+    if action_filter:
+        logs = logs.filter(action=action_filter)
+    
+    format_type = request.GET.get('format', 'csv')
+    
+    if format_type == 'json':
+        json_data = export_logs_to_json(logs)
+        response = HttpResponse(json_data, content_type='application/json')
+        response['Content-Disposition'] = 'attachment; filename="admin_logs.json"'
+        return response
+    
+    else:  # CSV format (default)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="admin_logs.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow([
+            'ID',
+            'Admin User',
+            'Action',
+            'Model',
+            'Object ID',
+            'Description',
+            'Status',
+            'Timestamp',
+            'IP Address',
+            'Duration (ms)',
+            'Error Message'
+        ])
+        
+        for log in logs:
+            writer.writerow([
+                log.id,
+                str(log.admin_user),
+                log.get_action_display(),
+                log.model_name,
+                log.object_id,
+                log.description,
+                log.status,
+                log.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                log.ip_address or '',
+                log.duration_ms or '',
+                log.error_message or '',
+            ])
+        
+        return response
