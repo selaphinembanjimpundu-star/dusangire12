@@ -27,10 +27,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-40^5e(c&86(8ae3np5&ew
 
 # DEBUG should be switched off in production via environment variable
 # Example: export DEBUG=False
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-# ALLOWED_HOSTS must be configured in production. Provide a sensible default for dev.
-ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') if h]
+# ALLOWED_HOSTS must be configured in production. Include PythonAnywhere domain.
+ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='dusa2026.pythonanywhere.com,localhost,127.0.0.1').split(',') if h]
 
 
 # Application definition
@@ -96,6 +96,7 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year in production
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = not DEBUG  # Enforce HTTPS in production
 SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only in production
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SECURE = not DEBUG  # HTTPS only in production
