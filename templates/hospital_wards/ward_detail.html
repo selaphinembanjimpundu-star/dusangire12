@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ ward.name }} - Ward Details - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:ward_list' %}">Wards</a></li>
+            <li class="breadcrumb-item active">{{ ward.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Ward Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">{{ ward.name }}</h1>
+                            <p class="text-muted mb-0"><i class="bi bi-geo-alt"></i> {{ ward.location }}</p>
+                        </div>
+                        <div class="text-end">
+                            {% with occupancy=ward.get_occupancy_percentage %}
+                                {% if occupancy < 50 %}
+                                    <span class="badge bg-success fs-6">Low Occupancy</span>
+                                {% elif occupancy < 80 %}
+                                    <span class="badge bg-warning fs-6">Medium Occupancy</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">High Occupancy</span>
+                                {% endif %}
+                                <p class="text-muted mt-2 mb-0">{{ occupancy|floatformat:0 }}% Full</p>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ward Description -->
+    {% if ward.description %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <p class="mb-0">{{ ward.description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Total Beds</h6>
+                    <h2 class="fw-bold text-primary">{{ ward.capacity }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Available</h6>
+                    <h2 class="fw-bold text-success">{{ available_beds|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Occupied</h6>
+                    <h2 class="fw-bold text-warning">{{ occupied_beds|length }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 text-center">
+                <div class="card-body">
+                    <h6 class="text-muted small mb-2">Delivery Routes</h6>
+                    <h2 class="fw-bold text-info">{{ delivery_routes|length }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="beds-tab" data-bs-toggle="tab" data-bs-target="#beds" type="button" role="tab">
+                <i class="bi bi-door-closed"></i> Beds ({{ beds|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab">
+                <i class="bi bi-truck"></i> Delivery Routes ({{ delivery_routes|length }})
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Beds Tab -->
+        <div class="tab-pane fade show active" id="beds" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Bed Number</th>
+                                    <th>Status</th>
+                                    <th>Patient</th>
+                                    <th>Assigned At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bed in beds %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ bed.bed_number }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if bed.status == 'available' %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% elif bed.status == 'occupied' %}
+                                            <span class="badge bg-warning">Occupied</span>
+                                        {% elif bed.status == 'maintenance' %}
+                                            <span class="badge bg-danger">Maintenance</span>
+                                        {% else %}
+                                            <span class="badge bg-info">Reserved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if bed.patient %}
+                                            <a href="{% url 'hospital_wards:bed_detail' bed.id %}" class="text-decoration-none">
+                                                {{ bed.patient.first_name }} {{ bed.patient.last_name }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if bed.assigned_at %}
+                                            {{ bed.assigned_at|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'hospital_wards:bed_detail' bed.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox"></i> No beds found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivery Routes Tab -->
+        <div class="tab-pane fade" id="delivery" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    {% if delivery_routes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Meal Type</th>
+                                        <th>Scheduled Time</th>
+                                        <th>Avg. Delivery Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for route in delivery_routes %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ route.get_meal_type_display }}</strong>
+                                        </td>
+                                        <td>{{ route.scheduled_time|time:"H:i" }}</td>
+                                        <td>{{ route.average_delivery_minutes }} minutes</td>
+                                        <td>
+                                            {% if route.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted py-4">
+                            <i class="bi bi-inbox"></i> No delivery routes configured
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

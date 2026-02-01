@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                <i class="bi bi-info-circle"></i>
+                Redirecting to your dashboard...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Redirect to role-specific dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    const userRole = '{{ user.profile.role }}';
+    
+    const dashboardMap = {
+        'patient': '/hospital/dashboards/patient/',
+        'caregiver': '/hospital/dashboards/caregiver/',
+        'nutritionist': '/hospital/dashboards/nutritionist/',
+        'medical_staff': '/hospital/dashboards/medical-staff/',
+        'chef': '/hospital/dashboards/chef/',
+        'kitchen_staff': '/hospital/dashboards/kitchen-staff/',
+        'delivery_person': '/hospital/dashboards/delivery-person/',
+        'support_staff': '/hospital/dashboards/support-staff/',
+        'hospital_manager': '/hospital/dashboards/hospital-manager/',
+        'admin': '/hospital/dashboards/admin/'
+    };
+    
+    const dashboardUrl = dashboardMap[userRole] || '/hospital/';
+    window.location.href = dashboardUrl;
+});
+</script>
+{% endblock %}

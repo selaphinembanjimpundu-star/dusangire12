@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Assign Patients to Beds{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Bulk Assign Patients to Beds</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>CSV Format Requirements:</h5>
+                        <p class="mb-0">Your CSV file must include the following columns (in any order):</p>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>patient_id</strong> - Patient ID from database</li>
+                            <li><strong>bed_id</strong> - Bed ID from database</li>
+                            <li><strong>reason</strong> - Reason for admission</li>
+                            <li><strong>chief_complaint</strong> - Chief complaint or primary condition</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.csv_file.id_for_label }}" class="form-label">
+                                Select CSV File
+                            </label>
+                            {{ form.csv_file }}
+                            {% if form.csv_file.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.csv_file.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-2">
+                                {{ form.csv_file.help_text|safe }}
+                            </small>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.send_notifications }}
+                            <label class="form-check-label" for="{{ form.send_notifications.id_for_label }}">
+                                Send notifications to caregivers
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-object-group"></i> Bulk Assign
+                        </button>
+                        <a href="{% url 'bulk_operations_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sample CSV Format</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3">patient_id,bed_id,reason,chief_complaint
+1,5,Emergency,Acute abdominal pain
+2,6,Routine,Broken left arm
+3,8,Emergency,High fever and cough</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Assignment Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Use patient IDs that exist in database
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Beds must be in "available" status
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Each patient can only have one active bed
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Verify bed and ward compatibility
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Enable notifications for alert caregivers
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Support Staff Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 fw-bold mb-1">Support Staff Dashboard 🏨</h1>
+            <p class="text-muted">Ward management, bed assignments, and patient support</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Active Beds</p>
+                            <h5 class="fw-bold mb-0">{{ active_beds }}</h5>
+                            <small class="text-muted">Occupied</small>
+                        </div>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="bi bi-door-open text-primary fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Available Beds</p>
+                            <h5 class="fw-bold mb-0">{{ available_beds }}</h5>
+                            <small class="text-muted">Ready</small>
+                        </div>
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="bi bi-check-circle text-success fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Maintenance</p>
+                            <h5 class="fw-bold mb-0">{{ maintenance_beds }}</h5>
+                            <small class="text-muted">Beds</small>
+                        </div>
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="bi bi-tools text-warning fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Pending Discharge</p>
+                            <h5 class="fw-bold mb-0">{{ support_requests }}</h5>
+                            <small class="text-muted">Patients</small>
+                        </div>
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3">
+                            <i class="bi bi-exclamation-circle text-danger fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                    <div class="btn-group-vertical w-100" role="group">
+                        <a href="{% url 'hospital_wards:patient_admission' %}" class="btn btn-outline-success btn-sm text-start">
+                            <i class="fas fa-user-plus"></i> Admit New Patient
+                        </a>
+                        <a href="{% url 'hospital_wards:transfer_patient_bed' %}" class="btn btn-outline-warning btn-sm text-start">
+                            <i class="fas fa-arrows-alt"></i> Transfer Patient to Different Bed
+                        </a>
+                        <a href="{% url 'hospital_wards:occupancy_report' %}" class="btn btn-outline-primary btn-sm text-start">
+                            <i class="fas fa-chart-bar"></i> View Occupancy Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Ward Bed Management -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Ward Bed Status</h5>
+                    <a href="{% url 'hospital_wards:patient_admission' %}" class="btn btn-sm btn-primary">+ Assign Bed</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ward</th>
+                                    <th>Bed #</th>
+                                    <th>Status</th>
+                                    <th>Patient</th>
+                                    <th>Assigned Since</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bed in ward_beds|slice:":8" %}
+                                <tr>
+                                    <td><strong>{{ bed.ward.name }}</strong></td>
+                                    <td>{{ bed.bed_number }}</td>
+                                    <td>
+                                        <span class="badge {% if bed.status == 'occupied' %}bg-warning{% elif bed.status == 'available' %}bg-success{% elif bed.status == 'maintenance' %}bg-secondary{% else %}bg-info{% endif %}">
+                                            {{ bed.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if bed.patient %}
+                                        <strong>{{ bed.patient.get_full_name }}</strong>
+                                        <br><small class="text-muted">{{ bed.patient.email }}</small>
+                                        {% else %}
+                                        <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if bed.assigned_at %}
+                                        <small>{{ bed.assigned_at|date:"M d, Y" }}</small>
+                                        {% else %}
+                                        <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'hospital_wards:bed_detail' bed.id %}" class="btn btn-outline-primary btn-sm">View</a>
+                                            {% if bed.patient %}
+                                            <a href="{% url 'hospital_wards:transfer_patient_bed' %}" class="btn btn-outline-warning btn-sm">Transfer</a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Admissions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-check"></i> Active Admissions</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_admissions %}
+                    <div class="list-group list-group-flush">
+                        {% for admission in active_admissions|slice:":5" %}
+                        <div class="list-group-item p-2 border-start border-success">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div style="flex: 1;">
+                                    <h6 class="mb-1 small"><strong>{{ admission.patient.get_full_name }}</strong></h6>
+                                    <p class="text-muted small mb-1">Bed: <strong>{{ admission.bed.bed_number }}</strong></p>
+                                    <p class="text-muted small mb-0">{{ admission.admission_date|date:"M d, Y H:i" }}</p>
+                                </div>
+                                <span class="badge bg-success ms-2">{{ admission.reason }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No active admissions</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Discharges -->
+    {% if pending_discharges %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-sign-out-alt"></i> Patients Ready for Discharge</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Current Bed</th>
+                                    <th>Admitted</th>
+                                    <th>Length of Stay</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admission in pending_discharges %}
+                                <tr>
+                                    <td><strong>{{ admission.patient.get_full_name }}</strong></td>
+                                    <td>{{ admission.bed.bed_number }} ({{ admission.bed.ward.name }})</td>
+                                    <td>{{ admission.admission_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% now "U" as current_time %}
+                                        {% load humanize %}
+                                        <strong>{{ admission.admission_date|timesince }} days</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'hospital_wards:patient_discharge' admission.id %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-check"></i> Discharge
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bed Assignment Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Bed Assignments</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Current Bed</th>
+                                    <th>Ward</th>
+                                    <th>Days in Bed</th>
+                                    <th>Assignment Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in bed_assignments|slice:":8" %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ assignment.patient_name }}</strong>
+                                        <br><small class="text-muted">{{ assignment.patient_phone }}</small>
+                                    </td>
+                                    <td>{{ assignment.bed_number }}</td>
+                                    <td>{{ assignment.ward_name }}</td>
+                                    <td>{{ assignment.duration }} days</td>
+                                    <td>{{ assignment.assigned_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-info">Active</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button class="btn btn-outline-primary" onclick="editAssignment('{{ assignment.id }}')">
+                                                Edit
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="dischargePatient('{{ assignment.id }}')">
+                                                Discharge
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ward Occupancy Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Ward Occupancy Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ward Name</th>
+                                    <th>Total Beds</th>
+                                    <th>Occupied</th>
+                                    <th>Available</th>
+                                    <th>Maintenance</th>
+                                    <th>Reserved</th>
+                                    <th>Occupancy %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ward in ward_summary %}
+                                <tr>
+                                    <td><strong>{{ ward.name }}</strong></td>
+                                    <td>{{ ward.total_beds }}</td>
+                                    <td><span class="badge bg-warning">{{ ward.occupied }}</span></td>
+                                    <td><span class="badge bg-success">{{ ward.available }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ ward.maintenance }}</span></td>
+                                    <td><span class="badge bg-info">{{ ward.reserved }}</span></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px; min-width: 100px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ ward.occupancy_percent }}%;">
+                                                {{ ward.occupancy_percent }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function editAssignment(assignmentId) {
+    // Implement edit functionality
+    console.log('Edit assignment:', assignmentId);
+}
+
+function dischargePatient(assignmentId) {
+    if (confirm('Are you sure you want to discharge this patient?')) {
+        fetch(`{% url 'hospital_wards:discharge_bed' 0 %}`.replace('0', assignmentId), {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => alert('Error: ' + error));
+    }
+}
+</script>
+{% endblock %}

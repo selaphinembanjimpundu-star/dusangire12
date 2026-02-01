@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Operations{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-tasks"></i> Bulk Operations Management
+            </h1>
+        </div>
+    </div>
+
+    <!-- Operation History -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Recent Bulk Operations</h5>
+                </div>
+                <div class="card-body">
+                    {% if operations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Operation Type</th>
+                                        <th>Status</th>
+                                        <th>Total Records</th>
+                                        <th>Successful</th>
+                                        <th>Failed</th>
+                                        <th>Success Rate</th>
+                                        <th>Created By</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for operation in operations %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ operation.get_operation_type_display }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if operation.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif operation.status == 'processing' %}
+                                                <span class="badge bg-info">Processing</span>
+                                            {% elif operation.status == 'failed' %}
+                                                <span class="badge bg-danger">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ operation.total_records }}</td>
+                                        <td><span class="text-success">{{ operation.successful_records }}</span></td>
+                                        <td><span class="text-danger">{{ operation.failed_records }}</span></td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {{ operation.success_rate >= 80 | yesno:'bg-success,bg-warning' }}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ operation.success_rate }}%"
+                                                     aria-valuenow="{{ operation.success_rate }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ operation.success_rate|floatformat:1 }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ operation.initiated_by.get_full_name }}</td>
+                                        <td>{{ operation.created_at|date:'M d, Y H:i' }}</td>
+                                        <td>
+                                            {% if operation.output_file %}
+                                                <a href="{{ operation.output_file.url }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No bulk operations yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-sign-out-alt"></i> Bulk Discharge</h5>
+                </div>
+                <div class="card-body">
+                    <p>Discharge multiple patients at once from the hospital.</p>
+                    <a href="{% url 'hospital:bulk_discharge_patients' %}" class="btn btn-danger">
+                        <i class="fas fa-users"></i> Bulk Discharge Patients
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-download"></i> Export Data</h5>
+                </div>
+                <div class="card-body">
+                    <p>Export patient and occupancy data to CSV format.</p>
+                    <a href="{% url 'hospital:export_patients_csv' %}" class="btn btn-success me-2">
+                        <i class="fas fa-file-csv"></i> Export Patients
+                    </a>
+                    <a href="{% url 'hospital:export_occupancy_csv' %}" class="btn btn-info">
+                        <i class="fas fa-file-csv"></i> Export Occupancy
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

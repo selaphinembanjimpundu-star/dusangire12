@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Import Patients{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Import Patients from CSV</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>CSV Format Requirements:</h5>
+                        <p class="mb-0">Your CSV file must include the following columns (in any order):</p>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>patient_id</strong> - Unique identifier</li>
+                            <li><strong>first_name</strong> - Patient first name</li>
+                            <li><strong>last_name</strong> - Patient last name</li>
+                            <li><strong>email</strong> - Valid email address</li>
+                            <li><strong>phone</strong> - Contact number</li>
+                            <li><strong>date_of_birth</strong> - YYYY-MM-DD format</li>
+                            <li><strong>gender</strong> - M, F, or O</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.csv_file.id_for_label }}" class="form-label">
+                                Select CSV File
+                            </label>
+                            {{ form.csv_file }}
+                            {% if form.csv_file.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.csv_file.errors }}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-2">
+                                {{ form.csv_file.help_text|safe }}
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Import Patients
+                        </button>
+                        <a href="{% url 'bulk_operations_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sample CSV Format</h5>
+                </div>
+                <div class="card-body">
+                    <pre class="bg-light p-3">patient_id,first_name,last_name,email,phone,date_of_birth,gender
+001,John,Doe,john@example.com,555-0001,1980-05-15,M
+002,Jane,Smith,jane@example.com,555-0002,1985-03-20,F
+003,Bob,Johnson,bob@example.com,555-0003,1990-07-10,M</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Import Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Ensure all required columns are present
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Use consistent date format (YYYY-MM-DD)
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Verify email addresses are unique
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Check for duplicate entries
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-check text-success"></i>
+                            Keep file size under 10 MB
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

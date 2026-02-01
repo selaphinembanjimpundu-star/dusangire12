@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hospital Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 fw-bold">🏥 Hospital Ward Management Dashboard</h1>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'hospital_wards:ward_list' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-building"></i> Wards
+                    </a>
+                    <a href="{% url 'hospital_wards:education_hub' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-book"></i> Education
+                    </a>
+                    <a href="{% url 'hospital_wards:nutrition_info' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-apple"></i> Nutrition
+                    </a>
+                    <a href="{% url 'hospital_wards:notifications' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-bell"></i> Notifications
+                        {% if unread_notifications > 0 %}
+                            <span class="badge bg-danger">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row mb-4">
+        <!-- Ward Statistics -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Beds</h6>
+                            <h2 class="h1 fw-bold text-primary">{{ total_beds }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-light p-3">
+                            <i class="bi bi-hospital-fill text-primary fs-5"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">Across {{ wards.count }} wards</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Occupied Beds -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Occupied Beds</h6>
+                            <h2 class="h1 fw-bold text-warning">{{ occupied_beds }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-light p-3">
+                            <i class="bi bi-person-check-fill text-warning fs-5"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ occupancy_percentage|floatformat:0 }}% occupancy</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Beds -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Available Beds</h6>
+                            <h2 class="h1 fw-bold text-success">{{ available_beds }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-light p-3">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">Ready for admission</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unread Notifications -->
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-1">Unread Messages</h6>
+                            <h2 class="h1 fw-bold text-info">{{ unread_notifications }}</h2>
+                        </div>
+                        <div class="rounded-circle bg-light p-3">
+                            <i class="bi bi-chat-dots-fill text-info fs-5"></i>
+                        </div>
+                    </div>
+                    <a href="{% url 'hospital_wards:notifications' %}" class="small text-decoration-none">
+                        View notifications <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Occupancy Chart -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3">
+                    <h6 class="mb-0 fw-bold">Ward Occupancy</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ward Name</th>
+                                    <th>Location</th>
+                                    <th>Capacity</th>
+                                    <th>Available</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ward in wards %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'hospital_wards:ward_detail' ward.id %}" class="text-decoration-none fw-500">
+                                            {{ ward.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ ward.location }}</td>
+                                    <td>{{ ward.capacity }} beds</td>
+                                    <td>{{ ward.get_available_beds_count }} available</td>
+                                    <td>
+                                        {% with occupancy=ward.get_occupancy_percentage %}
+                                            {% if occupancy < 50 %}
+                                                <span class="badge bg-success">Low</span>
+                                            {% elif occupancy < 80 %}
+                                                <span class="badge bg-warning">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox"></i> No wards available
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3">
+                    <h6 class="mb-0 fw-bold">Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="list-group list-group-flush">
+                            {% for order in recent_orders %}
+                            <a href="{% url 'orders:order_detail' order.id %}" class="list-group-item list-group-item-action border-0 px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 small">{{ order.order_number }}</h6>
+                                        <small class="text-muted">{{ order.created_at|date:"M d, H:i" }}</small>
+                                    </div>
+                                    <span class="badge bg-primary">{{ order.get_status_display }}</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-3">No recent orders</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Education & Nutrition Section -->
+    <div class="row">
+        <!-- Education Progress -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">Your Learning Progress</h6>
+                    <a href="{% url 'hospital_wards:education_hub' %}" class="small text-decoration-none">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="progress-wrapper">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted">Educational Materials Completed</span>
+                            <strong>{{ user_education_progress }}/{{ total_education_items }}</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            {% widthratio user_education_progress total_education_items 100 as completion_percent %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ completion_percent }}%"></div>
+                        </div>
+                        <small class="text-muted d-block mt-2">Continue your learning journey</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3">
+                    <h6 class="mb-0 fw-bold">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <a href="{% url 'hospital_wards:delivery_schedule' %}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="bi bi-calendar-check"></i> Book Delivery
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'hospital_wards:nutrition_info' %}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="bi bi-apple"></i> View Nutrition
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'hospital_wards:education_hub' %}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="bi bi-book"></i> Learn More
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{% url 'hospital_wards:ward_list' %}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="bi bi-building"></i> View Wards
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+</style>
+{% endblock %}

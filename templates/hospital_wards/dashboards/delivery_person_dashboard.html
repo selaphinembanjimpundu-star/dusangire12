@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delivery Person Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 fw-bold mb-1">Delivery Dashboard 🚚</h1>
+            <p class="text-muted">Manage your delivery routes and track orders</p>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Today's Routes</p>
+                            <h5 class="fw-bold mb-0">{{ total_routes }}</h5>
+                            <small class="text-muted">Deliveries</small>
+                        </div>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="bi bi-map text-primary fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Completed</p>
+                            <h5 class="fw-bold mb-0">{{ completed_deliveries }}</h5>
+                            <small class="text-muted">On schedule</small>
+                        </div>
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="bi bi-check-circle text-success fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Pending</p>
+                            <h5 class="fw-bold mb-0">{{ pending_deliveries }}</h5>
+                            <small class="text-muted">In progress</small>
+                        </div>
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Distance</p>
+                            <h5 class="fw-bold mb-0">{{ total_distance }}</h5>
+                            <small class="text-muted">km</small>
+                        </div>
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                            <i class="bi bi-signpost-2 text-info fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Deliveries Map & Route -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-map"></i> Today's Delivery Routes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for route in delivery_routes %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-1 h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Route {{ forloop.counter }} - {{ route.ward_name }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <p class="mb-1"><small class="text-muted">Status</small></p>
+                                        <span class="badge {% if route.status == 'completed' %}bg-success{% elif route.status == 'in_progress' %}bg-primary{% else %}bg-warning{% endif %}">
+                                            {{ route.get_status_display }}
+                                        </span>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p class="mb-1"><small class="text-muted">Orders</small></p>
+                                        <h6 class="mb-0">{{ route.order_count }} orders</h6>
+                                        <div class="progress mt-2" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ route.completion_percent }}%;">
+                                                {{ route.completion_percent }}%
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p class="mb-1"><small class="text-muted">Distance</small></p>
+                                        <h6 class="mb-0">{{ route.distance }} km</h6>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <p class="mb-1"><small class="text-muted">Est. Time</small></p>
+                                        <h6 class="mb-0">{{ route.est_time }} minutes</h6>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        {% if route.status != 'completed' %}
+                                        <button class="btn btn-sm btn-primary" onclick="startRoute('{{ route.id }}')">
+                                            <i class="bi bi-play-fill"></i> Start Route
+                                        </button>
+                                        {% else %}
+                                        <button class="btn btn-sm btn-success" disabled>
+                                            <i class="bi bi-check"></i> Completed
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-3">No routes assigned</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Route Details -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-task"></i> Active Route Orders</h5>
+                    <span class="badge bg-primary">{{ current_route_orders|length }} items</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if current_route_orders %}
+                    <div class="list-group list-group-flush">
+                        {% for order in current_route_orders %}
+                        <div class="list-group-item p-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <h6 class="mb-1">Order #{{ order.id }}</h6>
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-geo-alt"></i> Ward {{ order.ward }} - Bed {{ order.bed }}
+                                    </p>
+                                    <p class="text-muted small">
+                                        Patient: <strong>{{ order.patient_name }}</strong>
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div>
+                                        <small class="text-muted">Scheduled</small>
+                                        <br><strong>{{ order.scheduled_time|time:"H:i" }}</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="badge {% if order.status == 'delivered' %}bg-success{% elif order.status == 'in_transit' %}bg-primary{% else %}bg-warning{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    {% if order.status != 'delivered' %}
+                                    <button class="btn btn-sm btn-success" onclick="markDelivered('{{ order.id }}')">
+                                        <i class="bi bi-check"></i> Deliver
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-success">✓ Delivered</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <p>No active route. Start a route to see orders.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Today's Performance</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row text-sm mb-0">
+                        <dt class="col-sm-8">On-time Deliveries</dt>
+                        <dd class="col-sm-4 text-end">
+                            <strong>{{ on_time_percent }}%</strong>
+                        </dd>
+
+                        <dt class="col-sm-8">Avg Delivery Time</dt>
+                        <dd class="col-sm-4 text-end">
+                            <strong>{{ avg_delivery_time }} min</strong>
+                        </dd>
+
+                        <dt class="col-sm-8">Customer Rating</dt>
+                        <dd class="col-sm-4 text-end">
+                            <strong>{{ customer_rating }}/5</strong>
+                        </dd>
+
+                        <dt class="col-sm-8">Efficiency Score</dt>
+                        <dd class="col-sm-4 text-end">
+                            <strong>{{ efficiency_score }}%</strong>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock"></i> Time Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h6 class="text-muted mb-2">Time Spent Delivering</h6>
+                        <h4 class="fw-bold">{{ delivery_time }}</h4>
+                    </div>
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: 65%;">
+                            65%
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">Shift Started: {{ shift_start_time|time:"H:i" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Issues</h5>
+                </div>
+                <div class="card-body">
+                    {% if delivery_issues %}
+                    <div class="list-group list-group-flush">
+                        {% for issue in delivery_issues|slice:":3" %}
+                        <div class="list-group-item p-2 border-0">
+                            <small class="text-muted">{{ issue.type }}</small>
+                            <p class="mb-0 small">{{ issue.description }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-check-circle fs-1"></i>
+                        <p class="mt-2">No issues</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startRoute(routeId) {
+    fetch(`{% url 'hospital_wards:start_delivery_route' 0 %}`.replace('0', routeId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => alert('Error: ' + error));
+}
+
+function markDelivered(orderId) {
+    fetch(`{% url 'hospital_wards:mark_order_delivered' 0 %}`.replace('0', orderId), {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => alert('Error: ' + error));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hospital Manager Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 fw-bold mb-1">Hospital Manager Dashboard 📊</h1>
+            <p class="text-muted">Complete hospital overview, analytics, and staff management</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total Patients</p>
+                            <h5 class="fw-bold mb-0">{{ total_patients }}</h5>
+                            <small class="text-muted">Current</small>
+                        </div>
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="bi bi-people text-primary fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Bed Occupancy</p>
+                            <h5 class="fw-bold mb-0">{{ bed_occupancy }}%</h5>
+                            <small class="text-muted">Capacity</small>
+                        </div>
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="bi bi-door-open text-success fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Revenue (Today)</p>
+                            <h5 class="fw-bold mb-0">{{ todays_revenue }}</h5>
+                            <small class="text-muted">RWF</small>
+                        </div>
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="bi bi-cash-coin text-warning fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total Staff</p>
+                            <h5 class="fw-bold mb-0">{{ total_staff }}</h5>
+                            <small class="text-muted">Active</small>
+                        </div>
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                            <i class="bi bi-person-badge text-info fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="fas fa-bolt"></i> Quick Actions</h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'hospital_wards:occupancy_report' %}" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fas fa-chart-bar"></i> View Occupancy Report
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'hospital_wards:patient_admission' %}" class="btn btn-outline-success w-100 btn-sm">
+                                <i class="fas fa-user-plus"></i> Admit Patient
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'hospital_wards:transfer_patient_bed' %}" class="btn btn-outline-warning w-100 btn-sm">
+                                <i class="fas fa-arrows-alt"></i> Transfer Patient
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary w-100 btn-sm">
+                                <i class="fas fa-cog"></i> Admin Panel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Hospital Statistics -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Hospital Performance Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Bed Utilization</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: {{ bed_occupancy }}%;">
+                                    <strong>{{ bed_occupancy }}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Service Efficiency</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ service_efficiency }}%;">
+                                    <strong>{{ service_efficiency }}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-2">Patient Satisfaction</h6>
+                            <div class="progress mb-2" style="height: 25px;">
+                                <div class="progress-bar bg-info" role="progressbar" 
+                                     style="width: {{ patient_satisfaction }}%;">
+                                    <strong>{{ patient_satisfaction }}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Today</th>
+                                    <th>Weekly Avg</th>
+                                    <th>Monthly Avg</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Orders Delivered</strong></td>
+                                    <td>{{ orders_today }}</td>
+                                    <td>{{ orders_weekly_avg }}</td>
+                                    <td>{{ orders_monthly_avg }}</td>
+                                    <td><i class="bi bi-arrow-up text-success"></i></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>On-Time Delivery %</strong></td>
+                                    <td>{{ ontime_today }}%</td>
+                                    <td>{{ ontime_weekly }}%</td>
+                                    <td>{{ ontime_monthly }}%</td>
+                                    <td><i class="bi bi-arrow-down text-danger"></i></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Patient Check-ins</strong></td>
+                                    <td>{{ checkins_today }}</td>
+                                    <td>{{ checkins_weekly_avg }}</td>
+                                    <td>{{ checkins_monthly_avg }}</td>
+                                    <td><i class="bi bi-arrow-up text-success"></i></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Overview -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Staff Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for role_stat in staff_distribution %}
+                        <div class="list-group-item p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1 small">{{ role_stat.role }}</h6>
+                                </div>
+                                <span class="badge bg-primary">{{ role_stat.count }}</span>
+                            </div>
+                            <div class="progress mt-2" style="height: 15px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ role_stat.percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ward Management -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Ward Overview</h5>
+                    <a href="#" class="btn btn-sm btn-primary">+ Add Ward</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ward Name</th>
+                                    <th>Location</th>
+                                    <th>Total Beds</th>
+                                    <th>Occupied</th>
+                                    <th>Available</th>
+                                    <th>Occupancy %</th>
+                                    <th>Staff Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ward in wards %}
+                                <tr>
+                                    <td><strong>{{ ward.name }}</strong></td>
+                                    <td>{{ ward.location }}</td>
+                                    <td>{{ ward.total_beds }}</td>
+                                    <td><span class="badge bg-warning">{{ ward.occupied }}</span></td>
+                                    <td><span class="badge bg-success">{{ ward.available }}</span></td>
+                                    <td>
+                                        <div class="progress" style="height: 20px; min-width: 80px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ ward.occupancy_percent }}%;">
+                                                {{ ward.occupancy_percent }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ ward.staff_count }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary">Manage</a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        No wards available
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Revenue Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted small mb-1">Today</p>
+                            <h4 class="fw-bold">{{ todays_revenue }} RWF</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted small mb-1">This Month</p>
+                            <h4 class="fw-bold">{{ monthly_revenue }} RWF</h4>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="text-muted small">Average Order Value: <strong>{{ avg_order_value }} RWF</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> System Health</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item p-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Database Status</span>
+                                <span class="badge bg-success">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item p-2">
+                            <div class="d-flex justify-content-between">
+                                <span>API Response Time</span>
+                                <span class="badge bg-success">{{ api_response_time }}ms</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item p-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Active Users</span>
+                                <span class="badge bg-info">{{ active_users }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item p-2">
+                            <div class="d-flex justify-content-between">
+                                <span>System Uptime</span>
+                                <span class="badge bg-success">99.9%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activities|slice:":8" %}
+                        <div class="list-group-item p-2 border-0">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <p class="mb-1 small">
+                                        <strong>{{ activity.action }}</strong> by {{ activity.user }}
+                                    </p>
+                                    <small class="text-muted">{{ activity.description }}</small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

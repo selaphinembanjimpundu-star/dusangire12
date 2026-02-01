@@ -1,0 +1,130 @@
+{% extends 'hospital_wards/base.html' %}
+{% load static %}
+
+{% block title %}Transfer Patient{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-arrows-alt"></i> Transfer Patient to Different Bed</h4>
+                </div>
+                <div class="card-body">
+                    <form id="transferForm" method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patient_id" class="form-label">Select Patient *</label>
+                                    <select class="form-select" id="patient_id" name="patient_id" required>
+                                        <option value="">-- Choose Patient in Hospital --</option>
+                                        {% for patient in patients %}
+                                        <option value="{{ patient.id }}">
+                                            {{ patient.get_full_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="from_bed_id" class="form-label">Current Bed *</label>
+                                    <input type="text" class="form-control" id="from_bed_display" 
+                                           placeholder="Current bed will show here" disabled>
+                                    <input type="hidden" id="from_bed_id" name="from_bed_id">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="to_bed_id" class="form-label">Transfer to Bed *</label>
+                            <select class="form-select" id="to_bed_id" name="to_bed_id" required>
+                                <option value="">-- Choose Available Bed --</option>
+                                {% for bed in available_beds %}
+                                <option value="{{ bed.id }}">
+                                    {{ bed.bed_number }} ({{ bed.ward.name }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Transfer Reason</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="2" 
+                                      placeholder="Reason for transfer (clinical, administrative, etc.)"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'hospital_wards:support_staff_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-check"></i> Transfer Patient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle patient selection and show current bed
+document.getElementById('patient_id').addEventListener('change', function() {
+    const patientId = this.value;
+    if (patientId) {
+        fetch(`/hospital/api/patient/${patientId}/current-bed/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.bed_id) {
+                    document.getElementById('from_bed_id').value = data.bed_id;
+                    document.getElementById('from_bed_display').value = data.bed_number;
+                }
+            });
+    }
+});
+
+document.getElementById('transferForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "hospital_wards:transfer_patient_bed" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            setTimeout(() => {
+                window.location.href = '{% url "hospital_wards:support_staff_dashboard" %}';
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'Failed to transfer patient');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred');
+    });
+});
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.card').parentElement.insertBefore(alertDiv, document.querySelector('.card'));
+}
+</script>
+{% endblock %}

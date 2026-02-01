@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ content.title }} - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:education_hub' %}">Education Hub</a></li>
+            <li class="breadcrumb-item active">{{ content.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <article class="card border-0 shadow-sm mb-4">
+                <!-- Header Image -->
+                {% if content.image %}
+                <div class="ratio ratio-16x9">
+                    <img src="{{ content.image.url }}" class="card-img-top" alt="{{ content.title }}" style="object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <!-- Article Header -->
+                <div class="card-body border-bottom">
+                    <h1 class="h2 fw-bold mb-2">{{ content.title }}</h1>
+                    
+                    <div class="d-flex gap-2 align-items-center flex-wrap mb-3">
+                        <span class="badge bg-light text-dark">
+                            {% if content.category.icon %}{{ content.category.icon }} {% endif %}
+                            {{ content.category.name }}
+                        </span>
+                        <span class="badge bg-info">{{ content.get_content_type_display }}</span>
+                        {% if content.target_role == 'patient' %}
+                            <span class="badge bg-primary">For Patients</span>
+                        {% elif content.target_role == 'caregiver' %}
+                            <span class="badge bg-primary">For Caregivers</span>
+                        {% else %}
+                            <span class="badge bg-primary">For All</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-muted small">
+                        <i class="bi bi-calendar"></i> Published {{ content.created_at|date:"M d, Y" }}
+                        {% if content.author %}
+                            • By <strong>{{ content.author.first_name }} {{ content.author.last_name }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Article Description -->
+                {% if content.description %}
+                <div class="card-body border-bottom bg-light">
+                    <p class="lead">{{ content.description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Article Content -->
+                <div class="card-body education-content">
+                    {{ content.content|linebreaks }}
+                </div>
+
+                <!-- Additional Resources -->
+                <div class="card-body border-top">
+                    <h6 class="fw-bold mb-3">📚 Additional Resources</h6>
+                    
+                    <div class="row g-3">
+                        {% if content.video_url %}
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-play-circle fs-3 text-primary"></i>
+                                    <h6 class="mt-2 mb-0">Video Tutorial</h6>
+                                    <a href="{{ content.video_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-primary mt-2">
+                                        <i class="bi bi-play"></i> Watch Video
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if content.pdf_file %}
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-pdf fs-3 text-danger"></i>
+                                    <h6 class="mt-2 mb-0">PDF Document</h6>
+                                    <a href="{{ content.pdf_file.url }}" download class="btn btn-sm btn-danger mt-2">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Completion Button -->
+                <div class="card-body border-top">
+                    {% if progress.completed %}
+                    <div class="alert alert-success mb-0" role="alert">
+                        <i class="bi bi-check-circle-fill"></i> You have completed this material on {{ progress.completion_date|date:"M d, Y" }}
+                    </div>
+                    {% else %}
+                    <button type="button" class="btn btn-success w-100" onclick="markComplete()">
+                        <i class="bi bi-check-circle"></i> Mark as Complete
+                    </button>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Progress Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Your Progress</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">First Accessed:</dt>
+                        <dd class="col-sm-6 small">{{ progress.first_accessed|date:"M d, Y" }}</dd>
+
+                        <dt class="col-sm-6">Times Viewed:</dt>
+                        <dd class="col-sm-6 small">{{ progress.view_count }}</dd>
+
+                        <dt class="col-sm-6">Last Accessed:</dt>
+                        <dd class="col-sm-6 small">{{ progress.last_accessed|date:"M d, Y H:i" }}</dd>
+
+                        <dt class="col-sm-6">Status:</dt>
+                        <dd class="col-sm-6 small">
+                            {% if progress.completed %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-warning">In Progress</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Diet Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Diet Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">Applicable For:</p>
+                    <p class="mb-0">
+                        <span class="badge bg-info">{{ content.get_applicable_diet_types_display }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Related Content -->
+            {% if related_contents %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Related Materials</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for item in related_contents %}
+                        <a href="{% url 'hospital_wards:education_detail' item.id %}" class="list-group-item list-group-item-action border-0 px-0 py-2">
+                            <h6 class="small mb-1">{{ item.title }}</h6>
+                            <small class="text-muted">{{ item.get_content_type_display }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .education-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #2c3e50;
+    }
+    .education-content p {
+        margin-bottom: 1.5rem;
+    }
+    .education-content h3 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #1a5a96;
+    }
+</style>
+
+<script>
+function markComplete() {
+    fetch('{% url "hospital_wards:mark_education_complete" content.id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Great! You have completed this material.');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => alert('Error: ' + error));
+}
+</script>
+{% endblock %}

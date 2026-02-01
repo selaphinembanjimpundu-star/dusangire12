@@ -1,0 +1,135 @@
+{% extends 'hospital_wards/base.html' %}
+{% load static %}
+
+{% block title %}Patient Admission{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-plus"></i> Patient Admission</h4>
+                </div>
+                <div class="card-body">
+                    <form id="admissionForm" method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="patient_id" class="form-label">Select Patient *</label>
+                                    <select class="form-select" id="patient_id" name="patient_id" required>
+                                        <option value="">-- Choose Patient --</option>
+                                        {% for patient in patients %}
+                                        <option value="{{ patient.id }}">
+                                            {{ patient.get_full_name }} ({{ patient.profile.phone }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bed_id" class="form-label">Select Bed *</label>
+                                    <select class="form-select" id="bed_id" name="bed_id" required>
+                                        <option value="">-- Choose Available Bed --</option>
+                                        {% for bed in beds %}
+                                        <option value="{{ bed.id }}">
+                                            {{ bed.bed_number }} ({{ bed.ward.name }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label">Admission Reason *</label>
+                                    <select class="form-select" id="reason" name="reason" required>
+                                        <option value="">-- Select Reason --</option>
+                                        {% for code, label in admission_reasons %}
+                                        <option value="{{ code }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="chief_complaint" class="form-label">Chief Complaint</label>
+                                    <input type="text" class="form-control" id="chief_complaint" 
+                                           name="chief_complaint" placeholder="Primary health concern">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="allergies" class="form-label">Allergies</label>
+                            <textarea class="form-control" id="allergies" name="allergies" 
+                                      rows="2" placeholder="List any known allergies"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="current_medications" class="form-label">Current Medications</label>
+                            <textarea class="form-control" id="current_medications" name="current_medications" 
+                                      rows="2" placeholder="List current medications and dosages"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'hospital_wards:support_staff_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Admit Patient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('admissionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "hospital_wards:patient_admission" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            setTimeout(() => {
+                window.location.href = '{% url "hospital_wards:support_staff_dashboard" %}';
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'Failed to admit patient');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred');
+    });
+});
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.card').parentElement.insertBefore(alertDiv, document.querySelector('.card'));
+}
+</script>
+{% endblock %}

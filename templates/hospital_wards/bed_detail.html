@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ bed.bed_number }} - Bed Details - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:ward_list' %}">Wards</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:ward_detail' bed.ward.id %}">{{ bed.ward.name }}</a></li>
+            <li class="breadcrumb-item active">{{ bed.bed_number }}</li>
+        </ol>
+    </nav>
+
+    <!-- Bed Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">{{ bed.bed_number }}</h1>
+                            <p class="text-muted mb-0">{{ bed.ward.name }} • {{ bed.ward.location }}</p>
+                        </div>
+                        {% if bed.status == 'available' %}
+                            <span class="badge bg-success fs-6">Available</span>
+                        {% elif bed.status == 'occupied' %}
+                            <span class="badge bg-warning fs-6">Occupied</span>
+                        {% elif bed.status == 'maintenance' %}
+                            <span class="badge bg-danger fs-6">Maintenance</span>
+                        {% else %}
+                            <span class="badge bg-info fs-6">Reserved</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bed Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Bed Information</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Bed Number:</dt>
+                        <dd class="col-sm-7"><strong>{{ bed.bed_number }}</strong></dd>
+
+                        <dt class="col-sm-5">Ward:</dt>
+                        <dd class="col-sm-7">
+                            <a href="{% url 'hospital_wards:ward_detail' bed.ward.id %}" class="text-decoration-none">
+                                {{ bed.ward.name }}
+                            </a>
+                        </dd>
+
+                        <dt class="col-sm-5">Location:</dt>
+                        <dd class="col-sm-7">{{ bed.ward.location }}</dd>
+
+                        <dt class="col-sm-5">Status:</dt>
+                        <dd class="col-sm-7">
+                            {% if bed.status == 'available' %}
+                                <span class="badge bg-success">Available</span>
+                            {% elif bed.status == 'occupied' %}
+                                <span class="badge bg-warning">Occupied</span>
+                            {% elif bed.status == 'maintenance' %}
+                                <span class="badge bg-danger">Maintenance</span>
+                            {% else %}
+                                <span class="badge bg-info">Reserved</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-5">Active:</dt>
+                        <dd class="col-sm-7">
+                            {% if bed.is_active %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-5">Created:</dt>
+                        <dd class="col-sm-7">{{ bed.created_at|date:"M d, Y H:i" }}</dd>
+
+                        <dt class="col-sm-5">Updated:</dt>
+                        <dd class="col-sm-7">{{ bed.updated_at|date:"M d, Y H:i" }}</dd>
+                    </dl>
+
+                    {% if bed.notes %}
+                    <hr>
+                    <h6 class="fw-bold mb-2">Notes</h6>
+                    <p class="mb-0 text-muted">{{ bed.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Patient Assignment</h6>
+                </div>
+                <div class="card-body">
+                    {% if bed.patient %}
+                        <dl class="row">
+                            <dt class="col-sm-5">Patient:</dt>
+                            <dd class="col-sm-7">
+                                <strong>{{ bed.patient.first_name }} {{ bed.patient.last_name }}</strong>
+                            </dd>
+
+                            <dt class="col-sm-5">Username:</dt>
+                            <dd class="col-sm-7">{{ bed.patient.username }}</dd>
+
+                            <dt class="col-sm-5">Email:</dt>
+                            <dd class="col-sm-7">{{ bed.patient.email }}</dd>
+
+                            <dt class="col-sm-5">Assigned At:</dt>
+                            <dd class="col-sm-7">
+                                {% if bed.assigned_at %}
+                                    {{ bed.assigned_at|date:"M d, Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </dd>
+
+                            <dt class="col-sm-5">Duration:</dt>
+                            <dd class="col-sm-7">
+                                {% if bed.assigned_at %}
+                                    {{ days_assigned }} days
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </dd>
+                        </dl>
+
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle"></i> Patient is currently assigned to this bed
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center py-5">
+                            <i class="bi bi-person-x fs-1"></i>
+                            <h6 class="mt-2 mb-1">No Patient Assigned</h6>
+                            <p class="text-muted small mb-0">This bed is available for assignment</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    {% if orders %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Order Number</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td><strong>{{ order.order_number }}</strong></td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ order.get_status_display }}</span>
+                                    </td>
+                                    <td>{{ order.total|floatformat:2 }}</td>
+                                    <td>
+                                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notification Preferences{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cog"></i> Notification Preferences
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Notification Channels -->
+                        <h5 class="mb-3">Notification Channels</h5>
+                        
+                        <div class="card mb-4 border-light">
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="email_enabled" 
+                                        name="email_enabled"
+                                        value="on"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="email_enabled">
+                                        <strong>Email Notifications</strong>
+                                        <p class="small text-muted mb-0 ms-4">Receive notifications via email</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="sms_enabled" 
+                                        name="sms_enabled"
+                                        value="on"
+                                    >
+                                    <label class="form-check-label" for="sms_enabled">
+                                        <strong>SMS Notifications</strong>
+                                        <p class="small text-muted mb-0 ms-4">Receive urgent notifications via SMS</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="app_enabled" 
+                                        name="app_enabled"
+                                        value="on"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="app_enabled">
+                                        <strong>In-App Notifications</strong>
+                                        <p class="small text-muted mb-0 ms-4">See notifications within the hospital app</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notification Types -->
+                        <h5 class="mb-3">Notification Types</h5>
+
+                        <div class="card mb-4 border-light">
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="admission_notif" 
+                                        name="admission"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="admission_notif">
+                                        <strong>Patient Admissions</strong>
+                                        <p class="small text-muted mb-0 ms-4">Notify when patient is admitted to hospital</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="discharge_notif" 
+                                        name="discharge"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="discharge_notif">
+                                        <strong>Patient Discharges</strong>
+                                        <p class="small text-muted mb-0 ms-4">Notify when patient is discharged from hospital</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="transfer_notif" 
+                                        name="transfer"
+                                        checked
+                                    >
+                                    <label class="form-check-label" for="transfer_notif">
+                                        <strong>Patient Transfers</strong>
+                                        <p class="small text-muted mb-0 ms-4">Notify when patient is transferred between beds/wards</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="bed_status_notif" 
+                                        name="bed_status"
+                                    >
+                                    <label class="form-check-label" for="bed_status_notif">
+                                        <strong>Bed Status Changes</strong>
+                                        <p class="small text-muted mb-0 ms-4">Notify about bed availability and maintenance</p>
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="maintenance_notif" 
+                                        name="maintenance"
+                                    >
+                                    <label class="form-check-label" for="maintenance_notif">
+                                        <strong>Bed Maintenance</strong>
+                                        <p class="small text-muted mb-0 ms-4">Notify about scheduled bed maintenance</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Frequency Settings -->
+                        <h5 class="mb-3">Notification Frequency</h5>
+
+                        <div class="card mb-4 border-light">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Email Frequency</strong></label>
+                                    <select class="form-select" name="email_frequency">
+                                        <option value="instant">Instantly</option>
+                                        <option value="hourly">Hourly Digest</option>
+                                        <option value="daily">Daily Digest</option>
+                                        <option value="never">Never</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>SMS Frequency</strong></label>
+                                    <select class="form-select" name="sms_frequency">
+                                        <option value="instant">Instantly (Urgent Only)</option>
+                                        <option value="daily">Daily Summary</option>
+                                        <option value="never">Never</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quiet Hours -->
+                        <h5 class="mb-3">Quiet Hours</h5>
+
+                        <div class="card mb-4 border-light">
+                            <div class="card-body">
+                                <div class="form-check form-switch mb-3">
+                                    <input 
+                                        class="form-check-input" 
+                                        type="checkbox" 
+                                        id="quiet_hours" 
+                                        name="quiet_hours"
+                                        onchange="toggleQuietHours()"
+                                    >
+                                    <label class="form-check-label" for="quiet_hours">
+                                        <strong>Enable Quiet Hours</strong>
+                                    </label>
+                                </div>
+
+                                <div id="quiet_hours_section" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="quiet_start" class="form-label">Start Time</label>
+                                            <input 
+                                                type="time" 
+                                                class="form-control" 
+                                                id="quiet_start" 
+                                                name="quiet_start"
+                                                value="22:00"
+                                            >
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="quiet_end" class="form-label">End Time</label>
+                                            <input 
+                                                type="time" 
+                                                class="form-control" 
+                                                id="quiet_end" 
+                                                name="quiet_end"
+                                                value="08:00"
+                                            >
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted">
+                                        <i class="fas fa-info-circle"></i> No notifications will be sent during quiet hours 
+                                        (except urgent medical alerts)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Preferences
+                            </button>
+                            <a href="{% url 'hospital_wards:notifications_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Information Panel -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">About Notifications</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-envelope text-primary"></i>
+                            <strong>Email Notifications:</strong> Sent to your registered email address
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-sms text-success"></i>
+                            <strong>SMS Notifications:</strong> Urgent alerts sent to your phone (requires phone number)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-bell text-warning"></i>
+                            <strong>In-App Notifications:</strong> Appear in your notification dashboard and bell icon
+                        </li>
+                        <li>
+                            <i class="fas fa-moon text-secondary"></i>
+                            <strong>Quiet Hours:</strong> Stop notifications during night hours while allowing urgent alerts
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleQuietHours() {
+    const checkbox = document.getElementById('quiet_hours');
+    const section = document.getElementById('quiet_hours_section');
+    section.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('quiet_hours');
+    if (checkbox.checked) {
+        document.getElementById('quiet_hours_section').style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

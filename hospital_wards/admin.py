@@ -4,7 +4,8 @@ from .models import (
     Ward, WardBed, WardDeliveryRoute, WardAvailability,
     MealNutritionInfo, DeliveryScheduleSlot,
     PatientEducationCategory, PatientEducationContent, PatientEducationProgress,
-    CaregiverNotification
+    CaregiverNotification, PatientAdmission, PatientDischarge, PatientTransfer,
+    BedMaintenanceSchedule, BulkOperation, PatientNotification, NotificationTemplate
 )
 
 
@@ -360,3 +361,201 @@ class CaregiverNotificationAdmin(admin.ModelAdmin):
             '<span style="background-color: #ffc107; color: white; padding: 3px 8px; border-radius: 3px;">Unread</span>'
         )
     is_read_badge.short_description = "Status"
+
+
+class PatientAdmissionAdmin(admin.ModelAdmin):
+    """Admin for patient admissions"""
+    list_display = ['patient_name', 'admission_date', 'reason', 'bed_number', 'admitted_by']
+    list_filter = ['reason', 'admission_date', 'is_active']
+    search_fields = ['patient__first_name', 'patient__last_name', 'chief_complaint']
+    readonly_fields = ['admission_date', 'created_at', 'updated_at']
+    fieldsets = (
+        ('Patient Information', {
+            'fields': ('patient', 'bed', 'admitted_by')
+        }),
+        ('Admission Details', {
+            'fields': ('reason', 'chief_complaint', 'admission_date')
+        }),
+        ('Medical History', {
+            'fields': ('medical_history', 'allergies', 'current_medications'),
+            'classes': ('collapse',)
+        }),
+        ('Status', {
+            'fields': ('is_active', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def patient_name(self, obj):
+        return obj.patient.get_full_name()
+    patient_name.short_description = "Patient"
+    
+    def bed_number(self, obj):
+        return obj.bed.bed_number if obj.bed else "N/A"
+    bed_number.short_description = "Bed"
+
+
+class PatientDischargeAdmin(admin.ModelAdmin):
+    """Admin for patient discharges"""
+    list_display = ['patient_name', 'discharge_date', 'discharge_status', 'discharged_by']
+    list_filter = ['discharge_status', 'discharge_date']
+    search_fields = ['admission__patient__first_name', 'admission__patient__last_name']
+    readonly_fields = ['discharge_date', 'created_at']
+    fieldsets = (
+        ('Discharge Information', {
+            'fields': ('admission', 'discharge_status', 'discharge_date', 'discharged_by')
+        }),
+        ('Instructions & Medications', {
+            'fields': ('discharge_notes', 'follow_up_instructions', 'medications_prescribed')
+        }),
+        ('Follow Up', {
+            'fields': ('restrictions', 'return_visit_date'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def patient_name(self, obj):
+        return obj.admission.patient.get_full_name()
+    patient_name.short_description = "Patient"
+
+
+class PatientTransferAdmin(admin.ModelAdmin):
+    """Admin for patient bed transfers"""
+    list_display = ['patient_name', 'from_bed_number', 'to_bed_number', 'transfer_date']
+    list_filter = ['transfer_date', 'is_completed']
+    search_fields = ['patient__first_name', 'patient__last_name']
+    readonly_fields = ['transfer_date']
+    
+    def patient_name(self, obj):
+        return obj.patient.get_full_name()
+    patient_name.short_description = "Patient"
+    
+    def from_bed_number(self, obj):
+        return obj.from_bed.bed_number if obj.from_bed else "N/A"
+    from_bed_number.short_description = "From Bed"
+    
+    def to_bed_number(self, obj):
+        return obj.to_bed.bed_number if obj.to_bed else "N/A"
+    to_bed_number.short_description = "To Bed"
+
+
+class BedMaintenanceScheduleAdmin(admin.ModelAdmin):
+    """Admin for bed maintenance"""
+    list_display = ['bed_number', 'maintenance_type', 'scheduled_date', 'is_completed']
+    list_filter = ['maintenance_type', 'scheduled_date', 'is_completed']
+    search_fields = ['bed__bed_number']
+    readonly_fields = ['completed_date'] if 'completed_date' in [f.name for f in BedMaintenanceSchedule._meta.fields] else []
+    
+    def bed_number(self, obj):
+        return obj.bed.bed_number
+    bed_number.short_description = "Bed"
+
+
+# Register admin classes
+admin.site.register(PatientAdmission, PatientAdmissionAdmin)
+admin.site.register(PatientDischarge, PatientDischargeAdmin)
+admin.site.register(PatientTransfer, PatientTransferAdmin)
+admin.site.register(BedMaintenanceSchedule, BedMaintenanceScheduleAdmin)
+
+
+@admin.register(BulkOperation)
+class BulkOperationAdmin(admin.ModelAdmin):
+    """Admin for bulk operations"""
+    list_display = ['operation_type', 'status_badge', 'total_records', 'successful_records', 'initiated_by', 'created_at']
+    list_filter = ['operation_type', 'status', 'created_at']
+    search_fields = ['initiated_by__username']
+    readonly_fields = ['total_records', 'successful_records', 'failed_records', 'created_at', 'started_at', 'completed_at', 'success_rate_display']
+    
+    fieldsets = (
+        ('Operation Information', {
+            'fields': ('operation_type', 'status', 'initiated_by')
+        }),
+        ('File Handling', {
+            'fields': ('input_file', 'output_file')
+        }),
+        ('Statistics', {
+            'fields': ('total_records', 'successful_records', 'failed_records', 'success_rate_display', 'error_message')
+        }),
+        ('Timeline', {
+            'fields': ('created_at', 'started_at', 'completed_at')
+        }),
+    )
+    
+    def status_badge(self, obj):
+        """Display status as colored badge"""
+        colors = {
+            'pending': '#FFA500',
+            'processing': '#87CEEB',
+            'completed': '#90EE90',
+            'failed': '#FF6B6B'
+        }
+        color = colors.get(obj.status, '#808080')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    status_badge.short_description = 'Status'
+    
+    def success_rate_display(self, obj):
+        """Display success rate"""
+        return f"{obj.success_rate:.1f}%"
+    success_rate_display.short_description = 'Success Rate'
+
+
+@admin.register(PatientNotification)
+class PatientNotificationAdmin(admin.ModelAdmin):
+    """Admin for patient notifications"""
+    list_display = ['title', 'notification_type', 'recipient', 'read_status', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'send_email', 'send_sms', 'created_at']
+    search_fields = ['title', 'message', 'recipient__username', 'patient__username']
+    readonly_fields = ['created_at', 'read_at']
+    
+    fieldsets = (
+        ('Notification Information', {
+            'fields': ('notification_type', 'title', 'message', 'recipient', 'patient', 'admission')
+        }),
+        ('Delivery Methods', {
+            'fields': ('send_email', 'send_sms', 'send_in_app', 'scheduled_for')
+        }),
+        ('Status', {
+            'fields': ('is_read', 'read_at', 'email_sent', 'sms_sent')
+        }),
+        ('Timeline', {
+            'fields': ('created_at',)
+        }),
+    )
+    
+    def read_status(self, obj):
+        """Display read status"""
+        if obj.is_read:
+            return format_html('<span style="color: green;">✓ Read</span>')
+        return format_html('<span style="color: red;">✗ Unread</span>')
+    read_status.short_description = 'Status'
+
+
+@admin.register(NotificationTemplate)
+class NotificationTemplateAdmin(admin.ModelAdmin):
+    """Admin for notification templates"""
+    list_display = ['name', 'notification_type', 'is_active', 'created_at']
+    list_filter = ['notification_type', 'is_active', 'created_at']
+    search_fields = ['name', 'email_subject']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Template Information', {
+            'fields': ('name', 'notification_type', 'is_active')
+        }),
+        ('Email Template', {
+            'fields': ('email_subject', 'email_body'),
+            'description': 'Variables: {patient_name}, {bed_number}, {ward_name}'
+        }),
+        ('SMS Template', {
+            'fields': ('sms_body',),
+            'description': 'Keep under 160 characters'
+        }),
+        ('Timeline', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+

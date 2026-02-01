@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nutrition Information - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 fw-bold mb-2">🍎 Meal Nutrition Information</h1>
+            <p class="text-muted">View detailed nutritional information for all available meals</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Filter by Allergen</label>
+                            <select name="allergen" class="form-select form-select-sm">
+                                <option value="">All Meals</option>
+                                <option value="gluten" {% if selected_allergen == 'gluten' %}selected{% endif %}>Contains Gluten</option>
+                                <option value="dairy" {% if selected_allergen == 'dairy' %}selected{% endif %}>Contains Dairy</option>
+                                <option value="nuts" {% if selected_allergen == 'nuts' %}selected{% endif %}>Contains Nuts</option>
+                                <option value="shellfish" {% if selected_allergen == 'shellfish' %}selected{% endif %}>Contains Shellfish</option>
+                                <option value="eggs" {% if selected_allergen == 'eggs' %}selected{% endif %}>Contains Eggs</option>
+                                <option value="soy" {% if selected_allergen == 'soy' %}selected{% endif %}>Contains Soy</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Filter by Diet Type</label>
+                            <select name="diet_type" class="form-select form-select-sm">
+                                <option value="">All Diets</option>
+                                <option value="diabetic" {% if selected_diet == 'diabetic' %}selected{% endif %}>Diabetic Friendly</option>
+                                <option value="low_sodium" {% if selected_diet == 'low_sodium' %}selected{% endif %}>Low Sodium</option>
+                                <option value="high_protein" {% if selected_diet == 'high_protein' %}selected{% endif %}>High Protein</option>
+                                <option value="low_fat" {% if selected_diet == 'low_fat' %}selected{% endif %}>Low Fat</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-search"></i> Filter
+                            </button>
+                            <a href="{% url 'hospital_wards:nutrition_info' %}" class="btn btn-outline-secondary btn-sm">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nutrition Items -->
+    <div class="row">
+        {% for item in nutrition_items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 nutrition-card">
+                <!-- Meal Image -->
+                {% if item.menu_item.image %}
+                <div class="ratio ratio-16x9">
+                    <img src="{{ item.menu_item.image.url }}" class="card-img-top" alt="{{ item.menu_item.name }}" style="object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <div class="card-body d-flex flex-column">
+                    <!-- Meal Name -->
+                    <h5 class="card-title">{{ item.menu_item.name }}</h5>
+
+                    <!-- Price -->
+                    <p class="text-primary fw-bold mb-2">
+                        {{ item.menu_item.price|floatformat:2 }} RWF
+                    </p>
+
+                    <!-- Quick Nutrition Stats -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="card border bg-light">
+                                <div class="card-body py-2 px-2 text-center">
+                                    <small class="text-muted d-block">Calories</small>
+                                    <strong>{{ item.calories }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card border bg-light">
+                                <div class="card-body py-2 px-2 text-center">
+                                    <small class="text-muted d-block">Protein</small>
+                                    <strong>{{ item.protein_g }}g</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Allergen Badges -->
+                    {% if item.get_allergen_list %}
+                    <div class="mb-3">
+                        <small class="text-danger d-block mb-1"><strong>⚠️ Contains:</strong></small>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for allergen in item.get_allergen_list %}
+                            <span class="badge bg-warning text-dark small">{{ allergen }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Diet Types -->
+                    {% if item.suitable_for_diets %}
+                    <div class="mb-3 mt-auto">
+                        <small class="text-muted d-block mb-1"><strong>✓ Suitable for:</strong></small>
+                        <small class="text-success">{{ item.suitable_for_diets }}</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- View Details Button -->
+                    <a href="{% url 'hospital_wards:meal_detail' item.id %}" class="btn btn-primary btn-sm w-100 mt-2">
+                        <i class="bi bi-eye"></i> View Full Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="bi bi-info-circle fs-1"></i>
+                <h5 class="mt-3">No Nutrition Information Available</h5>
+                <p class="text-muted">Try adjusting your filters to see meal nutrition details.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .nutrition-card {
+        transition: all 0.3s ease;
+    }
+    .nutrition-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+</style>
+{% endblock %}

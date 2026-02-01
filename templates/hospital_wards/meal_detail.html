@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ nutrition.menu_item.name }} - Nutrition Details - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'hospital_wards:nutrition_info' %}">Nutrition</a></li>
+            <li class="breadcrumb-item active">{{ nutrition.menu_item.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Column: Image & Quick Info -->
+        <div class="col-lg-4 mb-4">
+            {% if nutrition.menu_item.image %}
+            <div class="card border-0 shadow-sm mb-4">
+                <img src="{{ nutrition.menu_item.image.url }}" class="card-img-top" alt="{{ nutrition.menu_item.name }}" style="object-fit: cover; height: 300px;">
+            </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">{{ nutrition.menu_item.name }}</h5>
+                    <p class="text-primary fs-5 fw-bold">{{ nutrition.menu_item.price|floatformat:2 }} RWF</p>
+                    <p class="text-muted small">{{ nutrition.menu_item.description|truncatewords:20 }}</p>
+                </div>
+            </div>
+
+            <!-- Allergen Warnings -->
+            {% if allergens %}
+            <div class="card border-0 shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="card-title text-danger fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Allergen Warning
+                    </h6>
+                    <p class="small mb-0">This meal contains:</p>
+                    <div class="mt-2">
+                        {% for allergen in allergens %}
+                        <span class="badge bg-warning text-dark mb-1">{{ allergen }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Detailed Nutrition -->
+        <div class="col-lg-8">
+            <!-- Macronutrients -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">💪 Macronutrients (per {{ nutrition.serving_size }})</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="card border bg-light">
+                                <div class="card-body">
+                                    <h3 class="fw-bold text-primary">{{ nutrition.calories }}</h3>
+                                    <small class="text-muted">Calories</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border bg-light">
+                                <div class="card-body">
+                                    <h3 class="fw-bold text-success">{{ nutrition.protein_g }}</h3>
+                                    <small class="text-muted">Protein (g)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border bg-light">
+                                <div class="card-body">
+                                    <h3 class="fw-bold text-warning">{{ nutrition.carbohydrates_g }}</h3>
+                                    <small class="text-muted">Carbs (g)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card border bg-light">
+                                <div class="card-body">
+                                    <h3 class="fw-bold text-danger">{{ nutrition.fat_g }}</h3>
+                                    <small class="text-muted">Fat (g)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fiber -->
+                    <div class="alert alert-info small mt-3 mb-0">
+                        <i class="bi bi-info-circle"></i> <strong>Fiber:</strong> {{ nutrition.fiber_g }}g
+                    </div>
+                </div>
+            </div>
+
+            <!-- Micronutrients -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">⚗️ Micronutrients</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <dl class="row">
+                                <dt class="col-sm-7"><small class="text-muted">Sodium</small></dt>
+                                <dd class="col-sm-5"><small>{{ nutrition.sodium_mg }} mg</small></dd>
+
+                                <dt class="col-sm-7"><small class="text-muted">Potassium</small></dt>
+                                <dd class="col-sm-5"><small>{{ nutrition.potassium_mg }} mg</small></dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <dl class="row">
+                                <dt class="col-sm-7"><small class="text-muted">Calcium</small></dt>
+                                <dd class="col-sm-5"><small>{{ nutrition.calcium_mg }} mg</small></dd>
+
+                                <dt class="col-sm-7"><small class="text-muted">Iron</small></dt>
+                                <dd class="col-sm-5"><small>{{ nutrition.iron_mg }} mg</small></dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ingredients & Preparation -->
+            <div class="row">
+                {% if nutrition.key_ingredients %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0 fw-bold">🥘 Key Ingredients</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                {% for ingredient in nutrition.key_ingredients|split:"," %}
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i> {{ ingredient|safe }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if nutrition.preparation_notes %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-light border-0">
+                            <h6 class="mb-0 fw-bold">📝 Preparation Notes</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted mb-0">{{ nutrition.preparation_notes }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Diet Suitability -->
+            {% if nutrition.suitable_for_diets %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0 fw-bold">✓ Suitable For</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">{{ nutrition.suitable_for_diets }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Order Section -->
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center">
+                    <h6 class="fw-bold mb-2">Ready to Order?</h6>
+                    <a href="{% url 'menu:menu_list' %}" class="btn btn-primary">
+                        <i class="bi bi-cart"></i> Add to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

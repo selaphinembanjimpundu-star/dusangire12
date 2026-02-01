@@ -1,0 +1,118 @@
+{% extends 'hospital_wards/base.html' %}
+{% load static %}
+
+{% block title %}Patient Discharge{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-check"></i> Patient Discharge</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Patient:</strong> {{ admission.patient.get_full_name }} | 
+                        <strong>Bed:</strong> {{ admission.bed.bed_number }} | 
+                        <strong>Admitted:</strong> {{ admission.admission_date|date:"M d, Y H:i" }}
+                    </div>
+
+                    <form id="dischargeForm" method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="discharge_status" class="form-label">Discharge Status *</label>
+                            <select class="form-select" id="discharge_status" name="discharge_status" required>
+                                <option value="">-- Select Status --</option>
+                                {% for code, label in discharge_statuses %}
+                                <option value="{{ code }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="discharge_notes" class="form-label">Discharge Notes</label>
+                            <textarea class="form-control" id="discharge_notes" name="discharge_notes" 
+                                      rows="3" placeholder="Summary of hospital stay and treatment"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="medications_prescribed" class="form-label">Medications Prescribed</label>
+                            <textarea class="form-control" id="medications_prescribed" name="medications_prescribed" 
+                                      rows="2" placeholder="Medications to take after discharge"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="follow_up_instructions" class="form-label">Follow-Up Instructions</label>
+                            <textarea class="form-control" id="follow_up_instructions" name="follow_up_instructions" 
+                                      rows="2" placeholder="Special care instructions and restrictions"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="restrictions" class="form-label">Activity Restrictions</label>
+                            <textarea class="form-control" id="restrictions" name="restrictions" 
+                                      rows="2" placeholder="Physical activity restrictions or limitations"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="return_visit_date" class="form-label">Return Visit Date</label>
+                            <input type="date" class="form-control" id="return_visit_date" name="return_visit_date">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'hospital_wards:support_staff_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-check"></i> Discharge Patient
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('dischargeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            setTimeout(() => {
+                window.location.href = '{% url "hospital_wards:support_staff_dashboard" %}';
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'Failed to discharge patient');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred');
+    });
+});
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.card').parentElement.insertBefore(alertDiv, document.querySelector('.card'));
+}
+</script>
+{% endblock %}

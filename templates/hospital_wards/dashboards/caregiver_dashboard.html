@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Caregiver Dashboard - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 fw-bold mb-1">Caregiver Dashboard 👨‍👩‍👧</h1>
+            <p class="text-muted">Monitor your loved ones and stay updated on their care</p>
+        </div>
+    </div>
+
+    <!-- Patient Assignments -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Patients Under Your Care</h5>
+                </div>
+                <div class="card-body">
+                    {% if assigned_patients %}
+                    <div class="row">
+                        {% for patient in assigned_patients %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-1 h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{{ patient.user.get_full_name }}</h6>
+                                            <small class="text-muted">{{ patient.user.email }}</small>
+                                        </div>
+                                        <span class="badge bg-success">Active</span>
+                                    </div>
+                                    
+                                    {% if patient.bed %}
+                                    <div class="mb-3">
+                                        <p class="mb-1"><small class="text-muted">Current Location</small></p>
+                                        <h6 class="mb-0">{{ patient.bed.ward.name }} - Bed {{ patient.bed.bed_number }}</h6>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="row text-center mb-3 text-sm">
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">Pending Orders</p>
+                                            <h6 class="mb-0">{{ patient.pending_order_count|default:0 }}</h6>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="text-muted small mb-1">Messages</p>
+                                            <h6 class="mb-0">{{ patient.unread_count|default:0 }}</h6>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'hospital_wards:bed_detail' patient.bed.id %}" class="btn btn-sm btn-primary">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-3">No patients assigned yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Recent Messages -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Messages & Updates</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_notifications %}
+                    <div class="list-group list-group-flush">
+                        {% for notif in recent_notifications|slice:":5" %}
+                        <a href="{% url 'hospital_wards:notification_detail' notif.id %}" class="list-group-item list-group-item-action p-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div style="flex: 1;">
+                                    <h6 class="mb-1 small">{{ notif.title|truncatewords:5 }}</h6>
+                                    <p class="text-muted small mb-0">{{ notif.message|truncatewords:8 }}</p>
+                                </div>
+                                {% if not notif.is_read %}
+                                <span class="badge bg-info ms-2">New</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No new messages</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{% url 'hospital_wards:notifications' %}" class="btn btn-sm btn-outline-primary">
+                        View All Messages <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'hospital_wards:delivery_schedule' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-calendar-event"></i> Schedule Meal Delivery
+                        </a>
+                        <a href="{% url 'hospital_wards:nutrition_info' %}" class="btn btn-outline-success">
+                            <i class="bi bi-apple"></i> View Nutrition Info
+                        </a>
+                        <a href="{% url 'hospital_wards:education_hub' %}" class="btn btn-outline-info">
+                            <i class="bi bi-book"></i> Patient Education Hub
+                        </a>
+                        <a href="{% url 'hospital_wards:notifications' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-bell"></i> View All Messages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Care Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-heart-pulse"></i> Care Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h6 class="text-muted mb-2">Total Patients</h6>
+                                <h3 class="fw-bold">{{ assigned_patients|length }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h6 class="text-muted mb-2">Pending Orders</h6>
+                                <h3 class="fw-bold text-success">{{ total_pending_orders }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h6 class="text-muted mb-2">Unread Messages</h6>
+                                <h3 class="fw-bold text-warning">{{ total_unread }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center">
+                                <h6 class="text-muted mb-2">Care Days</h6>
+                                <h3 class="fw-bold text-info">{{ care_duration }} days</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

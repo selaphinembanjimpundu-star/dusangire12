@@ -81,6 +81,101 @@ class WardBed(models.Model):
         self.save()
 
 
+class PatientAdmission(models.Model):
+    """Track patient admission history"""
+    ADMISSION_REASON_CHOICES = [
+        ('emergency', 'Emergency'),
+        ('planned', 'Planned Surgery'),
+        ('routine', 'Routine Checkup'),
+        ('follow_up', 'Follow Up'),
+        ('transfer', 'Transfer from Other Hospital'),
+    ]
+    
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admissions')
+    bed = models.ForeignKey(WardBed, on_delete=models.SET_NULL, null=True, blank=True, related_name='admissions')
+    admission_date = models.DateTimeField(auto_now_add=True)
+    admitted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='admissions_created')
+    reason = models.CharField(max_length=50, choices=ADMISSION_REASON_CHOICES, default='routine')
+    chief_complaint = models.TextField(blank=True)
+    medical_history = models.TextField(blank=True)
+    allergies = models.TextField(blank=True, help_text='Known allergies')
+    current_medications = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-admission_date']
+    
+    def __str__(self):
+        return f"{self.patient.get_full_name()} - {self.admission_date.strftime('%Y-%m-%d')}"
+
+
+class PatientDischarge(models.Model):
+    """Track patient discharge history"""
+    DISCHARGE_STATUS_CHOICES = [
+        ('improved', 'Improved'),
+        ('stable', 'Stable'),
+        ('discharged', 'Discharged'),
+        ('referred', 'Referred to Specialist'),
+        ('against_advice', 'Against Medical Advice'),
+        ('deceased', 'Deceased'),
+    ]
+    
+    admission = models.OneToOneField(PatientAdmission, on_delete=models.CASCADE, related_name='discharge')
+    discharge_date = models.DateTimeField(auto_now_add=True)
+    discharge_status = models.CharField(max_length=50, choices=DISCHARGE_STATUS_CHOICES)
+    discharged_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='discharges_performed')
+    discharge_notes = models.TextField(blank=True)
+    follow_up_instructions = models.TextField(blank=True)
+    medications_prescribed = models.TextField(blank=True)
+    restrictions = models.TextField(blank=True)
+    return_visit_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.admission.patient.get_full_name()} - Discharged {self.discharge_date.strftime('%Y-%m-%d')}"
+
+
+class PatientTransfer(models.Model):
+    """Track patient transfers between beds/wards"""
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bed_transfers')
+    from_bed = models.ForeignKey(WardBed, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_from')
+    to_bed = models.ForeignKey(WardBed, on_delete=models.SET_NULL, null=True, related_name='transfers_to')
+    transfer_date = models.DateTimeField(auto_now_add=True)
+    transferred_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_performed')
+    reason = models.TextField(blank=True)
+    is_completed = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.patient.get_full_name()} - {self.transfer_date.strftime('%Y-%m-%d %H:%M')}"
+
+
+class BedMaintenanceSchedule(models.Model):
+    """Schedule bed maintenance"""
+    MAINTENANCE_TYPE_CHOICES = [
+        ('cleaning', 'Deep Cleaning'),
+        ('repair', 'Repair'),
+        ('inspection', 'Inspection'),
+        ('replacement', 'Replacement'),
+    ]
+    
+    bed = models.ForeignKey(WardBed, on_delete=models.CASCADE, related_name='maintenance_schedule')
+    maintenance_type = models.CharField(max_length=50, choices=MAINTENANCE_TYPE_CHOICES)
+    scheduled_date = models.DateTimeField()
+    completed_date = models.DateTimeField(null=True, blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bed_maintenance')
+    description = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+    is_completed = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['scheduled_date']
+    
+    def __str__(self):
+        return f"{self.bed.bed_number} - {self.maintenance_type} ({self.scheduled_date.strftime('%Y-%m-%d')})"
+
+
 class WardDeliveryRoute(models.Model):
     """Delivery route/schedule for a ward"""
     MEAL_TYPE_CHOICES = [
@@ -488,3 +583,172 @@ class CaregiverNotification(models.Model):
             self.is_read = True
             self.read_at = timezone.now()
             self.save()
+
+
+class BulkOperation(models.Model):
+    """Track bulk import/export operations"""
+    OPERATION_TYPES = [
+        ('import_patients', 'Import Patients'),
+        ('export_patients', 'Export Patients'),
+        ('bulk_discharge', 'Bulk Discharge'),
+        ('bulk_assignment', 'Bulk Assignment'),
+        ('export_report', 'Export Report'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    operation_type = models.CharField(max_length=50, choices=OPERATION_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # User who initiated
+    initiated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='bulk_operations'
+    )
+    
+    # File handling
+    input_file = models.FileField(upload_to='bulk_operations/input/', null=True, blank=True)
+    output_file = models.FileField(upload_to='bulk_operations/output/', null=True, blank=True)
+    
+    # Statistics
+    total_records = models.PositiveIntegerField(default=0)
+    successful_records = models.PositiveIntegerField(default=0)
+    failed_records = models.PositiveIntegerField(default=0)
+    error_message = models.TextField(blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['initiated_by', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_operation_type_display()} - {self.status}"
+    
+    @property
+    def duration(self):
+        """Get operation duration"""
+        if self.completed_at and self.started_at:
+            return self.completed_at - self.started_at
+        return None
+    
+    @property
+    def success_rate(self):
+        """Calculate success rate percentage"""
+        if self.total_records == 0:
+            return 0
+        return (self.successful_records / self.total_records) * 100
+
+
+class PatientNotification(models.Model):
+    """In-app notifications for patients and caregivers"""
+    NOTIFICATION_TYPES = [
+        ('admission', 'Admission Notification'),
+        ('discharge', 'Discharge Notification'),
+        ('transfer', 'Transfer Notification'),
+        ('appointment', 'Appointment Reminder'),
+        ('medication', 'Medication Reminder'),
+        ('follow_up', 'Follow-up Reminder'),
+        ('alert', 'Medical Alert'),
+    ]
+    
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='patient_notifications'
+    )
+    
+    # Related objects
+    patient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notifications_about',
+        null=True,
+        blank=True
+    )
+    admission = models.ForeignKey(
+        PatientAdmission,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notifications'
+    )
+    
+    # Notification content
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    
+    # Delivery methods
+    send_email = models.BooleanField(default=True)
+    send_sms = models.BooleanField(default=False)
+    send_in_app = models.BooleanField(default=True)
+    
+    # Status tracking
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    email_sent = models.BooleanField(default=False)
+    sms_sent = models.BooleanField(default=False)
+    
+    # Scheduled notification
+    scheduled_for = models.DateTimeField(null=True, blank=True, help_text="Send at specific time")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+            models.Index(fields=['notification_type', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.recipient.username}"
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save()
+
+
+class NotificationTemplate(models.Model):
+    """Email/SMS notification templates"""
+    name = models.CharField(max_length=255, unique=True)
+    notification_type = models.CharField(max_length=50, choices=PatientNotification.NOTIFICATION_TYPES)
+    
+    # Email template
+    email_subject = models.CharField(max_length=255)
+    email_body = models.TextField(help_text="Use {patient_name}, {bed_number}, {ward_name} as variables")
+    
+    # SMS template
+    sms_body = models.CharField(
+        max_length=160,
+        help_text="Keep under 160 characters for SMS. Use {patient_name}, {bed_number} as variables"
+    )
+    
+    # Configuration
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['notification_type', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_notification_type_display()})"

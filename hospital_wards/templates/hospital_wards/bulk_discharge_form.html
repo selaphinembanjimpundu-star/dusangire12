@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulk Discharge Patients{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-sign-out-alt"></i> Bulk Discharge Patients
+            </h1>
+            <p class="text-muted">Select patients to discharge from the hospital.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="mb-0">Active Admissions</h5>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="select-all">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all">
+                                Deselect All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if admissions %}
+                        <form id="discharge-form">
+                            {% csrf_token %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th><input type="checkbox" id="select-checkbox"></th>
+                                            <th>Patient Name</th>
+                                            <th>Email</th>
+                                            <th>Bed Number</th>
+                                            <th>Ward</th>
+                                            <th>Admission Date</th>
+                                            <th>Reason</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for admission in admissions %}
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" name="admission_ids" value="{{ admission.id }}" class="admission-checkbox">
+                                            </td>
+                                            <td>{{ admission.patient.get_full_name }}</td>
+                                            <td>{{ admission.patient.email }}</td>
+                                            <td><strong>{{ admission.bed.bed_number }}</strong></td>
+                                            <td>{{ admission.bed.ward.name }}</td>
+                                            <td>{{ admission.admission_date|date:'M d, Y H:i' }}</td>
+                                            <td>{{ admission.get_reason_display }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-4">
+                                <div id="selected-count" class="alert alert-info">
+                                    <strong>0</strong> patients selected for discharge
+                                </div>
+                                <button type="submit" class="btn btn-danger btn-lg" id="discharge-btn" disabled>
+                                    <i class="fas fa-sign-out-alt"></i> Discharge Selected Patients
+                                </button>
+                                <a href="{% url 'hospital:bulk_operations_list' %}" class="btn btn-secondary btn-lg">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No active admissions to discharge.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('discharge-form');
+    const selectAllBtn = document.getElementById('select-all');
+    const deselectAllBtn = document.getElementById('deselect-all');
+    const selectCheckbox = document.getElementById('select-checkbox');
+    const admissionCheckboxes = document.querySelectorAll('.admission-checkbox');
+    const selectedCountDiv = document.getElementById('selected-count');
+    const dischargeBtn = document.getElementById('discharge-btn');
+
+    // Update selected count
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.admission-checkbox:checked').length;
+        selectedCountDiv.innerHTML = `<strong>${checked}</strong> patients selected for discharge`;
+        dischargeBtn.disabled = checked === 0;
+    }
+
+    // Select all
+    selectAllBtn.addEventListener('click', function() {
+        admissionCheckboxes.forEach(checkbox => checkbox.checked = true);
+        selectCheckbox.checked = true;
+        updateSelectedCount();
+    });
+
+    // Deselect all
+    deselectAllBtn.addEventListener('click', function() {
+        admissionCheckboxes.forEach(checkbox => checkbox.checked = false);
+        selectCheckbox.checked = false;
+        updateSelectedCount();
+    });
+
+    // Select checkbox
+    selectCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        admissionCheckboxes.forEach(checkbox => checkbox.checked = isChecked);
+        updateSelectedCount();
+    });
+
+    // Individual checkboxes
+    admissionCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+
+    // Form submit
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedIds = Array.from(admissionCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            alert('Please select at least one patient');
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to discharge ${selectedIds.length} patients?`)) {
+            return;
+        }
+
+        dischargeBtn.disabled = true;
+        dischargeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        fetch('{% url "hospital:bulk_discharge_patients" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admission_ids: selectedIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Patients discharged successfully!');
+                window.location.href = '{% url "hospital:bulk_operations_list" %}';
+            } else {
+                alert('Error: ' + data.error);
+                dischargeBtn.disabled = false;
+                dischargeBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Discharge Selected Patients';
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+            dischargeBtn.disabled = false;
+            dischargeBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Discharge Selected Patients';
+        });
+    });
+
+    // Initial count
+    updateSelectedCount();
+});
+</script>
+{% endblock %}
