@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'health_profiles',
     'analytics',
     'health_tracking',
+    'hospital_wards',
 ]
 
 MIDDLEWARE = [
