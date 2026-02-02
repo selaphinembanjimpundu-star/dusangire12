@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from . import dashboard_router
 
 app_name = 'accounts'
 
@@ -10,7 +11,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile, name='profile'),
-    path('dashboard-redirect/', views.dashboard_redirect, name='dashboard_redirect'),
+    path('dashboard-redirect/', dashboard_router.dashboard_redirect, name='dashboard_redirect'),
+    path('dashboard/', dashboard_router.dashboard_home, name='dashboard_home'),
     path('hospital-dashboard/', views.hospital_ward_login_redirect, name='hospital_dashboard_redirect'),
     path('switch-dashboard/', views.switch_dashboard, name='switch_dashboard'),
     

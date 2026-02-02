@@ -4,6 +4,8 @@ Hospital Wards URL Configuration
 
 from django.urls import path
 from . import views
+from . import medical_staff_views
+from . import hospital_manager_views
 
 app_name = 'hospital_wards'
 
@@ -11,17 +13,16 @@ urlpatterns = [
     # Main Dashboard - Entry Point
     path('', views.hospital_dashboard, name='dashboard'),
     
-    # Role-Based Dashboards
-    path('dashboards/patient/', views.patient_dashboard, name='patient_dashboard'),
-    path('dashboards/caregiver/', views.caregiver_dashboard, name='caregiver_dashboard'),
-    path('dashboards/nutritionist/', views.nutritionist_dashboard, name='nutritionist_dashboard'),
-    path('dashboards/medical-staff/', views.medical_staff_dashboard, name='medical_staff_dashboard'),
-    path('dashboards/chef/', views.chef_dashboard, name='chef_dashboard'),
-    path('dashboards/kitchen-staff/', views.kitchen_staff_dashboard, name='kitchen_staff_dashboard'),
-    path('dashboards/delivery-person/', views.delivery_person_dashboard, name='delivery_person_dashboard'),
-    path('dashboards/support-staff/', views.support_staff_dashboard, name='support_staff_dashboard'),
-    path('dashboards/hospital-manager/', views.hospital_manager_dashboard, name='hospital_manager_dashboard'),
-    path('dashboards/admin/', views.admin_dashboard, name='admin_dashboard'),
+    # Medical Staff Dashboards
+    path('medical-staff/dashboard/', medical_staff_views.medical_staff_dashboard, name='medical_staff_dashboard'),
+    path('medical-staff/ward-management/', medical_staff_views.ward_management_dashboard, name='ward_management_dashboard'),
+    path('medical-staff/patient-admission/', medical_staff_views.patient_admission_dashboard, name='patient_admission_dashboard'),
+    
+    # Hospital Manager Dashboards
+    path('manager/dashboard/', hospital_manager_views.hospital_manager_dashboard, name='hospital_manager_dashboard'),
+    path('manager/staff/', hospital_manager_views.staff_management_dashboard, name='staff_management_dashboard'),
+    path('manager/nutrition/', hospital_manager_views.nutrition_program_dashboard, name='nutrition_program_dashboard'),
+    path('manager/analytics/', hospital_manager_views.hospital_analytics, name='hospital_analytics'),
     
     # Ward Management
     path('wards/', views.ward_list, name='ward_list'),
