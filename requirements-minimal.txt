@@ -1,0 +1,46 @@
+# Minimal Requirements for PythonAnywhere
+# Use this file if disk space is limited: pip install -r requirements-minimal.txt
+
+# Core Django and Web Framework (ESSENTIAL)
+Django==5.0.1
+djangorestframework==3.14.0
+daphne==4.2.1
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Django Core Extensions (ESSENTIAL)
+django-crispy-forms==2.5
+crispy-bootstrap5==2025.6
+django-allauth==65.14.0
+django-cors-headers==4.3.1
+django-environ==0.12.0
+
+# Async (ESSENTIAL)
+channels==4.3.2
+channels-redis==4.3.0
+
+# Security (ESSENTIAL)
+djangorestframework-simplejwt==5.5.1
+cryptography==46.0.4
+PyJWT==2.10.1
+
+# Database (ESSENTIAL)
+psycopg2-binary==2.9.11
+redis==5.0.1
+
+# Image/Document Processing (ESSENTIAL)
+Pillow==12.0.0
+
+# API and Requests (ESSENTIAL)
+requests==2.32.5
+
+# Optional but recommended:
+# Uncomment as needed to save space initially
+# django-oauth-toolkit==1.7.1
+# django-auditlog==3.0.0
+# django-cachalot==2.8.0
+# django-redis==6.0.0
+# drf-spectacular==0.29.0
+# pandas==2.3.3
+# numpy==2.4.0
+# celery==5.3.4
