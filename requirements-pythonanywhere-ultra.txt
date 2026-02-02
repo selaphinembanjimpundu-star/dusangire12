@@ -1,0 +1,42 @@
+# Ultra-minimal requirements for PythonAnywhere (20 core packages only)
+# Use if you get disk quota exceeded error with requirements-pythonanywhere.txt
+# To use: pip install --no-cache-dir -r requirements-pythonanywhere-ultra.txt
+
+# Core Django & REST Framework
+Django==5.0.1
+djangorestframework==3.14.0
+
+# ASGI & Web Server
+daphne==4.2.1
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Frontend & Forms
+django-crispy-forms==2.5
+crispy-bootstrap5==2025.6
+
+# Authentication
+django-allauth==65.14.0
+djangorestframework-simplejwt==5.5.1
+
+# Security & Cryptography
+cryptography==46.0.4
+pyOpenSSL==25.3.0
+PyJWT==2.10.1
+
+# Database
+psycopg2-binary==2.9.11
+redis==5.0.1
+
+# Configuration
+django-environ==0.12.0
+python-decouple==3.8
+
+# File Handling
+Pillow==12.0.0
+python-docx==1.2.0
+lxml==6.0.2
+
+# API & Utilities
+requests==2.32.5
+asgiref==3.11.0

@@ -7,40 +7,88 @@
 
 ## Solution
 
-### Step 1: Clean Up Virtual Environment
+### URGENT: Aggressive Cleanup (Do This First!)
 ```bash
-cd ~/dusangire12
-source ../../../virtualenvs/dusangire_env/bin/activate
+# 1. Check current disk usage
+du -sh ~/ 
+du -sh ~/dusangire12
+df -h
 
-# Remove and reinstall virtual environment (clean slate)
-deactivate
-cd ../..
-rm -rf dusangire_env  # WARNING: This removes the entire venv
+# 2. Remove pip cache BEFORE anything else
+pip cache purge
 
-# Create fresh virtual environment
+# 3. Remove old venv and build artifacts
+deactivate 2>/dev/null
+cd ~/..
+rm -rf dusangire_env  # CRITICAL: This saves 50-100 MB
+cd ~
+
+# 4. Clean project cache files
+find ~/dusangire12 -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
+find ~/dusangire12 -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null
+find ~/dusangire12 -type f -name "*.pyc" -delete 2>/dev/null
+find ~/dusangire12 -type d -name .tox -exec rm -rf {} + 2>/dev/null
+find ~/dusangire12 -type d -name build -exec rm -rf {} + 2>/dev/null
+find ~/dusangire12 -type d -name dist -exec rm -rf {} + 2>/dev/null
+find ~/dusangire12 -type d -name .eggs -exec rm -rf {} + 2>/dev/null
+
+# 5. Check disk again (should have freed 50-100 MB)
+du -sh ~/
+```
+
+### Step 1: Create Fresh Virtual Environment
+```bash
+# From your PythonAnywhere bash console
+cd ~/..
 python3.13 -m venv dusangire_env
 source dusangire_env/bin/activate
 
-# Upgrade pip, setuptools, wheel
-pip install --upgrade pip setuptools wheel
-
-# Install minimal requirements
-pip install -r dusangire12/requirements-pythonanywhere.txt
+# Upgrade pip, setuptools, wheel (use --no-cache to save space)
+pip install --no-cache-dir --upgrade pip setuptools wheel
 ```
 
-### Step 2: If Above Doesn't Work - Clear Pip Cache
+### Step 2: Install Minimal Requirements with Space Optimization
 ```bash
-pip cache purge
+cd ~/dusangire12
+
+# Install with NO cache to save disk space
+pip install --no-cache-dir -r requirements-pythonanywhere.txt
 ```
 
-### Step 3: Run Migrations and Collect Static
+### Step 3: If Still Getting Quota Error - Use Ultra-Minimal
+```bash
+# Remove optional packages not critical for payment system
+pip install --no-cache-dir \
+  Django==5.0.1 \
+  djangorestframework==3.14.0 \
+  daphne==4.2.1 \
+  gunicorn==21.2.0 \
+  whitenoise==6.6.0 \
+  django-crispy-forms==2.5 \
+  crispy-bootstrap5==2025.6 \
+  django-allauth==65.14.0 \
+  django-environ==0.12.0 \
+  djangorestframework-simplejwt==5.5.1 \
+  psycopg2-binary==2.9.11 \
+  redis==5.0.1 \
+  Pillow==12.0.0 \
+  python-docx==1.2.0 \
+  lxml==6.0.2 \
+  requests==2.32.5 \
+  python-decouple==3.8 \
+  PyJWT==2.10.1 \
+  cryptography==46.0.4 \
+  pyOpenSSL==25.3.0
+```
+
+### Step 4: Run Migrations and Collect Static
 ```bash
 cd ~/dusangire12
 python manage.py migrate
 python manage.py collectstatic --noinput
 ```
 
-### Step 4: Reload Web App
+### Step 5: Reload Web App
 1. Go to PythonAnywhere Dashboard
 2. Click your web app
 3. Click **Reload**
@@ -48,7 +96,8 @@ python manage.py collectstatic --noinput
 ## Files Available
 
 - `requirements.txt` - Full development requirements (for local development)
-- `requirements-pythonanywhere.txt` - Minimal production requirements (for PythonAnywhere)
+- `requirements-pythonanywhere.txt` - Minimal production requirements (48 packages, for PythonAnywhere)
+- `requirements-pythonanywhere-ultra.txt` - Ultra-minimal (20 core packages only, if disk quota still exceeded)
 
 ### Removed Packages (Not Needed for Web)
 These were removed from pythonanywhere.txt as they're heavy and not essential for the web app:
@@ -75,28 +124,97 @@ These are required for the web app to function:
 ### Result
 - Original: 88 packages (~200+ MB)
 - Minimal: 48 packages (~50 MB)
-- **Saves 75%+ space!**
+- **Ultra-minimal: 20 packages (~30 MB)**
+- **Saves 85%+ space with ultra-minimal!**
 
 ## Troubleshooting
 
-### Still Getting Quota Error?
+### Still Getting Quota Error After Installing Minimal?
+
+**The venv directory is taking too much space.** Follow the aggressive cleanup:
+
 ```bash
-# Check disk usage
-du -sh ~/
+# 1. Completely remove the old venv (critical!)
+deactivate
+cd ~/..
+rm -rf dusangire_env
+
+# 2. Create completely fresh venv
+python3.13 -m venv dusangire_env
+source dusangire_env/bin/activate
+
+# 3. Upgrade core tools with NO cache
+pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# 4. Try ultra-minimal requirements first (20 packages only)
+pip install --no-cache-dir -r dusangire12/requirements-pythonanywhere-ultra.txt
+
+# 5. If that works, try adding back more packages one at a time
+pip install --no-cache-dir django-redis==6.0.0
+pip install --no-cache-dir channels==4.3.2
+```
+
+### Check Actual Disk Usage
+```bash
+# Show all large directories
+du -sh ~/* | sort -rh
+
+# Check just venv
+du -sh ~/../../virtualenvs/dusangire_env/
+
+# Check project
 du -sh ~/dusangire12
 
-# Remove old Python caches
-find ~/dusangire12 -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
-find ~/dusangire12 -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null
+# Check pip cache
+du -sh ~/.cache/pip/
 
-# Remove .pyc files
-find ~/dusangire12 -type f -name "*.pyc" -delete
+# Total available
+df -h /
 ```
 
-### Check Virtual Environment Size
+### Clear Everything If Needed
 ```bash
-du -sh ~/../../virtualenvs/dusangire_env/
+# Remove ALL Python cache
+find ~ -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null
+find ~ -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null
+find ~ -type f -name "*.pyc" -delete 2>/dev/null
+
+# Remove pip cache completely
+rm -rf ~/.cache/pip/
+
+# Remove unused venv
+deactivate
+cd ~/..
+rm -rf dusangire_env
 ```
+
+### Package-by-Package Installation (Last Resort)
+If you still get quota errors, install packages one by one:
+```bash
+pip install --no-cache-dir Django==5.0.1
+pip install --no-cache-dir djangorestframework==3.14.0
+pip install --no-cache-dir daphne==4.2.1
+# ... continue with other packages
+```
+
+### Still Getting Quota Error?
+Check if PythonAnywhere quota is the issue:
+```bash
+# On PythonAnywhere bash console
+quota -u
+# Look for "dusangire_env" in the output - it's likely too large
+```
+
+If venv is repeatedly too large:
+1. Use ultra-minimal requirements ONLY
+2. Don't install extras like dev tools
+3. Consider removing optional packages:
+   - channels (WebSocket support)
+   - django-cachalot (caching)
+   - auditlog (audit logging)
+   - oauth-toolkit (OAuth)
+   - cors-headers (if not needed)
+   - drf-spectacular (API docs)
 
 ## Note
 After using minimal requirements on PythonAnywhere, if you need data science features locally, use the full `requirements.txt` on your development machine.
