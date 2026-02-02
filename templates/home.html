@@ -617,6 +617,24 @@ function goToDashboard() {
             </div>
             <div class="col-md-4 mb-4">
                 <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-shield-check display-4 text-warning mb-3"></i>
+                        <h5>Quality Assurance</h5>
+                        <p class="text-muted">Every meal passes strict quality and hygiene standards</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<script>
+function goToDashboard() {
+    // Route to appropriate dashboard based on user role
+    window.location.href = '/accounts/dashboard/';
+    return false;
 }
 </script>
 
