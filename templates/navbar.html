@@ -64,6 +64,29 @@
             <i class="bi bi-star"></i> Points
           </a>
         </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="paymentsDropdown" role="button"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-credit-card"></i> Payments
+          </a>
+          <ul class="dropdown-menu shadow-lg" aria-labelledby="paymentsDropdown">
+            <li>
+              <a class="dropdown-item" href="{% url 'payments:checkout' %}">
+                <i class="bi bi-cart-check"></i> Checkout
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'payments:payment_history' %}">
+                <i class="bi bi-clock-history"></i> Payment History
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'payments:payment_methods_list' %}">
+                <i class="bi bi-list-check"></i> Payment Methods
+              </a>
+            </li>
+          </ul>
+        </li>
         {% endif %}
       </ul>
       <ul class="navbar-nav">
@@ -83,6 +106,16 @@
             <li>
               <a class="dropdown-item" href="{% url 'loyalty:dashboard' %}">
                 <i class="bi bi-star"></i> Loyalty Points
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'payments:checkout' %}">
+                <i class="bi bi-credit-card"></i> Make Payment
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="{% url 'payments:payment_history' %}">
+                <i class="bi bi-clock-history"></i> Payment History
               </a>
             </li>
             <li>
