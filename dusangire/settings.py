@@ -36,8 +36,6 @@ ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='dusa2026.pythonanyw
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',  # Must be first for ASGI
-    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

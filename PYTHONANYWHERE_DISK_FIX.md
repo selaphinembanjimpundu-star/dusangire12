@@ -193,7 +193,7 @@ If you still get quota errors, install packages one by one:
 ```bash
 pip install --no-cache-dir Django==5.0.1
 pip install --no-cache-dir djangorestframework==3.14.0
-pip install --no-cache-dir daphne==4.2.1
+pip install --no-cache-dir gunicorn==21.2.0
 # ... continue with other packages
 ```
 
@@ -208,14 +208,14 @@ quota -u
 If venv is repeatedly too large:
 1. Use ultra-minimal requirements ONLY
 2. Don't install extras like dev tools
-3. Consider removing optional pa - not needed without Daphne ASGI)
+3. Consider removing optional packages:
+   - channels (WebSocket support - not needed without Daphne ASGI)
    - django-cachalot (caching)
    - auditlog (audit logging)
    - oauth-toolkit (OAuth)
    - cors-headers (if not needed)
    - drf-spectacular (API docs)
-   - twisted (async/event loop - not needed for WSGIed)
-   - drf-spectacular (API docs)
+   - twisted (async/event loop - not needed for WSGI)
 
 ## Note
 After using minimal requirements on PythonAnywhere, if you need data science features locally, use the full `requirements.txt` on your development machine.
