@@ -795,41 +795,5 @@ class NotificationPreferences(models.Model):
         return f"Preferences for {self.user.username}"
 
 
-class BulkOperation(models.Model):
-    """Track bulk operation history"""
-    OPERATION_TYPES = [
-        ('import_patients', 'Import Patients'),
-        ('assign_beds', 'Assign Beds'),
-        ('discharge_batch', 'Batch Discharge'),
-        ('export_report', 'Export Report'),
-    ]
-    
-    operation_type = models.CharField(max_length=50, choices=OPERATION_TYPES)
-    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    
-    total_records = models.IntegerField(default=0)
-    successful_records = models.IntegerField(default=0)
-    failed_records = models.IntegerField(default=0)
-    
-    error_details = models.TextField(blank=True, help_text="First 20 errors from operation")
-    
-    # File handling
-    uploaded_file = models.FileField(upload_to='bulk_operations/', null=True, blank=True)
-    
-    started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)
-    
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('processing', 'Processing'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    
-    class Meta:
-        ordering = ['-started_at']
-    
-    def __str__(self):
-        return f"{self.get_operation_type_display()} - {self.started_at}"
+
 
