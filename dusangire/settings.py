@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY: read secret key from environment in production
 # Keep the hard-coded key as a fallback only for local development.
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-40^5e(c&86(8ae3np5&ew%r!z1ifz&d)ex@0i2r3=w3%q3yko2')
+SECRET_KEY = config('SECRET_KEY', default='!@5x2i!jzcrbso%1)d0_xhnk2cmtr!w0+l$hwcmo$1j0nmj!7v')
 
 # DEBUG should be switched off in production via environment variable
 # Example: export DEBUG=False

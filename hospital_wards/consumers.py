@@ -339,3 +339,86 @@ class AddressConsumer(AsyncWebsocketConsumer):
             'charge': event['charge'],
             'timestamp': event['timestamp']
         }))
+
+class DashboardConsumer(AsyncWebsocketConsumer):
+    """
+    WebSocket consumer for real-time dashboard updates
+    Handles role-based dashboard notifications
+    """
+    
+    async def connect(self):
+        """
+        Handle WebSocket connection for dashboard
+        """
+        self.role = self.scope['url_route']['kwargs'].get('role')
+        self.room_group_name = f'dashboard_{self.role}'
+        
+        # Verify user is authenticated
+        user = self.scope['user']
+        if not user.is_authenticated:
+            await self.close()
+            return
+        
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        
+        await self.accept()
+    
+    async def disconnect(self, close_code):
+        """
+        Handle WebSocket disconnection
+        """
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+    
+    async def receive(self, text_data):
+        """
+        Handle incoming WebSocket messages
+        """
+        try:
+            data = json.loads(text_data)
+            message_type = data.get('type')
+            
+            if message_type == 'dashboard_update':
+                # Broadcast dashboard update to all users with this role
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'dashboard_update',
+                        'data': data.get('data', {}),
+                        'timestamp': timezone.now().isoformat()
+                    }
+                )
+        except json.JSONDecodeError:
+            await self.send(text_data=json.dumps({
+                'type': 'error',
+                'message': 'Invalid JSON received'
+            }))
+    
+    async def dashboard_update(self, event):
+        """
+        Handle dashboard update notification
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'dashboard_update',
+            'data': event['data'],
+            'timestamp': event['timestamp']
+        }))
+    
+    async def notification_sent(self, event):
+        """
+        Handle notification broadcast
+        """
+        await self.send(text_data=json.dumps({
+            'type': 'notification',
+            'title': event.get('title'),
+            'message': event.get('message'),
+            'level': event.get('level', 'info'),
+            'timestamp': event['timestamp']
+        }))
