@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Avg, Count
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import connection
 from django.utils import timezone
+from django.views.decorators.http import condition
 from .models import Category, MenuItem, DietaryTag
 from .forms import MenuFilterForm
 from .utils import get_recommendations, get_popular_items, get_highly_rated_items
@@ -206,3 +207,10 @@ def health_check(request):
     http_status = 200 if status['status'] == 'healthy' else 503
     
     return JsonResponse(status, status=http_status)
+
+
+def favicon(request):
+    """Serve favicon - prevents 404 errors for missing favicon.ico"""
+    # Return empty response with correct content type
+    return HttpResponse(status=204)
+

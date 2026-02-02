@@ -11,6 +11,9 @@ from django.conf.urls.static import static
 from menu import views as menu_views
 
 urlpatterns = [
+    # Favicon handling - returns 204 No Content to prevent 404 errors
+    path('favicon.ico', menu_views.favicon, name='favicon'),
+    
     path('admin/', admin.site.urls),
     path('', menu_views.menu_list, name='home'),
     path('health/', menu_views.health_check, name='health_check'),

@@ -65,17 +65,18 @@ class WardAdmin(admin.ModelAdmin):
     
     def occupancy_badge(self, obj):
         """Display occupancy percentage with color"""
-        occupancy = float(obj.get_occupancy_percentage())
+        occupancy = obj.get_occupancy_percentage()
         if occupancy < 50:
             color = '#28a745'  # green
         elif occupancy < 80:
             color = '#ffc107'  # yellow
         else:
             color = '#dc3545'  # red
+        occupancy_str = '{:.0f}%'.format(occupancy)
         return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{:.0f}%</span>',
+            '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
             color,
-            occupancy
+            occupancy_str
         )
     occupancy_badge.short_description = "Occupancy"
 
