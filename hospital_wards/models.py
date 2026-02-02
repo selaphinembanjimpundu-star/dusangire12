@@ -81,6 +81,47 @@ class WardBed(models.Model):
         self.save()
 
 
+class Patient(models.Model):
+    """Patient information and medical history"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')],
+        blank=True
+    )
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    emergency_contact = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    blood_group = models.CharField(
+        max_length=5,
+        choices=[('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'), 
+                 ('O+', 'O+'), ('O-', 'O-'), ('AB+', 'AB+'), ('AB-', 'AB-')],
+        blank=True
+    )
+    medical_history = models.TextField(blank=True, help_text="Previous medical conditions")
+    allergies = models.TextField(blank=True, help_text="Known allergies")
+    current_medications = models.TextField(blank=True)
+    insurance_provider = models.CharField(max_length=100, blank=True)
+    insurance_policy_number = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.get_full_name() or self.user.username}"
+    
+    def get_age(self):
+        """Calculate patient age"""
+        if self.date_of_birth:
+            today = timezone.now().date()
+            return today.year - self.date_of_birth.year
+        return None
+
+
 class PatientAdmission(models.Model):
     """Track patient admission history"""
     ADMISSION_REASON_CHOICES = [
@@ -752,3 +793,144 @@ class NotificationTemplate(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.get_notification_type_display()})"
+
+
+class Notification(models.Model):
+    """User notifications (alias for PatientNotification)"""
+    NOTIFICATION_TYPES = [
+        ('admission', 'Patient Admission'),
+        ('discharge', 'Patient Discharge'),
+        ('transfer', 'Patient Transfer'),
+        ('bed_status', 'Bed Status Changed'),
+        ('appointment', 'Appointment Reminder'),
+        ('medication', 'Medication Reminder'),
+        ('alert', 'Medical Alert'),
+    ]
+    
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    
+    # Related objects
+    patient = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='notifications_about'
+    )
+    admission = models.ForeignKey(
+        PatientAdmission,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user_notifications'
+    )
+    
+    # Status
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    # Delivery tracking
+    email_sent = models.BooleanField(default=False)
+    in_app = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read', '-created_at']),
+            models.Index(fields=['notification_type', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.user.username}"
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        self.is_read = True
+        self.read_at = timezone.now()
+        self.save()
+
+
+class NotificationPreferences(models.Model):
+    """User notification preferences"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    
+    # Channels
+    email_enabled = models.BooleanField(default=True)
+    in_app_enabled = models.BooleanField(default=True)
+    sms_enabled = models.BooleanField(default=False)
+    
+    # Notification types
+    admission_notifications = models.BooleanField(default=True)
+    discharge_notifications = models.BooleanField(default=True)
+    transfer_notifications = models.BooleanField(default=True)
+    alert_notifications = models.BooleanField(default=True)
+    appointment_notifications = models.BooleanField(default=True)
+    
+    # Quiet hours
+    quiet_hours_enabled = models.BooleanField(default=False)
+    quiet_hours_start = models.TimeField(null=True, blank=True, help_text="Start time (HH:MM)")
+    quiet_hours_end = models.TimeField(null=True, blank=True, help_text="End time (HH:MM)")
+    
+    # Frequency
+    notification_frequency = models.CharField(
+        max_length=20,
+        choices=[
+            ('instant', 'Instant'),
+            ('hourly', 'Hourly Digest'),
+            ('daily', 'Daily Digest'),
+        ],
+        default='instant'
+    )
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name_plural = "Notification Preferences"
+    
+    def __str__(self):
+        return f"Preferences for {self.user.username}"
+
+
+class BulkOperation(models.Model):
+    """Track bulk operation history"""
+    OPERATION_TYPES = [
+        ('import_patients', 'Import Patients'),
+        ('assign_beds', 'Assign Beds'),
+        ('discharge_batch', 'Batch Discharge'),
+        ('export_report', 'Export Report'),
+    ]
+    
+    operation_type = models.CharField(max_length=50, choices=OPERATION_TYPES)
+    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    
+    total_records = models.IntegerField(default=0)
+    successful_records = models.IntegerField(default=0)
+    failed_records = models.IntegerField(default=0)
+    
+    error_details = models.TextField(blank=True, help_text="First 20 errors from operation")
+    
+    # File handling
+    uploaded_file = models.FileField(upload_to='bulk_operations/', null=True, blank=True)
+    
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    class Meta:
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"{self.get_operation_type_display()} - {self.started_at}"
+
