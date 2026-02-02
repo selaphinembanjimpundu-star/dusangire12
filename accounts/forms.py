@@ -52,11 +52,11 @@ class UserRegisterForm(UserCreationForm):
         
         if commit:
             user.save()
-            # Update profile - ALWAYS set role to CUSTOMER for public registration
+            # Update profile - ALWAYS set role to PATIENT for public registration
             # Admin and nutritionist accounts must be created through admin panel or management commands
             profile = user.profile
             profile.phone = self.cleaned_data.get('phone', '')
-            profile.role = UserRole.CUSTOMER  # Force CUSTOMER role - no exceptions
+            profile.role = UserRole.PATIENT  # Force PATIENT role - no exceptions
             # Set has_light to False for new registrations (they confirmed they don't have light)
             profile.has_light = False
             profile.save()

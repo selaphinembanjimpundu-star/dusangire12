@@ -72,7 +72,8 @@ class WardAdmin(admin.ModelAdmin):
             color = '#ffc107'  # yellow
         else:
             color = '#dc3545'  # red
-        occupancy_str = '{:.0f}%'.format(occupancy)
+        # Pre-format the occupancy percentage as plain string before format_html
+        occupancy_str = f'{occupancy:.0f}%'
         return format_html(
             '<span style="background-color: {}; color: white; padding: 3px 10px; border-radius: 3px;">{}</span>',
             color,

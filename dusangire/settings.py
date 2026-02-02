@@ -36,6 +36,8 @@ ALLOWED_HOSTS = [h for h in config('ALLOWED_HOSTS', default='dusa2026.pythonanyw
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Must be first for ASGI
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     
     # Third party apps
+    'channels',  # Django Channels for WebSocket support
     'crispy_forms',
     'crispy_bootstrap5',
     'rest_framework',
@@ -293,3 +296,25 @@ CORS_ALLOWED_ORIGINS = [
 # Redirect URLs after OAuth
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 HOSPITAL_ACQUISITION_MODE = True  # Enable hospital-specific features
+# Django Channels Configuration
+ASGI_APPLICATION = 'dusangire.asgi.application'
+
+# Channel Layers Configuration (Redis backend for production)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],  # Local Redis or use remote for production
+            'capacity': 1500,
+            'expiry': 10,
+        }
+    }
+}
+
+# In-memory channel layer for development (if Redis is not available)
+# Uncomment for local development without Redis
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer'
+#     }
+# }
