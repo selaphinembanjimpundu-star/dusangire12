@@ -88,11 +88,60 @@ def logout_view(request):
     return redirect('home')
 
 
+def hospital_ward_login_redirect(request):
+    """
+    Dedicated redirect view for hospital ward system.
+    Routes authenticated users to their role-based hospital dashboard.
+    """
+    if not request.user.is_authenticated:
+        return redirect('accounts:login')
+    
+    user = request.user
+    logger.info(f"Hospital ward login redirect for user: {user.username}")
+    
+    # Check if user has a profile
+    if not hasattr(user, 'profile'):
+        logger.warning(f"No profile found for user {user.id}")
+        messages.info(request, 'Please complete your profile setup first.')
+        return redirect('accounts:profile')
+    
+    try:
+        profile = user.profile
+        
+        # Hospital ward roles and their corresponding dashboards
+        hospital_ward_routes = {
+            'patient': 'hospital_wards:patient_dashboard',
+            'caregiver': 'hospital_wards:caregiver_dashboard',
+            'nutritionist': 'hospital_wards:nutritionist_dashboard',
+            'medical_staff': 'hospital_wards:medical_staff_dashboard',
+            'chef': 'hospital_wards:chef_dashboard',
+            'kitchen_staff': 'hospital_wards:kitchen_staff_dashboard',
+            'delivery_person': 'hospital_wards:delivery_person_dashboard',
+            'support_staff': 'hospital_wards:support_staff_dashboard',
+            'hospital_manager': 'hospital_wards:hospital_manager_dashboard',
+            'admin': 'hospital_wards:admin_dashboard',
+        }
+        
+        # Route to appropriate hospital dashboard
+        if profile.role in hospital_ward_routes:
+            target_dashboard = hospital_ward_routes[profile.role]
+            logger.info(f"Redirecting {profile.role} user to {target_dashboard}")
+            return redirect(target_dashboard)
+        else:
+            logger.warning(f"User {user.id} has role '{profile.role}' which is not a hospital ward role")
+            messages.error(request, 'Your account role is not configured for the hospital system. Please contact administrator.')
+            return redirect('home')
+            
+    except Exception as e:
+        logger.error(f"Critical error in hospital_ward_login_redirect for user {user.id}: {str(e)}")
+        messages.error(request, 'An error occurred while redirecting to your hospital dashboard.')
+        return redirect('home')
+
 @login_required
 def dashboard_redirect(request):
     """
     Redirect user to appropriate dashboard based on role.
-    Uses direct URLs to avoid namespace conflicts.
+    Supports both main system roles and hospital ward roles.
     """
     user = request.user
     logger.info(f"Dashboard redirect for user: {user.username}")
@@ -106,42 +155,62 @@ def dashboard_redirect(request):
     try:
         profile = user.profile
         
-        # ADMIN - Redirect to admin dashboard
+        # ==================== HOSPITAL WARD ROLES ====================
+        # Map hospital ward roles to their dashboard templates
+        hospital_ward_roles = {
+            'patient': 'hospital_wards:patient_dashboard',
+            'caregiver': 'hospital_wards:caregiver_dashboard',
+            'nutritionist': 'hospital_wards:nutritionist_dashboard',
+            'medical_staff': 'hospital_wards:medical_staff_dashboard',
+            'chef': 'hospital_wards:chef_dashboard',
+            'kitchen_staff': 'hospital_wards:kitchen_staff_dashboard',
+            'delivery_person': 'hospital_wards:delivery_person_dashboard',
+            'support_staff': 'hospital_wards:support_staff_dashboard',
+            'hospital_manager': 'hospital_wards:hospital_manager_dashboard',
+            'admin': 'hospital_wards:admin_dashboard',
+        }
+        
+        # Check if user's role matches hospital ward roles
+        if profile.role in hospital_ward_roles:
+            target_view = hospital_ward_roles[profile.role]
+            logger.info(f"Redirecting {profile.role} to {target_view}")
+            return redirect(target_view)
+        
+        # ==================== MAIN SYSTEM ROLES ====================
+        # ADMIN - Redirect to main admin dashboard
         if profile.role == UserRole.ADMIN:
             logger.info("Redirecting ADMIN to admin dashboard")
-            return redirect('/dashboard/')  # Direct URL
+            return redirect('/dashboard/')
         
-        # NUTRITIONIST - Check if they have a nutritionist profile
+        # NUTRITIONIST - Old system (legacy support)
         elif profile.role == UserRole.NUTRITIONIST:
             logger.info("Redirecting NUTRITIONIST to nutritionist dashboard")
             try:
-                # Try to get nutritionist profile
                 from nutritionist_dashboard.models import NutritionistProfile
                 nutritionist_profile = NutritionistProfile.objects.get(user=user)
-                # Has profile, go to dashboard
-                return redirect('/nutritionist/')  # Direct URL
+                return redirect('/nutritionist/')
             except NutritionistProfile.DoesNotExist:
                 logger.info("Nutritionist profile not found, redirecting to create profile")
-                return redirect('/nutritionist/create-profile/')  # Direct URL
+                return redirect('/nutritionist/create-profile/')
             except ImportError as e:
                 logger.error(f"Nutritionist dashboard not available: {e}")
                 messages.error(request, 'Nutritionist dashboard is not available. Please contact administrator.')
                 return redirect('home')
         
-        # KITCHEN STAFF
+        # KITCHEN STAFF - Old system (legacy support)
         elif profile.role == UserRole.KITCHEN_STAFF:
             logger.info("Redirecting KITCHEN_STAFF to kitchen dashboard")
-            return redirect('/dashboard/kitchen/')  # Direct URL
+            return redirect('/dashboard/kitchen/')
         
-        # DELIVERY PERSON
+        # DELIVERY PERSON - Old system (legacy support)
         elif profile.role == UserRole.DELIVERY_PERSON:
             logger.info("Redirecting DELIVERY_PERSON to delivery dashboard")
-            return redirect('/dashboard/orders/')  # Direct URL
+            return redirect('/dashboard/orders/')
         
         # CUSTOMER - Default role
         elif profile.role == UserRole.CUSTOMER:
             logger.info("Redirecting CUSTOMER to customer dashboard")
-            return redirect('/customer_dashboard/')  # Direct URL
+            return redirect('/customer_dashboard/')
         
         # Unknown role
         else:
