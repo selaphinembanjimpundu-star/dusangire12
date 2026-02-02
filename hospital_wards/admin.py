@@ -65,7 +65,7 @@ class WardAdmin(admin.ModelAdmin):
     
     def occupancy_badge(self, obj):
         """Display occupancy percentage with color"""
-        occupancy = obj.get_occupancy_percentage()
+        occupancy = float(obj.get_occupancy_percentage())
         if occupancy < 50:
             color = '#28a745'  # green
         elif occupancy < 80:
