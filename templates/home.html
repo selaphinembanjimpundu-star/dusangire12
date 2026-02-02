@@ -1,82 +1,580 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Welcome to Dusangire{% endblock %}
+{% block title %}Dusangire - Healing Through Nutrition{% endblock %}
 
 {% block content %}
 {% if user.is_authenticated %}
-<!-- If user is logged in, show minimal home with dashboard prompt -->
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="display-4 fw-bold mb-4 text-primary">
-                Welcome back, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}!
-            </h1>
-            <p class="lead mb-4">Ready to continue your health journey?</p>
+<!-- ===================== LOGGED-IN USER HOME ===================== -->
+<div class="container-fluid py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <div class="container">
+        <!-- Welcome Header -->
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3 text-primary">
+                    Welcome back, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}!
+                </h1>
+                <p class="lead text-muted">Your Recovery, Delivered to Your Bedside</p>
+            </div>
+            <div class="col-lg-4 d-flex align-items-end">
+                <div class="w-100">
+                    <a href="#" onclick="return goToDashboard();" class="btn btn-primary btn-lg w-100 mb-2">
+                        <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
 
-            <div class="d-flex justify-content-center gap-3 mb-5">
-                <a href="#" onclick="return goToDashboard();" class="btn btn-primary btn-lg px-5">
-                    <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
-                </a>
-                <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary btn-lg px-5">
-                    <i class="bi bi-menu-button-wide me-2"></i>Browse Menu
+        <!-- Quick Access Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 hover-shadow" style="transition: transform 0.3s;">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-bag-heart display-4 text-primary mb-3"></i>
+                        <h5 class="fw-bold">Browse Menu</h5>
+                        <p class="text-muted small">Explore nutritious meals</p>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-primary">
+                            View Menu
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 hover-shadow" style="transition: transform 0.3s;">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-cart3 display-4 text-success mb-3"></i>
+                        <h5 class="fw-bold">My Cart</h5>
+                        <p class="text-muted small">View your selections</p>
+                        <a href="{% url 'orders:cart' %}" class="btn btn-sm btn-success">
+                            View Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 hover-shadow" style="transition: transform 0.3s;">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-box-seam display-4 text-warning mb-3"></i>
+                        <h5 class="fw-bold">My Orders</h5>
+                        <p class="text-muted small">Track your deliveries</p>
+                        <a href="{% url 'orders:order_history' %}" class="btn btn-sm btn-warning">
+                            View Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 hover-shadow" style="transition: transform 0.3s;">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-star display-4 text-info mb-3"></i>
+                        <h5 class="fw-bold">Subscriptions</h5>
+                        <p class="text-muted small">Meal plans & offers</p>
+                        <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-sm btn-info">
+                            Explore Plans
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="{% url 'account_login' %}" class="btn btn-light btn-lg px-5">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </a>
+                        <a href="{% url 'account_signup' %}" class="btn btn-outline-light btn-lg px-5">
+                            <i class="bi bi-person-plus me-2"></i>Sign Up
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="{% static 'images/hero-meal.jpg' %}" alt="Healthy meal" class="img-fluid rounded-lg shadow" style="max-width: 100%; height: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="py-5 bg-light" id="features-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">Why Choose Dusangire?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-primary text-white rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-heart-pulse fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Medically Tailored</h5>
+                        <p class="text-muted">Meals designed by certified nutritionists for specific health conditions</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-success text-white rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-lightning-charge fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Fast Delivery</h5>
+                        <p class="text-muted">Fresh meals delivered to your bedside or home within 30 minutes</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-warning text-dark rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-shop fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Easy Ordering</h5>
+                        <p class="text-muted">Simple app-based ordering system accessible 24/7</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-4 mt-3">
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-danger text-white rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-wallet-fill fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Flexible Payments</h5>
+                        <p class="text-muted">Cash, Mobile Money, Bank Transfer, or Hospital Account</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-info text-white rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-bar-chart-fill fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Track Progress</h5>
+                        <p class="text-muted">Monitor your nutritional compliance and recovery metrics</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center">
+                        <div class="bg-secondary text-white rounded-circle p-4 mb-3" style="width: 80px; height: 80px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-award-fill fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Loyalty Rewards</h5>
+                        <p class="text-muted">Earn points on every meal and redeem exclusive benefits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Preview Section -->
+    <div class="py-5" id="menu-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">Explore Our Menu</h2>
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <p class="lead text-muted">Choose meals tailored to your dietary needs</p>
+                </div>
+            </div>
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-heart display-3 text-danger mb-3"></i>
+                            <h5 class="fw-bold">Diabetic-Friendly</h5>
+                            <p class="text-muted">Low-sugar meal plans</p>
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-danger">View Meals</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-heart-fill display-3 text-info mb-3"></i>
+                            <h5 class="fw-bold">Low-Sodium</h5>
+                            <p class="text-muted">Heart-healthy options</p>
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-info">View Meals</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-lightning display-3 text-warning mb-3"></i>
+                            <h5 class="fw-bold">High-Protein</h5>
+                            <p class="text-muted">Post-surgery recovery</p>
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-warning">View Meals</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-leaf display-3 text-success mb-3"></i>
+                            <h5 class="fw-bold">Vegetarian</h5>
+                            <p class="text-muted">Plant-based nutrition</p>
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-success">View Meals</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-primary btn-lg px-5">
+                    <i class="bi bi-bag-heart me-2"></i>Browse Full Menu
                 </a>
             </div>
+        </div>
+    </div>
 
-            <!-- Quick Stats -->
-            <div class="row mt-5">
-                <div class="col-md-4 mb-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-cart-check display-4 text-primary mb-3"></i>
-                            <h5>Order History</h5>
-                            <p class="text-muted">View your past orders</p>
-                            <a href="{% url 'orders:order_history' %}" class="btn btn-sm btn-outline-primary">
-                                View Orders
-                            </a>
+    <!-- Subscriptions Section -->
+    <div class="py-5 bg-light" id="subscriptions-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">Meal Subscription Plans</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 position-relative">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Weekly Plan</h5>
+                            <div class="my-3">
+                                <span class="h3 fw-bold">7</span>
+                                <span class="text-muted">meals per week</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Customized to your diet</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Fresh daily delivery</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Flexible dates</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>5% discount</li>
+                            </ul>
+                            <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-primary w-100">Choose Plan</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-star display-4 text-warning mb-3"></i>
-                            <h5>My Reviews</h5>
-                            <p class="text-muted">See your ratings & reviews</p>
-                            <a href="{% url 'reviews:my_reviews' %}" class="btn btn-sm btn-outline-warning">
-                                View Reviews
-                            </a>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100 position-relative" style="border-top: 3px solid #667eea;">
+                        <div class="position-absolute top-0 start-50 translate-middle-x" style="background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; margin-top: -12px;">
+                            <small class="fw-bold">POPULAR</small>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Monthly Plan</h5>
+                            <div class="my-3">
+                                <span class="h3 fw-bold">30</span>
+                                <span class="text-muted">meals per month</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Personalized nutrition plan</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority delivery</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Nutritionist consultation</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>10% discount + bonus meals</li>
+                            </ul>
+                            <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-primary w-100">Choose Plan</a>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-4">
                     <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-person-circle display-4 text-success mb-3"></i>
-                            <h5>Profile</h5>
-                            <p class="text-muted">Update your information</p>
-                            <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-outline-success">
-                                Edit Profile
-                            </a>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Unlimited Plan</h5>
+                            <div class="my-3">
+                                <span class="h3 fw-bold">∞</span>
+                                <span class="text-muted">unlimited meals</span>
+                            </div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Any meal, any time</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Free delivery</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>24/7 support</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>15% discount</li>
+                            </ul>
+                            <a href="{% url 'subscriptions:subscription_list' %}" class="btn btn-primary w-100">Choose Plan</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Mission, Vision, About Section -->
+    <div class="py-5" id="about-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">About Dusangire</h2>
+            
+            <!-- Mission, Vision, Values -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-primary mb-3">
+                                <i class="bi bi-bullseye me-2"></i>Our Mission
+                            </h5>
+                            <p class="text-muted">
+                                To bridge critical health gaps by delivering medically-approved, convenient nutrition directly to patients and medical staff within hospitals, accelerating recovery and improving health outcomes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-success mb-3">
+                                <i class="bi bi-eye me-2"></i>Our Vision
+                            </h5>
+                            <p class="text-muted">
+                                A national network of hospital-integrated nutrition centers across Rwanda, where every patient has access to personalized, healing meals that support their recovery journey.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-info mb-3">
+                                <i class="bi bi-heart me-2"></i>Our Values
+                            </h5>
+                            <p class="text-muted">
+                                <strong>Quality:</strong> Every meal meets medical standards. <strong>Compassion:</strong> We care about recovery. <strong>Innovation:</strong> Technology serving health.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Details -->
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <h3 class="fw-bold mb-3">Who We Are</h3>
+                    <p class="mb-3 text-muted">
+                        Dusangire, meaning "Let's share" in Kinyarwanda, is a specialized hospital restaurant service that integrates nutritional expertise with hospital operations. We focus on the critical gap in hospital care: inadequate access to diet-specific meals for optimal patient recovery.
+                    </p>
+                    <p class="mb-3 text-muted">
+                        Our team includes certified nutritionists, experienced chefs, and technology experts dedicated to making healthy nutrition accessible, convenient, and integrated into the hospital experience.
+                    </p>
+                    <h4 class="fw-bold mt-4 mb-3">What We Deliver</h4>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Medically-Tailored Menus</strong> - Designed for specific health conditions</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Bedside Convenience</strong> - Order from your room anytime</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Quality Assurance</strong> - Clinical nutritionist oversight</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Local Impact</strong> - Supporting Rwandan farmers and jobs</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <h3 class="fw-bold mb-3">Our Impact</h3>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Patient Satisfaction</strong>
+                            <span>95%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" style="width: 95%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Diet Compliance</strong>
+                            <span>88%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 88%"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Recovery Rate Improvement</strong>
+                            <span>42%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-4 bg-light rounded">
+                        <h5 class="fw-bold mb-3">By the Numbers</h5>
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold text-primary">5,000+</h3>
+                                <small class="text-muted">Patients Served (Year 1)</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold text-success">50K</h3>
+                                <small class="text-muted">Meals Delivered Monthly</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="fw-bold text-warning">300+</h3>
+                                <small class="text-muted">Staff Members Subscribed</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="fw-bold text-danger">99.5%</h3>
+                                <small class="text-muted">System Uptime</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="py-5 bg-light" id="contact-section">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">Get in Touch</h2>
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-telephone-fill display-4 text-primary mb-3"></i>
+                        <h5 class="fw-bold">Call Us</h5>
+                        <p><a href="tel:+250XXX" class="text-decoration-none text-muted">+250 XXX XXX XXX</a></p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-envelope-fill display-4 text-success mb-3"></i>
+                        <h5 class="fw-bold">Email</h5>
+                        <p><a href="mailto:info@dusangire.rw" class="text-decoration-none text-muted">info@dusangire.rw</a></p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-geo-alt-fill display-4 text-danger mb-3"></i>
+                        <h5 class="fw-bold">Location</h5>
+                        <p class="text-muted">CHUB (Butare), Rwanda</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-chat-dots-fill display-4 text-info mb-3"></i>
+                        <h5 class="fw-bold">Support</h5>
+                        <a href="{% url 'support:contact' %}" class="btn btn-sm btn-outline-info">Contact Support</a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-5">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <h5 class="fw-bold mb-3 text-center">Send us a Message</h5>
+                    <form action="{% url 'support:contact' %}" method="post" class="needs-validation">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="email" name="email" placeholder="Your Email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" name="subject" placeholder="Subject" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="message" placeholder="Your Message" rows="5" class="form-control" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" class="text-white py-5">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-4">Ready to Start Your Healing Journey?</h2>
+            <p class="lead mb-4">Join thousands of patients getting better nutrition for faster recovery</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'account_signup' %}" class="btn btn-light btn-lg px-5">
+                    <i class="bi bi-person-plus me-2"></i>Get Started
+                </a>
+                <a href="#menu-section" class="btn btn-outline-light btn-lg px-5">
+                    <i class="bi bi-bag-heart me-2"></i>Browse Menu
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section (Optional but useful) -->
+    <div class="py-5">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5 display-5">Frequently Asked Questions</h2>
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How do I place an order?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Simply log into your account, browse our menu, add meals to your cart, and checkout. Choose your delivery time and payment method. Your meal will be prepared fresh and delivered to your room within 30 minutes.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    What payment methods do you accept?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept cash, Mobile Money (MTN & Airtel), bank transfers, and hospital account charges. Choose the method that works best for you.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Can I customize my meal plan?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Our nutritionists can create personalized meal plans based on your medical prescription and dietary needs. Contact our support team for a consultation.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    What if I have dietary restrictions?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our system automatically filters meals based on your medical prescription. You'll only see meals that are appropriate for your dietary needs. Our team monitors compliance to keep you safe.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                    How do subscription plans work?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Choose a plan (Weekly, Monthly, or Unlimited) and we'll prepare your meals according to your schedule. Plans auto-renew unless cancelled. Enjoy discounts up to 15% with our subscription plans.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
 </div>
+
+<script>
+function goToDashboard() {
+    // Route to appropriate dashboard based on user role
+    window.location.href = '/accounts/dashboard/';
+    return false
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% else %}
-<!-- Regular home page for non-logged in users -->
+<!-- ===================== PUBLIC LANDING PAGE ===================== -->
 <div class="container-fluid p-0">
     <!-- Hero Section -->
-    <div class="bg-primary text-white py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" class="text-white py-5">
         <div class="container py-5">
             <div class="row align-items-center">
-                <div class="col-lg-6">
+                <div class="col-lg-6 mb-4 mb-lg-0">
                     <h1 class="display-3 fw-bold mb-4">Dusangire</h1>
+                    <h2 class="h4 mb-4 fw-light opacity-90">Your Recovery, Delivered to Your Bedside</h2>
                     <p class="lead mb-4">
-                        Healthy, medically-approved meals for faster recovery and better health.
-                        Order nutritious meals delivered directly to your room at **CHUB (Butare)** or to your home.
+                        Medically-approved, nutritious meals tailored to your health needs. Get specialized nutrition delivered directly to hospital or home.
+                    </p>
+                    <p class="mb-4 opacity-90">
+                        Serving patients at CHUB (Butare) and nearby areas with food that heals and nourishes.
                     </p>
                     <div class="d-flex gap-3">
                         <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-4">
@@ -119,15 +617,7 @@
             </div>
             <div class="col-md-4 mb-4">
                 <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-shield-check display-4 text-warning mb-3"></i>
-                        <h5>Safe & Hygienic</h5>
-                        <p class="text-muted">Highest standards of food safety and preparation</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+}
+</script>
+
 {% endblock %}
