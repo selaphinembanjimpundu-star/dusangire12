@@ -6,8 +6,7 @@
 Django==5.0.1
 djangorestframework==3.14.0
 
-# ASGI & Web Server
-daphne==4.2.1
+# Web Server
 gunicorn==21.2.0
 whitenoise==6.6.0
 

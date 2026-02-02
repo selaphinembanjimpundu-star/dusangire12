@@ -61,7 +61,6 @@ pip install --no-cache-dir -r requirements-pythonanywhere.txt
 pip install --no-cache-dir \
   Django==5.0.1 \
   djangorestframework==3.14.0 \
-  daphne==4.2.1 \
   gunicorn==21.2.0 \
   whitenoise==6.6.0 \
   django-crispy-forms==2.5 \
@@ -101,6 +100,7 @@ python manage.py collectstatic --noinput
 
 ### Removed Packages (Not Needed for Web)
 These were removed from pythonanywhere.txt as they're heavy and not essential for the web app:
+- ❌ daphne (ASGI server - not needed for WSGI only)
 - ❌ pandas (12.3 MB)
 - ❌ numpy (16.4 MB)
 - ❌ scipy (data science)
@@ -112,7 +112,7 @@ These were removed from pythonanywhere.txt as they're heavy and not essential fo
 
 ### Kept Packages (Essential)
 These are required for the web app to function:
-- ✅ Django, DRF, Channels (core framework)
+- ✅ Django, DRF, Gunicorn (core framework & web server)
 - ✅ Crispy Forms, Bootstrap (UI)
 - ✅ Allauth (authentication)
 - ✅ JWT, cryptography (security)
@@ -208,12 +208,13 @@ quota -u
 If venv is repeatedly too large:
 1. Use ultra-minimal requirements ONLY
 2. Don't install extras like dev tools
-3. Consider removing optional packages:
-   - channels (WebSocket support)
+3. Consider removing optional pa - not needed without Daphne ASGI)
    - django-cachalot (caching)
    - auditlog (audit logging)
    - oauth-toolkit (OAuth)
    - cors-headers (if not needed)
+   - drf-spectacular (API docs)
+   - twisted (async/event loop - not needed for WSGIed)
    - drf-spectacular (API docs)
 
 ## Note
