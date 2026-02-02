@@ -83,8 +83,14 @@ class Order(models.Model):
     
     customer_name = models.CharField(max_length=200)
     customer_phone = models.CharField(max_length=20)
-    delivery_address = models.TextField()
+    delivery_address = models.ForeignKey('delivery.DeliveryAddress', on_delete=models.SET_NULL, null=True, related_name='orders')
     delivery_instructions = models.TextField(blank=True)
+    
+    # Special requests for customizations
+    special_requests = models.TextField(
+        blank=True,
+        help_text="Special requests or customizations (e.g., no salt, extra spice, allergies)"
+    )
     
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))

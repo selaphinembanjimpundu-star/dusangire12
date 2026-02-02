@@ -68,11 +68,36 @@
                     <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Delivery Information</h5>
                 </div>
                 <div class="card-body">
-                    <p><strong>Name:</strong> {{ order.customer_name }}</p>
-                    <p><strong>Phone:</strong> {{ order.customer_phone }}</p>
-                    <p><strong>Address:</strong> {{ order.delivery_address }}</p>
+                    <div class="mb-3">
+                        <strong class="d-block text-muted small mb-1">Full Name</strong>
+                        <p class="mb-0">{{ order.customer_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong class="d-block text-muted small mb-1">Phone Number</strong>
+                        <p class="mb-0">{{ order.customer_phone }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong class="d-block text-muted small mb-1">Delivery Address</strong>
+                        {% if order.delivery_address %}
+                            {% if order.delivery_address.label %}
+                            <p class="mb-1"><strong>{{ order.delivery_address.label }}</strong></p>
+                            <p class="mb-1">{{ order.delivery_address.get_full_address }}</p>
+                            {% else %}
+                            <p class="mb-0">{{ order.delivery_address }}</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                     {% if order.delivery_instructions %}
-                    <p><strong>Instructions:</strong> {{ order.delivery_instructions }}</p>
+                    <div class="mb-3">
+                        <strong class="d-block text-muted small mb-1">Delivery Instructions</strong>
+                        <p class="mb-0">{{ order.delivery_instructions }}</p>
+                    </div>
+                    {% endif %}
+                    {% if order.special_requests %}
+                    <div class="alert alert-info mb-0">
+                        <strong class="d-block mb-1"><i class="bi bi-chat-left-text"></i> Special Requests</strong>
+                        <p class="mb-0">{{ order.special_requests }}</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>

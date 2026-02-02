@@ -136,6 +136,11 @@ def checkout(request):
     delivery_addresses = DeliveryAddress.objects.filter(user=request.user).order_by('-is_default', '-created_at')
     default_address = delivery_addresses.filter(is_default=True).first()
     
+    # Ensure user has at least one address
+    if not delivery_addresses.exists():
+        messages.warning(request, 'Please add a delivery address before checking out')
+        return redirect('delivery:address_create')
+    
     # Get user profile for default values
     profile = getattr(request.user, 'profile', None)
     
@@ -149,6 +154,29 @@ def checkout(request):
         payment_method = request.POST.get('payment_method', PaymentMethod.CASH_ON_DELIVERY)
         phone_number = request.POST.get('phone_number', '').strip()
         account_number = request.POST.get('account_number', '').strip()
+        
+        # Get selected delivery address
+        saved_address_id = request.POST.get('saved_address_id')
+        
+        if not saved_address_id:
+            messages.error(request, 'Please select a delivery address')
+            context = {
+                'cart': cart,
+                'cart_items': cart_items,
+                'delivery_addresses': delivery_addresses,
+                'default_address': default_address,
+                'profile': profile,
+                'loyalty_info': loyalty_info,
+                'pricing': pricing,
+            }
+            return render(request, 'orders/checkout.html', context)
+        
+        # Get the saved address
+        try:
+            delivery_address_obj = DeliveryAddress.objects.get(id=saved_address_id, user=request.user)
+        except DeliveryAddress.DoesNotExist:
+            messages.error(request, 'Selected address not found')
+            return redirect('orders:checkout')
         
         validation_result = validate_user_can_make_payment(
             request.user,
@@ -175,51 +203,14 @@ def checkout(request):
             }
             return render(request, 'orders/checkout.html', context)
         
-        # Determine address
-        use_saved_address = request.POST.get('use_saved_address') == 'true'
-        saved_address_id = request.POST.get('saved_address_id')
+        # Get values from saved address
+        customer_name = delivery_address_obj.full_name
+        customer_phone = delivery_address_obj.phone
+        delivery_instructions = delivery_address_obj.delivery_instructions
+        delivery_charge = delivery_address_obj.get_delivery_charge()
         
-        if use_saved_address or saved_address_id:
-            if saved_address_id:
-                try:
-                    saved_address = DeliveryAddress.objects.get(id=saved_address_id, user=request.user)
-                    customer_name = saved_address.full_name
-                    customer_phone = saved_address.phone
-                    delivery_address = saved_address.get_full_address()
-                    delivery_instructions = saved_address.delivery_instructions
-                    delivery_charge = saved_address.get_delivery_charge()
-                except DeliveryAddress.DoesNotExist:
-                    messages.error(request, 'Selected address not found')
-                    return redirect('orders:checkout')
-            else:
-                if default_address:
-                    customer_name = default_address.full_name
-                    customer_phone = default_address.phone
-                    delivery_address = default_address.get_full_address()
-                    delivery_instructions = default_address.delivery_instructions
-                    delivery_charge = default_address.get_delivery_charge()
-                else:
-                    messages.error(request, 'Please select a delivery address or enter a new one')
-                    return redirect('orders:checkout')
-        else:
-            customer_name = request.POST.get('customer_name', request.user.get_full_name() or request.user.username)
-            customer_phone = request.POST.get('customer_phone', profile.phone if profile else '')
-            delivery_address = request.POST.get('delivery_address', '')
-            delivery_instructions = request.POST.get('delivery_instructions', '')
-            
-            zone_id = request.POST.get('delivery_zone')
-            if zone_id:
-                try:
-                    zone = DeliveryZone.objects.get(id=zone_id, is_active=True)
-                    delivery_charge = zone.delivery_charge
-                except DeliveryZone.DoesNotExist:
-                    delivery_charge = pricing['delivery_charge']
-            else:
-                delivery_charge = pricing['delivery_charge']
-            
-            if not delivery_address:
-                messages.error(request, 'Delivery address is required')
-                return redirect('orders:checkout')
+        # Get special requests if provided
+        special_requests = request.POST.get('special_requests', '').strip()
         
         # Validate cart items availability
         unavailable_items = [ci.menu_item.name for ci in cart_items if not ci.menu_item.is_available]
@@ -227,8 +218,8 @@ def checkout(request):
             messages.error(request, f'The following items are no longer available: {", ".join(unavailable_items)}')
             return redirect('orders:cart')
         
-        if not customer_name.strip() or not customer_phone.strip() or not delivery_address.strip():
-            messages.error(request, 'All customer information fields are required')
+        if not customer_name.strip() or not customer_phone.strip():
+            messages.error(request, 'Invalid delivery address information')
             return redirect('orders:checkout')
         
         subtotal = pricing['subtotal']
@@ -248,13 +239,14 @@ def checkout(request):
                         messages.error(request, f'{cart_item.menu_item.name} is no longer available')
                         return redirect('orders:cart')
                 
-                # ✅ Corrected: total_amount -> total
+                # Create order with delivery address reference
                 order = Order.objects.create(
                     user=request.user,
                     customer_name=customer_name,
                     customer_phone=customer_phone,
-                    delivery_address=delivery_address,
+                    delivery_address=delivery_address_obj,
                     delivery_instructions=delivery_instructions,
+                    special_requests=special_requests,
                     payment_method=payment_method,
                     payment_notes=request.POST.get('payment_notes', '').strip(),
                     subtotal=pricing['subtotal'],
@@ -265,7 +257,7 @@ def checkout(request):
                     vip_discount_amount=pricing['vip_discount_amount'],
                     corporate_discount_amount=pricing['corporate_discount_amount'],
                     referral_discount_amount=pricing['referral_discount_amount'],
-                    total=pricing['grand_total'],  # ✅ Correct field
+                    total=pricing['grand_total'],
                     status='pending'
                 )
                 

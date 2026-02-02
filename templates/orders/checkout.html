@@ -184,94 +184,54 @@
                             value="{% if delivery_addresses and default_address %}true{% else %}false{% endif %}">
                         <input type="hidden" name="loyalty_points_redeem" id="loyalty_points_redeem" value="0">
 
-                        <!-- Saved Addresses -->
-                        {% if delivery_addresses %}
+                        <!-- Saved Addresses (Required) -->
                         <div class="mb-4">
-                            <h6 class="mb-3">Select a Saved Address</h6>
+                            <h6 class="mb-3"><i class="bi bi-geo-alt-fill"></i> Select Your Delivery Address *</h6>
                             <div id="saved-addresses">
                                 {% for address in delivery_addresses %}
-                                <div class="address-card" data-address-id="{{ address.id }}">
+                                <div class="address-card border-2 mb-3" data-address-id="{{ address.id }}">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="saved_address_id"
-                                            id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %}>
+                                            id="address_{{ address.id }}" value="{{ address.id }}" {% if address.is_default %}checked{% endif %} required>
                                         <label class="form-check-label w-100" for="address_{{ address.id }}">
-                                            <strong>{{ address.label }}</strong>
+                                            <strong class="d-block mb-1">{{ address.label }}</strong>
                                             {% if address.is_default %}
-                                            <span class="badge bg-primary ms-2">Default</span>
+                                            <span class="badge bg-success mb-2">Default Address</span>
                                             {% endif %}
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ address.full_name }} | {{ address.phone }}<br>
-                                                {{ address.get_full_address }}
+                                            <div class="small text-muted mt-2">
+                                                <div><i class="bi bi-person"></i> <strong>{{ address.full_name }}</strong></div>
+                                                <div><i class="bi bi-telephone"></i> {{ address.phone }}</div>
+                                                <div><i class="bi bi-geo-alt"></i> {{ address.get_full_address }}</div>
                                                 {% if address.zone %}
-                                                <br><span class="badge bg-info">{{ address.zone.name }} - RWF {{
-                                                    address.get_delivery_charge }}</span>
+                                                <div class="mt-1"><span class="badge bg-info">{{ address.zone.name }}</span> <span class="text-muted">RWF {{ address.get_delivery_charge }}</span></div>
                                                 {% endif %}
-                                            </small>
+                                                {% if address.delivery_instructions %}
+                                                <div class="mt-1"><i class="bi bi-info-circle"></i> {{ address.delivery_instructions|truncatewords:15 }}</div>
+                                                {% endif %}
+                                            </div>
                                         </label>
                                     </div>
                                 </div>
-                                {% empty %}
-                                <div class="alert alert-info">
-                                    No saved addresses found. Please add a delivery address.
-                                </div>
                                 {% endfor %}
                             </div>
-                            <a href="{% url 'delivery:address_create' %}" class="btn btn-outline-primary btn-sm mb-3">
-                                <i class="bi bi-plus-circle"></i> Add New Address
-                            </a>
+                            
+                            <div class="alert alert-info mb-3">
+                                <i class="bi bi-info-circle"></i> <strong>Need a different address?</strong> 
+                                <a href="{% url 'delivery:address_create' %}" class="alert-link">Add a new address</a> or 
+                                <a href="{% url 'delivery:address_list' %}" class="alert-link">manage your addresses</a>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <button type="button" class="btn btn-link p-0" id="toggle-new-address">
-                                <i class="bi bi-plus-circle"></i> Or enter a new address
-                            </button>
-                        </div>
-                        {% endif %}
-
-                        <!-- New Address Form -->
-                        <div class="new-address-form {% if not delivery_addresses %}show{% endif %}"
-                            id="new-address-form">
-                            <div class="mb-3">
-                                <label for="customer_name" class="form-label">Full Name *</label>
-                                <input type="text" class="form-control" id="customer_name" name="customer_name"
-                                    value="{% if profile %}{{ user.get_full_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}"
-                                    required>
+                        <!-- Special Requests / Customizations -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-chat-left-text"></i> Special Requests (Optional)</h6>
                             </div>
-
-                            <div class="mb-3">
-                                <label for="customer_phone" class="form-label">Phone Number *</label>
-                                <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
-                                    value="{% if profile %}{{ profile.phone }}{% endif %}" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="delivery_address" class="form-label">Delivery Address *</label>
-                                <textarea class="form-control" id="delivery_address" name="delivery_address" rows="3"
-                                    required
-                                    placeholder="Enter your delivery address (e.g., Ward 3, Room 205, Hospital Building)"></textarea>
-                                <div class="form-text">Please provide detailed address including ward, room number, or
-                                    building</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="delivery_zone" class="form-label">Delivery Zone</label>
-                                <select class="form-select" id="delivery_zone" name="delivery_zone">
-                                    <option value="">Select zone (optional)</option>
-                                    {% for zone in delivery_zones %}
-                                    <option value="{{ zone.id }}" data-charge="{{ zone.delivery_charge }}">
-                                        {{ zone.name }} - RWF {{ zone.delivery_charge }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <div class="form-text">Select delivery zone to calculate delivery charge</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="delivery_instructions" class="form-label">Delivery Instructions
-                                    (Optional)</label>
-                                <textarea class="form-control" id="delivery_instructions" name="delivery_instructions"
-                                    rows="2" placeholder="Any special instructions for delivery..."></textarea>
+                            <div class="card-body">
+                                <label for="special_requests" class="form-label">Any special requests or customizations?</label>
+                                <textarea class="form-control" id="special_requests" name="special_requests" rows="3" 
+                                    placeholder="e.g., No salt, Extra spice, Allergies: peanuts, Dietary restrictions, Special preparation instructions..."></textarea>
+                                <div class="form-text">Tell us about any special needs, allergies, dietary preferences, or customizations for your order.</div>
                             </div>
                         </div>
 
