@@ -4,56 +4,63 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background-color: #f8fafc;">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-stethoscope"></i> Medical Staff Dashboard
-            </h1>
-            <p class="text-muted">Welcome back, {{ user.first_name }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0" style="color: #1e40af;">
+                        <i class="fas fa-stethoscope"></i> Medical Ward Dashboard
+                    </h1>
+                    <p class="text-muted mt-2">Hospital Ward & Patient Care Management</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 20px 30px; border-radius: 8px;">
+                    <div class="small">Last Updated</div>
+                    <div class="font-weight-bold">Just Now</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Key Metrics Row -->
+    <!-- Key Metrics Row - Healthcare Color Scheme -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #10b981;">
                 <div class="card-body">
-                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Total Beds</div>
-                    <div class="h3 mb-0">{{ total_beds }}</div>
+                    <div style="color: #10b981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Hospital Beds</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #065f46;">{{ total_beds }}</div>
                     <div class="small text-muted mt-2">
-                        <i class="fas fa-arrow-up"></i> {{ occupied_beds }} occupied
+                        <span style="color: #dc2626;">{{ occupied_beds }}</span> occupied • 
+                        <span style="color: #10b981;">{{ available_beds }}</span> available
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #3b82f6;">
                 <div class="card-body">
-                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Available Beds</div>
-                    <div class="h3 mb-0">{{ available_beds }}</div>
-                    <div class="small text-muted mt-2">
-                        {% widthratio available_beds total_beds 100 %}% available
-                    </div>
+                    <div style="color: #3b82f6; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Active Patients</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #1e40af;">{{ occupied_beds }}</div>
+                    <div class="small text-muted mt-2">Under active care</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #8b5cf6;">
                 <div class="card-body">
-                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Wards</div>
-                    <div class="h3 mb-0">{{ wards|length }}</div>
-                    <div class="small text-muted mt-2">Active departments</div>
+                    <div style="color: #8b5cf6; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Ward Departments</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #5b21b6;">{{ wards|length }}</div>
+                    <div class="small text-muted mt-2">Active wards</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card shadow-sm border-0 h-100" style="border-top: 4px solid #f59e0b;">
                 <div class="card-body">
-                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">Nutrition Programs</div>
-                    <div class="h3 mb-0">{{ nutrition_programs }}</div>
-                    <div class="small text-muted mt-2">Active programs</div>
+                    <div style="color: #f59e0b; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Occupancy Rate</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #92400e;">{% widthratio occupied_beds total_beds 100 %}%</div>
+                    <div class="small text-muted mt-2">Current hospital occupancy</div>
                 </div>
             </div>
         </div>
@@ -63,10 +70,12 @@
     <div class="row">
         <!-- Recent Admissions -->
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold">Recent Admissions (Last 7 days)</h6>
-                    <span class="badge badge-light">{{ recent_admissions|length }}</span>
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; border-bottom: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-sign-in-alt"></i> Recent Admissions</h6>
+                        <span class="badge badge-light text-primary">{{ recent_admissions|length }}</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     {% if recent_admissions %}
@@ -105,10 +114,12 @@
 
         <!-- Pending Discharges -->
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold">Pending Discharges</h6>
-                    <span class="badge badge-light">{{ pending_discharges|length }}</span>
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: white; border-bottom: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold"><i class="fas fa-sign-out-alt"></i> Pending Discharges</h6>
+                        <span class="badge badge-light text-danger">{{ pending_discharges|length }}</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     {% if pending_discharges %}
@@ -148,34 +159,30 @@
     <div class="row">
         <!-- Patient Education Progress -->
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h6 class="m-0 font-weight-bold">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #10b981;">
+                <div class="card-body">
+                    <h6 class="mb-3" style="color: #065f46; font-weight: 700;">
                         <i class="fas fa-graduation-cap"></i> Patient Education Progress
                     </h6>
-                </div>
-                <div class="card-body">
-                    <div class="h4 mb-0">{{ education_progress }}</div>
-                    <p class="text-muted mt-2">Patients completed education in last 7 days</p>
-                    <div class="progress mt-3">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                    <div class="h3 mb-2 font-weight-bold" style="color: #10b981;">{{ education_progress }}</div>
+                    <p class="small text-muted">Patients completed education in last 7 days</p>
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" style="width: 65%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Ward Orders -->
+        <!-- Ward Nutritional Programs -->
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-warning text-white">
-                    <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-shopping-bag"></i> Ward Patient Orders
-                    </h6>
-                </div>
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #f59e0b;">
                 <div class="card-body">
-                    <div class="h4 mb-0">{{ ward_patient_orders }}</div>
-                    <p class="text-muted mt-2">Orders placed by ward patients</p>
-                    <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-warning mt-3">View Orders</a>
+                    <h6 class="mb-3" style="color: #92400e; font-weight: 700;">
+                        <i class="fas fa-apple-alt"></i> Nutrition Programs
+                    </h6>
+                    <div class="h3 mb-2 font-weight-bold" style="color: #f59e0b;">{{ nutrition_programs }}</div>
+                    <p class="small text-muted">Active nutrition and meal programs</p>
+                    <a href="#" class="btn btn-sm mt-3" style="background: #f59e0b; color: white; border: none;">Manage Programs</a>
                 </div>
             </div>
         </div>
@@ -184,10 +191,10 @@
     <!-- Ward List -->
     <div class="row">
         <div class="col-md-12">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%); color: white; border-bottom: none;">
                     <h6 class="m-0 font-weight-bold">
-                        <i class="fas fa-hospital"></i> Active Wards
+                        <i class="fas fa-hospital"></i> Active Hospital Wards
                     </h6>
                 </div>
                 <div class="card-body">
@@ -220,10 +227,26 @@
 </div>
 
 <style>
-.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
-.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
-.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
-.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
-.border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+/* Healthcare Color Scheme */
+:root {
+  --clinical-blue: #1e40af;
+  --medical-green: #10b981;
+  --alert-red: #dc2626;
+  --info-purple: #8b5cf6;
+  --caution-amber: #f59e0b;
+}
+
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f0fdf4;
+}
 </style>
 {% endblock %}

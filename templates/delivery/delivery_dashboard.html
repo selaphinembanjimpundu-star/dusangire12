@@ -4,48 +4,48 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background-color: #f8fafc;">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-truck"></i> Delivery Dashboard
+            <h1 class="h2 mb-0" style="color: #1e40af;">
+                <i class="fas fa-truck"></i> Delivery Management Dashboard
             </h1>
-            <p class="text-muted">Real-time delivery tracking and management</p>
+            <p class="text-muted mt-2">Real-time delivery tracking and logistics management</p>
         </div>
     </div>
 
     <!-- Delivery Statistics -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card border-left-primary shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #3b82f6;">
                 <div class="card-body">
-                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Assigned</div>
-                    <div class="h3 mb-0">{{ total_assigned }}</div>
+                    <div style="color: #1e40af; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Assigned</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #3b82f6;">{{ total_assigned }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-warning shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #f59e0b;">
                 <div class="card-body">
-                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">In Transit</div>
-                    <div class="h3 mb-0">{{ total_in_transit }}</div>
+                    <div style="color: #92400e; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">In Transit</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #f59e0b;">{{ total_in_transit }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-success shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #10b981;">
                 <div class="card-body">
-                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Delivered</div>
-                    <div class="h3 mb-0">{{ total_delivered }}</div>
+                    <div style="color: #065f46; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Delivered</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #10b981;">{{ total_delivered }}</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-left-info shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #8b5cf6;">
                 <div class="card-body">
-                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Completion Rate</div>
-                    <div class="h3 mb-0">{{ completion_rate|floatformat:0 }}%</div>
+                    <div style="color: #5b21b6; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Completion</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #8b5cf6;">{{ completion_rate|floatformat:0 }}%</div>
                 </div>
             </div>
         </div>

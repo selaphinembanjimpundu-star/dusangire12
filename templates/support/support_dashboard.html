@@ -4,48 +4,48 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background-color: #f8fafc;">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-headset"></i> Support Dashboard
+            <h1 class="h2 mb-0" style="color: #5b21b6;">
+                <i class="fas fa-headset"></i> Customer Support Dashboard
             </h1>
-            <p class="text-muted">Customer support ticket management system</p>
+            <p class="text-muted mt-2">Support ticket management and customer service</p>
         </div>
     </div>
 
     <!-- Ticket Statistics -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-primary shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #3b82f6;">
                 <div class="card-body">
-                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Open</div>
-                    <div class="h3 mb-0">{{ open_tickets }}</div>
+                    <div style="color: #1e40af; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Open</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #3b82f6;">{{ open_tickets }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-warning shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #f59e0b;">
                 <div class="card-body">
-                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">In Progress</div>
-                    <div class="h3 mb-0">{{ in_progress_tickets }}</div>
+                    <div style="color: #92400e; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;\">In Progress</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #f59e0b;">{{ in_progress_tickets }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-success shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #10b981;">
                 <div class="card-body">
-                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Resolved</div>
-                    <div class="h3 mb-0">{{ resolved_tickets }}</div>
+                    <div style="color: #065f46; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Resolved</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #10b981;">{{ resolved_tickets }}</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-info shadow">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #6b7280;">
                 <div class="card-body">
-                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Closed</div>
-                    <div class="h3 mb-0">{{ closed_tickets }}</div>
+                    <div style="color: #374151; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Closed</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #6b7280;">{{ closed_tickets }}</div>
                 </div>
             </div>
         </div>

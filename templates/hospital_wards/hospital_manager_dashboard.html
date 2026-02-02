@@ -4,51 +4,59 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background-color: #f8fafc;">
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-hospital"></i> Hospital Manager Dashboard
-            </h1>
-            <p class="text-muted">Hospital Operations Overview</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0" style="color: #065f46;">
+                        <i class="fas fa-hospital"></i> Hospital Operations Dashboard
+                    </h1>
+                    <p class="text-muted mt-2">Real-time Hospital Management & Analytics</p>
+                </div>
+                <div style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; padding: 20px 30px; border-radius: 8px;">
+                    <div class="small">System Status</div>
+                    <div class="font-weight-bold">All Systems Operational</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Key Performance Indicators -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #10b981;">
                 <div class="card-body">
-                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Occupancy Rate</div>
-                    <div class="h3 mb-0">{{ occupancy_rate|floatformat:1 }}%</div>
+                    <div style="color: #065f46; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Occupancy Rate</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #10b981;">{{ occupancy_rate|floatformat:1 }}%</div>
                     <div class="small text-muted mt-2">{{ occupied_beds }}/{{ total_beds }} beds</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #3b82f6;">
                 <div class="card-body">
-                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Current Patients</div>
-                    <div class="h3 mb-0">{{ current_patients }}</div>
+                    <div style="color: #1e40af; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Current Patients</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #3b82f6;">{{ current_patients }}</div>
                     <div class="small text-muted mt-2">In hospital care</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #f59e0b;">
                 <div class="card-body">
-                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Monthly Revenue</div>
-                    <div class="h3 mb-0">${{ total_revenue_month|floatformat:0 }}</div>
+                    <div style="color: #92400e; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Monthly Revenue</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #f59e0b;">${{ total_revenue_month|floatformat:0 }}</div>
                     <div class="small text-muted mt-2">{{ total_orders_month }} orders</div>
                 </div>
             </div>
         </div>
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card shadow-sm border-0" style="border-top: 4px solid #8b5cf6;">
                 <div class="card-body">
-                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">Total Staff</div>
-                    <div class="h3 mb-0">
+                    <div style="color: #5b21b6; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Staff Count</div>
+                    <div class="h2 mb-0 font-weight-bold" style="color: #8b5cf6;">
                         {{ medical_staff_count|add:nutritionist_count|add:kitchen_staff_count|add:delivery_staff_count }}
                     </div>
                     <div class="small text-muted mt-2">Active team members</div>
@@ -60,8 +68,8 @@
     <!-- Hospital Statistics -->
     <div class="row mb-4">
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; border-bottom: none;">
                     <h6 class="m-0 font-weight-bold">
                         <i class="fas fa-bed"></i> Bed Management
                     </h6>
@@ -70,23 +78,23 @@
                     <div class="mb-4">
                         <div class="d-flex justify-content-between mb-2">
                             <span><strong>Wards</strong></span>
-                            <span class="badge badge-primary">{{ total_wards }}</span>
+                            <span class="badge" style="background: #065f46; color: white;">{{ total_wards }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span><strong>Total Beds</strong></span>
-                            <span class="badge badge-primary">{{ total_beds }}</span>
+                            <span class="badge" style="background: #3b82f6; color: white;">{{ total_beds }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span><strong>Occupied</strong></span>
-                            <span class="badge badge-danger">{{ occupied_beds }}</span>
+                            <span class="badge" style="background: #dc2626; color: white;">{{ occupied_beds }}</span>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span><strong>Available</strong></span>
-                            <span class="badge badge-success">{{ available_beds }}</span>
+                            <span class="badge" style="background: #10b981; color: white;">{{ available_beds }}</span>
                         </div>
                     </div>
                     <div class="progress" style="height: 25px;">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ occupancy_rate|floatformat:0 }}%">
+                        <div class="progress-bar" role="progressbar" style="width: {{ occupancy_rate|floatformat:0 }}%; background: linear-gradient(90deg, #dc2626, #f87171); color: white; display: flex; align-items: center; justify-content: center;">
                             {{ occupancy_rate|floatformat:1 }}%
                         </div>
                     </div>
@@ -95,8 +103,8 @@
         </div>
 
         <div class="col-lg-6 mb-4">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); color: white; border-bottom: none;">
                     <h6 class="m-0 font-weight-bold">
                         <i class="fas fa-chart-line"></i> Monthly Activity
                     </h6>
@@ -104,26 +112,26 @@
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-md-6 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="h5 mb-0 text-success">{{ total_admissions_month }}</div>
+                            <div class="p-3 rounded" style="background: #dbeafe; border-left: 4px solid #3b82f6;">
+                                <div class="h5 mb-0 font-weight-bold" style="color: #1e40af;">{{ total_admissions_month }}</div>
                                 <small class="text-muted">Admissions</small>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <div class="p-3 bg-light rounded">
-                                <div class="h5 mb-0 text-info">{{ total_discharges_month }}</div>
+                            <div class="p-3 rounded" style="background: #fee2e2; border-left: 4px solid #dc2626;">
+                                <div class="h5 mb-0 font-weight-bold" style="color: #991b1b;">{{ total_discharges_month }}</div>
                                 <small class="text-muted">Discharges</small>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="p-3 bg-light rounded">
-                                <div class="h5 mb-0 text-warning">{{ total_orders_month }}</div>
+                            <div class="p-3 rounded" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+                                <div class="h5 mb-0 font-weight-bold" style="color: #92400e;">{{ total_orders_month }}</div>
                                 <small class="text-muted">Orders This Month</small>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="p-3 bg-light rounded">
-                                <div class="h5 mb-0 text-primary">{{ orders_this_week }}</div>
+                            <div class="p-3 rounded" style="background: #dcfce7; border-left: 4px solid #10b981;">
+                                <div class="h5 mb-0 font-weight-bold" style="color: #065f46;">{{ orders_this_week }}</div>
                                 <small class="text-muted">Orders This Week</small>
                             </div>
                         </div>
