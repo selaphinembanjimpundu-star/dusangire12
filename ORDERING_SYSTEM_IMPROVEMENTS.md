@@ -10,7 +10,7 @@
 
 The ordering system has been significantly improved to provide:
 1. **Better menu ordering**: Users can order items from the menu with special customizations
-2. **Fixed checkout addresses**: Addresses are now selected from saved user addresses only (no free-form text)
+2. **Fixed checkout addresses**: Addresses are now selected from user's saved delivery addresses only (no free-form text input allowed)
 3. **Special requests support**: Users can specify dietary preferences, allergies, and customizations
 
 ---
