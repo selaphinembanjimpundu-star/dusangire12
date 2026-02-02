@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Portal - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="mb-2"><i class="bi bi-heart-pulse"></i> Welcome, {{ request.user.first_name|default:request.user.username }}</h1>
+                        <p class="mb-0 lead">Your health journey, our priority. Order meals designed for your recovery.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div style="font-size: 0.9rem; opacity: 0.9;">
+                            <p class="mb-1">📍 {% if request.user.profile.health_profile.current_ward %}{{ request.user.profile.health_profile.current_ward }}{% else %}Not assigned{% endif %}</p>
+                            <p class="mb-0">👨‍⚕️ Your Doctor: {% if request.user.profile.health_profile.assigned_doctor %}{{ request.user.profile.health_profile.assigned_doctor.get_full_name }}{% else %}TBD{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm" style="border-top: 4px solid #10b981;">
+                <div class="card-body">
+                    <div style="font-size: 2.5rem; color: #10b981;">📋</div>
+                    <h6 class="card-title text-muted">Active Meal Plan</h6>
+                    <p class="mb-0">
+                        {% if has_meal_plan %}
+                            <strong style="color: #10b981;">Yes</strong>
+                        {% else %}
+                            <span class="text-muted">Not assigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm" style="border-top: 4px solid #3b82f6;">
+                <div class="card-body">
+                    <div style="font-size: 2.5rem; color: #3b82f6;">🛒</div>
+                    <h6 class="card-title text-muted">Items in Cart</h6>
+                    <p class="mb-0"><strong style="color: #3b82f6;">{{ cart_count }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm" style="border-top: 4px solid #f59e0b;">
+                <div class="card-body">
+                    <div style="font-size: 2.5rem; color: #f59e0b;">📊</div>
+                    <h6 class="card-title text-muted">Compliance</h6>
+                    <p class="mb-0"><strong style="color: #f59e0b;">{{ compliance_percentage }}%</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm" style="border-top: 4px solid #8b5cf6;">
+                <div class="card-body">
+                    <div style="font-size: 2.5rem; color: #8b5cf6;">✅</div>
+                    <h6 class="card-title text-muted">Orders This Month</h6>
+                    <p class="mb-0"><strong style="color: #8b5cf6;">{{ orders_this_month }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content Area -->
+        <div class="col-lg-8">
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #10b981;">
+                <div class="card-header" style="background-color: #f0fdf4; border-bottom: 2px solid #10b981;">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> What would you like to do?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <a href="{% url 'menu:patient_meal_plan_guide' %}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-book"></i> View My Meal Plan
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-menu-button-wide"></i> Browse Menu
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'orders:cart' %}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-bag"></i> My Cart ({{ cart_count }})
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #3b82f6;">
+                <div class="card-header" style="background-color: #f0f9ff; border-bottom: 2px solid #3b82f6;">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in recent_orders %}
+                                    <tr>
+                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                        <td>{{ order.items.count }} item{{ order.items.count|pluralize }}</td>
+                                        <td><strong>RWF {{ order.total_price }}</strong></td>
+                                        <td>
+                                            {% if order.status == 'PENDING' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif order.status == 'CONFIRMED' %}
+                                                <span class="badge bg-info">Confirmed</span>
+                                            {% elif order.status == 'PREPARING' %}
+                                                <span class="badge bg-primary">Preparing</span>
+                                            {% elif order.status == 'READY' %}
+                                                <span class="badge bg-success">Ready</span>
+                                            {% elif order.status == 'DELIVERED' %}
+                                                <span class="badge bg-success">Delivered</span>
+                                            {% elif order.status == 'CANCELLED' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-3">No orders yet. Start by browsing our menu!</p>
+                            <a href="{% url 'menu:menu_list' %}" class="btn btn-success">
+                                <i class="bi bi-menu-button-wide"></i> Browse Menu
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Meal Preferences -->
+            <div class="card shadow-sm" style="border-left: 4px solid #f59e0b;">
+                <div class="card-header" style="background-color: #fffbeb; border-bottom: 2px solid #f59e0b;">
+                    <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Your Dietary Preferences</h5>
+                </div>
+                <div class="card-body">
+                    {% if dietary_preferences %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for pref in dietary_preferences %}
+                            <span class="badge bg-warning-subtle text-dark" style="font-size: 0.95rem; padding: 0.5rem 0.75rem;">
+                                {{ pref }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No dietary preferences set yet. You can add them in your profile settings.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Meal Plan Info Card -->
+            {% if meal_plan %}
+            <div class="card shadow-sm mb-4" style="border-top: 4px solid #10b981;">
+                <div class="card-header" style="background-color: #f0fdf4; border-bottom: 2px solid #10b981;">
+                    <h6 class="mb-0"><i class="bi bi-prescription2"></i> Your Meal Plan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Type</small>
+                        <div>
+                            <span class="badge bg-success" style="font-size: 0.95rem;">{{ meal_plan.get_meal_type_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Prescribed by</small>
+                        <div>{{ meal_plan.prescribed_by.get_full_name|default:"Your Doctor" }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Duration</small>
+                        <div>
+                            {{ meal_plan.start_date|date:"M d" }} - 
+                            {% if meal_plan.end_date %}
+                                {{ meal_plan.end_date|date:"M d, Y" }}
+                            {% else %}
+                                Ongoing
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <a href="{% url 'menu:patient_meal_plan_guide' %}" class="btn btn-success btn-sm w-100">
+                        <i class="bi bi-arrow-right"></i> View Full Plan
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info shadow-sm">
+                <h6><i class="bi bi-info-circle"></i> No Active Meal Plan</h6>
+                <p class="small mb-0">Your doctor will assign a personalized meal plan soon. In the meantime, you can browse our menu!</p>
+            </div>
+            {% endif %}
+
+            <!-- Helpful Resources -->
+            <div class="card shadow-sm" style="border-left: 4px solid #8b5cf6;">
+                <div class="card-header" style="background-color: #faf5ff; border-bottom: 2px solid #8b5cf6;">
+                    <h6 class="mb-0"><i class="bi bi-question-circle"></i> Need Help?</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action py-2 px-0">
+                            <i class="bi bi-book"></i> How to order meals
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action py-2 px-0">
+                            <i class="bi bi-heart-pulse"></i> Understanding your meal plan
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action py-2 px-0">
+                            <i class="bi bi-exclamation-triangle"></i> Dietary restrictions & allergies
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action py-2 px-0">
+                            <i class="bi bi-telephone"></i> Contact support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+    .btn-outline-success:hover, .btn-success:hover {
+        background-color: #059669;
+        border-color: #059669;
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f9fafb;
+    }
+</style>
+{% endblock %}

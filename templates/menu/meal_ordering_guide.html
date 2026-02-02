@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}How to Order Meals - Dusangire{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; padding: 2rem; border-radius: 1rem;">
+                <h1 class="mb-2"><i class="bi bi-question-circle"></i> How to Order Your Meals</h1>
+                <p class="mb-0">Simple steps to get healthy meals delivered to your room.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="#step1" class="btn btn-outline-primary">
+                    <i class="bi bi-1-circle"></i> Understand Your Plan
+                </a>
+                <a href="#step2" class="btn btn-outline-primary">
+                    <i class="bi bi-2-circle"></i> Browse Meals
+                </a>
+                <a href="#step3" class="btn btn-outline-primary">
+                    <i class="bi bi-3-circle"></i> Add to Cart
+                </a>
+                <a href="#step4" class="btn btn-outline-primary">
+                    <i class="bi bi-4-circle"></i> Checkout
+                </a>
+                <a href="#step5" class="btn btn-outline-primary">
+                    <i class="bi bi-5-circle"></i> Track Order
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="step1" class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #10b981;">
+                <div class="card-header" style="background-color: #f0fdf4; border-bottom: 2px solid #10b981;">
+                    <h4 class="mb-0"><i class="bi bi-1-circle-fill" style="color: #10b981;"></i> Understand Your Meal Plan</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p><strong>What is a Meal Plan?</strong></p>
+                            <p>Your doctor creates a special meal plan just for you based on:</p>
+                            <ul>
+                                <li>Your health condition</li>
+                                <li>Your allergies</li>
+                                <li>Your dietary needs</li>
+                                <li>Your recovery goals</li>
+                            </ul>
+                            <p><strong>Meal Plan Types:</strong></p>
+                            <ul>
+                                <li><strong>Diabetic-Friendly:</strong> Low sugar, controlled portions</li>
+                                <li><strong>Low-Sodium:</strong> Low salt for heart health</li>
+                                <li><strong>High-Protein:</strong> Extra protein for muscle recovery</li>
+                                <li><strong>Low-Fat:</strong> Light meals for digestion</li>
+                                <li><strong>Vegetarian:</strong> Plant-based meals</li>
+                                <li><strong>Gluten-Free:</strong> Safe for celiac disease</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-lightbulb"></i> Pro Tip</h6>
+                                <p class="mb-0">Check your meal plan regularly to see what meals your doctor recommends. You can find it in "Your Meal Plan" section on your dashboard.</p>
+                            </div>
+                            <div class="card" style="background-color: #f0fdf4; border-left: 4px solid #10b981;">
+                                <div class="card-body">
+                                    <small><strong>✓ Recommended meals are marked with:</strong></small><br>
+                                    <small><span class="badge bg-success me-1">Diabetic-Friendly</span> <span class="badge bg-success me-1">High-Protein</span> <span class="badge bg-success">Low-Sodium</span></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step2" class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #3b82f6;">
+                <div class="card-header" style="background-color: #f0f9ff; border-bottom: 2px solid #3b82f6;">
+                    <h4 class="mb-0"><i class="bi bi-2-circle-fill" style="color: #3b82f6;"></i> Browse Available Meals</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>How to Find Meals:</strong></p>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3" style="background-color: #f9fafb;">
+                                <h6 class="mb-2"><i class="bi bi-search"></i> Search by Name</h6>
+                                <p class="small text-muted">Looking for a specific meal? Type the name in the search box.</p>
+                                <small>Example: "rice", "chicken", "soup"</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3" style="background-color: #f9fafb;">
+                                <h6 class="mb-2"><i class="bi bi-funnel"></i> Filter by Category</h6>
+                                <p class="small text-muted">Browse by meal type: breakfast, lunch, dinner, or snacks.</p>
+                                <small>Each category shows meals available at that time.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3" style="background-color: #f9fafb;">
+                                <h6 class="mb-2"><i class="bi bi-heart-pulse"></i> Dietary Tags</h6>
+                                <p class="small text-muted">See which meals match your needs with colored badges.</p>
+                                <small>Look for your diet type badge on each meal.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3" style="background-color: #f9fafb;">
+                                <h6 class="mb-2"><i class="bi bi-star"></i> Read Reviews</h6>
+                                <p class="small text-muted">See ratings from other patients who ordered that meal.</p>
+                                <small>Higher stars mean patients enjoyed it more.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Understanding Meal Labels</h6>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">Diabetic-Friendly</span></td>
+                                    <td>Safe for patients with diabetes - low sugar</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-info">High-Protein</span></td>
+                                    <td>Extra protein for strength and recovery</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning">Low-Fat</span></td>
+                                    <td>Light and easy to digest</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-danger">Spicy</span></td>
+                                    <td>Contains hot peppers or spices</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step3" class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #f59e0b;">
+                <div class="card-header" style="background-color: #fffbeb; border-bottom: 2px solid #f59e0b;">
+                    <h4 class="mb-0"><i class="bi bi-3-circle-fill" style="color: #f59e0b;"></i> Add Meals to Your Cart</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Adding a Meal to Your Cart:</strong></p>
+                    <ol>
+                        <li>Find a meal you like</li>
+                        <li>Click the <strong>"Add to Cart"</strong> button</li>
+                        <li>The meal is added to your shopping cart</li>
+                        <li>You can continue shopping and add more meals</li>
+                    </ol>
+
+                    <p class="mt-3"><strong>Special Notes:</strong></p>
+                    <p>When ordering, you can add <strong>"Special Notes"</strong> to tell the kitchen about:</p>
+                    <ul>
+                        <li>🚫 Allergies (peanuts, shellfish, etc.)</li>
+                        <li>🧂 Food preferences ("No salt", "Extra spice")</li>
+                        <li>🍽️ Portion size ("Small portion", "Extra portion")</li>
+                        <li>❌ Ingredients to avoid ("No onions", "No tomato")</li>
+                        <li>✅ Special requests ("Cut into small pieces", "Very soft")</li>
+                    </ul>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle"></i> Important</h6>
+                        <p class="mb-0">Always mention allergies in the Special Notes box. This helps our kitchen team prepare your meal safely!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div id="step4" class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #8b5cf6;">
+                <div class="card-header" style="background-color: #faf5ff; border-bottom: 2px solid #8b5cf6;">
+                    <h4 class="mb-0"><i class="bi bi-4-circle-fill" style="color: #8b5cf6;"></i> Checkout (Place Your Order)</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Steps to Checkout:</strong></p>
+                    <ol>
+                        <li>Click "View Cart" to review your meals</li>
+                        <li>Adjust quantities if needed (or remove meals you don't want)</li>
+                        <li>Click "Checkout"</li>
+                        <li><strong>Select your Delivery Location:</strong>
+                            <ul>
+                                <li>Choose where the meal should be delivered</li>
+                                <li>Your room number or ward location</li>
+                                <li>This must be a saved address from your account</li>
+                            </ul>
+                        </li>
+                        <li><strong>Add Special Requests:</strong> (if not already done)
+                            <ul>
+                                <li>Tell the kitchen about allergies</li>
+                                <li>Add any dietary notes</li>
+                                <li>Request meal modifications</li>
+                            </ul>
+                        </li>
+                        <li><strong>Choose Payment Method:</strong>
+                            <ul>
+                                <li>💵 Cash on Delivery</li>
+                                <li>📱 Mobile Money (MTN, Airtel)</li>
+                                <li>🏦 Bank Transfer</li>
+                                <li>💳 Debit/Credit Card</li>
+                            </ul>
+                        </li>
+                        <li>Review your order total</li>
+                        <li>Click "Place Order"</li>
+                    </ol>
+
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-check-circle"></i> Order Confirmed!</h6>
+                        <p class="mb-0">You'll receive a confirmation with your order number and estimated delivery time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div id="step5" class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4" style="border-left: 4px solid #06b6d4;">
+                <div class="card-header" style="background-color: #ecfdf5; border-bottom: 2px solid #06b6d4;">
+                    <h4 class="mb-0"><i class="bi bi-5-circle-fill" style="color: #06b6d4;"></i> Track Your Order</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Order Status Explained:</strong></p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="font-size: 1.5rem; color: #fbbf24; margin-right: 1rem;">⏳</div>
+                                <div>
+                                    <h6 class="mb-1">Pending</h6>
+                                    <small class="text-muted">Your order is being received by the kitchen</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="font-size: 1.5rem; color: #3b82f6; margin-right: 1rem;">✓</div>
+                                <div>
+                                    <h6 class="mb-1">Confirmed</h6>
+                                    <small class="text-muted">Kitchen has confirmed your order</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="font-size: 1.5rem; color: #f59e0b; margin-right: 1rem;">🍳</div>
+                                <div>
+                                    <h6 class="mb-1">Preparing</h6>
+                                    <small class="text-muted">Chef is cooking your meal</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="font-size: 1.5rem; color: #8b5cf6; margin-right: 1rem;">📦</div>
+                                <div>
+                                    <h6 class="mb-1">Ready</h6>
+                                    <small class="text-muted">Your meal is ready for delivery</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="font-size: 1.5rem; color: #10b981; margin-right: 1rem;">🚚</div>
+                                <div>
+                                    <h6 class="mb-1">Delivered</h6>
+                                    <small class="text-muted">Your meal has been delivered!</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="mt-3"><strong>Tracking Your Order:</strong></p>
+                    <ol>
+                        <li>Go to your dashboard or "Recent Orders"</li>
+                        <li>Click on the order to see details</li>
+                        <li>View the current status</li>
+                        <li>See estimated delivery time</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm" style="border-left: 4px solid #ec4899;">
+                <div class="card-header" style="background-color: #fce7f3; border-bottom: 2px solid #ec4899;">
+                    <h4 class="mb-0"><i class="bi bi-chat-dots"></i> Frequently Asked Questions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Can I change my order after placing it?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>It depends on the status:</p>
+                                    <ul>
+                                        <li><strong>Pending:</strong> You can usually cancel or modify</li>
+                                        <li><strong>Confirmed or later:</strong> Kitchen has already started, changes may not be possible</li>
+                                    </ul>
+                                    <p>Contact support immediately if you need to make changes.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    What if I have an allergy? How do I tell the kitchen?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <strong>Always mention allergies in the Special Notes section!</strong> Examples:
+                                    <ul>
+                                        <li>"Allergic to peanuts - please avoid all peanut products"</li>
+                                        <li>"Cannot eat shellfish"</li>
+                                        <li>"Allergic to eggs"</li>
+                                    </ul>
+                                    <p>Be clear and specific so the kitchen team can prepare your meal safely.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    How long does delivery take?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Typical delivery times:</p>
+                                    <ul>
+                                        <li><strong>Breakfast order:</strong> 30-45 minutes</li>
+                                        <li><strong>Lunch order:</strong> 45-60 minutes</li>
+                                        <li><strong>Dinner order:</strong> 45-60 minutes</li>
+                                    </ul>
+                                    <p>You'll see the estimated time after placing your order.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Can I rate meals after eating?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Yes! After your order is delivered, you can:</p>
+                                    <ul>
+                                        <li>Leave a 5-star rating</li>
+                                        <li>Write a review about the meal</li>
+                                        <li>Help other patients find good meals</li>
+                                    </ul>
+                                    <p>Your feedback helps us improve!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 2rem; border-radius: 1rem; text-align: center;">
+                <h4 class="mb-3"><i class="bi bi-heart-fill"></i> Ready to Order?</h4>
+                <p class="mb-3">Start by viewing your personalized meal plan designed by your doctor.</p>
+                <a href="{% url 'menu:patient_meal_plan_guide' %}" class="btn btn-light btn-lg">
+                    <i class="bi bi-arrow-right"></i> View My Meal Plan
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

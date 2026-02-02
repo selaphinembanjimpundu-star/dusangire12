@@ -40,6 +40,7 @@ urlpatterns = [
     path('health-tracking/', include('health_tracking.urls')),
     path('health-checks/', include('health_profiles.urls')),
     path('hospital/', include('hospital_wards.urls')),
+    path('patient/', include('patients.urls')),
 ]
 
 # Serve media files in development

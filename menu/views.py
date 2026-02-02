@@ -5,9 +5,12 @@ from django.http import JsonResponse, HttpResponse
 from django.db import connection
 from django.utils import timezone
 from django.views.decorators.http import condition
+from django.contrib.auth.decorators import login_required
 from .models import Category, MenuItem, DietaryTag
 from .forms import MenuFilterForm
 from .utils import get_recommendations, get_popular_items, get_highly_rated_items
+from patients.models import MedicalPrescription
+from orders.models import Cart, CartItem
 
 
 def menu_list(request):
@@ -172,6 +175,89 @@ def menu_detail(request, item_id):
         'recent_reviews': recent_reviews,
     }
     return render(request, 'menu/menu_detail.html', context)
+
+
+@login_required
+def patient_meal_plan_guide(request):
+    """
+    Patient-friendly view to browse menu and understand meal plan recommendations
+    Shows:
+    - Patient's current meal prescription (doctor's recommendations)
+    - Meals that match their dietary needs
+    - Full menu to browse and order
+    - Shopping cart status
+    """
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    
+    # Get patient's current medical prescription (meal plan)
+    medical_prescription = None
+    matching_meals = []
+    
+    if profile and hasattr(profile, 'health_profile'):
+        health_profile = profile.health_profile
+        # Get the most recent active prescription
+        medical_prescription = MedicalPrescription.objects.filter(
+            health_profile=health_profile,
+            is_active=True
+        ).order_by('-start_date').first()
+        
+        if medical_prescription:
+            # Find meals that match the prescribed meal type
+            if hasattr(medical_prescription, 'meal_type'):
+                # Create a mapping of meal types to dietary tags
+                meal_type_tags = {
+                    'DIABETIC': 'Diabetic-Friendly',
+                    'LOW_SODIUM': 'Low-Sodium',
+                    'HIGH_PROTEIN': 'High-Protein',
+                    'LOW_FAT': 'Low-Fat',
+                    'VEGETARIAN': 'Vegetarian',
+                    'GLUTEN_FREE': 'Gluten-Free',
+                    'VEGAN': 'Vegan',
+                }
+                
+                tag_name = meal_type_tags.get(medical_prescription.meal_type)
+                if tag_name:
+                    tag = DietaryTag.objects.filter(name=tag_name).first()
+                    if tag:
+                        matching_meals = MenuItem.objects.filter(
+                            is_available=True,
+                            dietary_tags=tag
+                        ).select_related('category').prefetch_related('dietary_tags')[:6]
+    
+    # Get all available menu items
+    menu_items = MenuItem.objects.filter(
+        is_available=True
+    ).select_related('category').prefetch_related('dietary_tags').order_by('category', 'name')
+    
+    # Get user's cart count
+    cart_count = 0
+    if request.user.is_authenticated:
+        try:
+            cart = Cart.objects.get(user=user)
+            cart_count = CartItem.objects.filter(cart=cart).aggregate(
+                total=Count('quantity'))['total'] or 0
+        except Cart.DoesNotExist:
+            cart_count = 0
+    
+    context = {
+        'medical_prescription': medical_prescription,
+        'matching_meals': matching_meals,
+        'menu_items': menu_items,
+        'cart_count': cart_count,
+    }
+    
+    return render(request, 'menu/patient_menu_guide.html', context)
+
+
+def meal_ordering_guide(request):
+    """
+    User-friendly guide for patients on how to order meals
+    Includes step-by-step instructions and FAQs
+    """
+    return render(request, 'menu/meal_ordering_guide.html')
+
+
 
 
 def health_check(request):
