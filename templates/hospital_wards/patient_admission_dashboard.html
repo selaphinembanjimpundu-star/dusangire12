@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-user-md"></i> Patient Admission & Discharge Management
+            </h1>
+            <p class="text-muted">Manage patient admissions and discharges</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="admissions-tab" data-toggle="tab" href="#admissions">
+                <i class="fas fa-sign-in-alt"></i> Recent Admissions
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="discharges-tab" data-toggle="tab" href="#discharges">
+                <i class="fas fa-sign-out-alt"></i> Pending Discharges
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Admissions Tab -->
+        <div id="admissions" class="tab-pane fade show active">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Recent Admissions</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_admissions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Patient Name</th>
+                                        <th>Contact</th>
+                                        <th>Ward</th>
+                                        <th>Admission Date</th>
+                                        <th>Bed Assigned</th>
+                                        <th>Medical Condition</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admission in recent_admissions %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ admission.patient.first_name }} {{ admission.patient.last_name }}</strong>
+                                        </td>
+                                        <td>
+                                            <small>{{ admission.patient.email }}</small>
+                                        </td>
+                                        <td>{{ admission.ward.name }}</td>
+                                        <td>{{ admission.admission_date|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            {% if admission.bed %}
+                                                <span class="badge badge-info">{{ admission.bed.bed_number }}</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ admission.medical_condition|default:"N/A"|truncatewords:3 }}</small>
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-primary">Details</a>
+                                            <a href="#" class="btn btn-sm btn-secondary">Edit</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No recent admissions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Discharges Tab -->
+        <div id="discharges" class="tab-pane fade">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">Pending Discharges</h6>
+                </div>
+                <div class="card-body">
+                    {% if pending_discharges %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Patient Name</th>
+                                        <th>Ward</th>
+                                        <th>Bed</th>
+                                        <th>Admission Date</th>
+                                        <th>Expected Discharge</th>
+                                        <th>Days in Hospital</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for discharge in pending_discharges %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ discharge.patient.first_name }} {{ discharge.patient.last_name }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if discharge.admission.ward %}
+                                                {{ discharge.admission.ward.name }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if discharge.admission.bed %}
+                                                <span class="badge badge-info">{{ discharge.admission.bed.bed_number }}</span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if discharge.admission %}
+                                                {{ discharge.admission.admission_date|date:"M d, Y" }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ discharge.expected_discharge_date|date:"M d, Y"|default:"TBD" }}
+                                        </td>
+                                        <td>
+                                            {% if discharge.admission.admission_date %}
+                                                {% now "U" as today %}
+                                                {% with discharge.admission.admission_date|date:"U" as admit_time %}
+                                                    <span class="badge badge-secondary">
+                                                        {{ today|add:admit_time|add:"-" }}
+                                                    </span>
+                                                {% endwith %}
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-success">Process Discharge</a>
+                                            <a href="#" class="btn btn-sm btn-secondary">Edit</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No pending discharges</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Bootstrap tab functionality
+    document.querySelectorAll('[data-toggle="tab"]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = this.getAttribute('href');
+            document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                pane.classList.remove('show', 'active');
+            });
+            document.querySelectorAll('[role="tab"]').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
+            document.querySelector(target).classList.add('show', 'active');
+            this.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

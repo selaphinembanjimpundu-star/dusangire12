@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-headset"></i> Support Dashboard
+            </h1>
+            <p class="text-muted">Customer support ticket management system</p>
+        </div>
+    </div>
+
+    <!-- Ticket Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Open</div>
+                    <div class="h3 mb-0">{{ open_tickets }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">In Progress</div>
+                    <div class="h3 mb-0">{{ in_progress_tickets }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Resolved</div>
+                    <div class="h3 mb-0">{{ resolved_tickets }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Closed</div>
+                    <div class="h3 mb-0">{{ closed_tickets }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Ticket Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#urgent">
+                <i class="fas fa-exclamation-circle"></i> Urgent ({{ urgent_tickets|length }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#unassigned">
+                <i class="fas fa-user-slash"></i> Unassigned ({{ unassigned_tickets|length }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#recent">
+                <i class="fas fa-history"></i> Recent ({{ recent_tickets|length }})
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Urgent Tickets -->
+        <div id="urgent" class="tab-pane fade show active">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="m-0 font-weight-bold">High Priority Tickets Requiring Attention</h6>
+                </div>
+                <div class="card-body">
+                    {% if urgent_tickets %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Subject</th>
+                                        <th>Customer</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in urgent_tickets %}
+                                    <tr class="table-danger">
+                                        <td>
+                                            <strong>#{{ ticket.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ ticket.subject|truncatewords:5 }}</td>
+                                        <td>
+                                            {% if ticket.customer %}
+                                                {{ ticket.customer.first_name }} {{ ticket.customer.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.category %}
+                                                <span class="badge badge-secondary">{{ ticket.category }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-danger">{{ ticket.get_status_display|default:ticket.status }}</span>
+                                        </td>
+                                        <td><small>{{ ticket.created_at|date:"M d, H:i" }}</small></td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-primary">Open</a>
+                                            <a href="#" class="btn btn-sm btn-secondary">Assign</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No urgent tickets</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Unassigned Tickets -->
+        <div id="unassigned" class="tab-pane fade">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">Unassigned Tickets</h6>
+                </div>
+                <div class="card-body">
+                    {% if unassigned_tickets %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Subject</th>
+                                        <th>Customer</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in unassigned_tickets %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ ticket.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ ticket.subject|truncatewords:5 }}</td>
+                                        <td>
+                                            {% if ticket.customer %}
+                                                {{ ticket.customer.first_name }} {{ ticket.customer.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.priority == 'high' %}
+                                                <span class="badge badge-danger">High</span>
+                                            {% elif ticket.priority == 'medium' %}
+                                                <span class="badge badge-warning">Medium</span>
+                                            {% else %}
+                                                <span class="badge badge-info">Low</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-secondary">{{ ticket.get_status_display|default:ticket.status }}</span>
+                                        </td>
+                                        <td><small>{{ ticket.created_at|date:"M d, H:i" }}</small></td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-primary">Open</a>
+                                            <a href="#" class="btn btn-sm btn-success">Assign to Me</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">All tickets are assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tickets -->
+        <div id="recent" class="tab-pane fade">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Recent Tickets</h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_tickets %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Ticket ID</th>
+                                        <th>Subject</th>
+                                        <th>Customer</th>
+                                        <th>Assigned To</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ticket in recent_tickets %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ ticket.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ ticket.subject|truncatewords:5 }}</td>
+                                        <td>
+                                            {% if ticket.customer %}
+                                                {{ ticket.customer.first_name }} {{ ticket.customer.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.assigned_to %}
+                                                {{ ticket.assigned_to.first_name }} {{ ticket.assigned_to.last_name }}
+                                            {% else %}
+                                                <span class="text-muted">Unassigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if ticket.status == 'open' %}
+                                                <span class="badge badge-primary">Open</span>
+                                            {% elif ticket.status == 'in_progress' %}
+                                                <span class="badge badge-warning">In Progress</span>
+                                            {% elif ticket.status == 'resolved' %}
+                                                <span class="badge badge-success">Resolved</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Closed</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ ticket.created_at|date:"M d, H:i" }}</small></td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-primary">Open</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No tickets</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+.border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+</style>
+{% endblock %}

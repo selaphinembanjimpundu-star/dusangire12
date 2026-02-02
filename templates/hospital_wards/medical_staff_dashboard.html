@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-stethoscope"></i> Medical Staff Dashboard
+            </h1>
+            <p class="text-muted">Welcome back, {{ user.first_name }}</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Total Beds</div>
+                    <div class="h3 mb-0">{{ total_beds }}</div>
+                    <div class="small text-muted mt-2">
+                        <i class="fas fa-arrow-up"></i> {{ occupied_beds }} occupied
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Available Beds</div>
+                    <div class="h3 mb-0">{{ available_beds }}</div>
+                    <div class="small text-muted mt-2">
+                        {% widthratio available_beds total_beds 100 %}% available
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Wards</div>
+                    <div class="h3 mb-0">{{ wards|length }}</div>
+                    <div class="small text-muted mt-2">Active departments</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">Nutrition Programs</div>
+                    <div class="h3 mb-0">{{ nutrition_programs }}</div>
+                    <div class="small text-muted mt-2">Active programs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Recent Admissions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Recent Admissions (Last 7 days)</h6>
+                    <span class="badge badge-light">{{ recent_admissions|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if recent_admissions %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Ward</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for admission in recent_admissions %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ admission.patient.first_name }} {{ admission.patient.last_name }}</strong>
+                                        </td>
+                                        <td>{{ admission.ward.name }}</td>
+                                        <td>{{ admission.admission_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge badge-success">Admitted</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No recent admissions</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Discharges -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Pending Discharges</h6>
+                    <span class="badge badge-light">{{ pending_discharges|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if pending_discharges %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Expected Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for discharge in pending_discharges %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ discharge.patient.first_name }} {{ discharge.patient.last_name }}</strong>
+                                        </td>
+                                        <td>{{ discharge.expected_discharge_date|date:"M d, Y"|default:"TBD" }}</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-outline-primary">Process</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No pending discharges</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="row">
+        <!-- Patient Education Progress -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-graduation-cap"></i> Patient Education Progress
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="h4 mb-0">{{ education_progress }}</div>
+                    <p class="text-muted mt-2">Patients completed education in last 7 days</p>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ward Orders -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-shopping-bag"></i> Ward Patient Orders
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="h4 mb-0">{{ ward_patient_orders }}</div>
+                    <p class="text-muted mt-2">Orders placed by ward patients</p>
+                    <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-warning mt-3">View Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ward List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-hospital"></i> Active Wards
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if wards %}
+                        <div class="row">
+                            {% for ward in wards %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-left-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ ward.name }}</h5>
+                                        <p class="card-text text-muted small">{{ ward.location }}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <small><strong>Capacity:</strong> {{ ward.capacity }}</small>
+                                            {% if ward.get_availability %}
+                                                <small class="text-success"><strong>Available:</strong> {{ ward.get_available_beds_count }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No active wards</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+.border-left-danger { border-left: 0.25rem solid #e74a3b !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-utensils"></i> Kitchen Dashboard
+            </h1>
+            <p class="text-muted">Real-time meal preparation status and management</p>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-left-primary shadow">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Orders Today</div>
+                    <div class="h3 mb-0">{{ total_orders_today }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-success shadow">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Completed</div>
+                    <div class="h3 mb-0">{{ completed_today }}</div>
+                    <div class="small text-muted mt-2">
+                        {% widthratio completed_today total_orders_today 100 %}% Complete
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-warning shadow">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">In Progress</div>
+                    <div class="h3 mb-0">{{ preparing_meals|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meal Status Boards -->
+    <div class="row">
+        <!-- Pending Meals -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-hourglass-start"></i> Pending
+                    </h6>
+                    <span class="badge badge-light">{{ pending_meals|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if pending_meals %}
+                        <div class="list-group list-group-flush">
+                            {% for meal in pending_meals %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            Order #{{ meal.id|truncatechars:8 }}
+                                        </h6>
+                                        <p class="mb-1 small text-muted">
+                                            Patient: {{ meal.user.first_name }} {{ meal.user.last_name }}
+                                        </p>
+                                        <small class="text-muted">
+                                            {{ meal.created_at|date:"H:i" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge badge-warning">{{ meal.items.count }} items</span>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-primary mt-2">Start Preparing</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No pending meals</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Preparing Meals -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-fire"></i> Preparing
+                    </h6>
+                    <span class="badge badge-light">{{ preparing_meals|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if preparing_meals %}
+                        <div class="list-group list-group-flush">
+                            {% for meal in preparing_meals %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            Order #{{ meal.id|truncatechars:8 }}
+                                        </h6>
+                                        <p class="mb-1 small text-muted">
+                                            Patient: {{ meal.user.first_name }} {{ meal.user.last_name }}
+                                        </p>
+                                        <small class="text-muted">
+                                            {{ meal.created_at|date:"H:i" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge badge-info">{{ meal.items.count }} items</span>
+                                </div>
+                                <a href="#" class="btn btn-sm btn-success mt-2">Mark Ready</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No meals being prepared</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ready Meals -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-check-circle"></i> Ready
+                    </h6>
+                    <span class="badge badge-light">{{ ready_meals|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if ready_meals %}
+                        <div class="list-group list-group-flush">
+                            {% for meal in ready_meals %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            Order #{{ meal.id|truncatechars:8 }}
+                                        </h6>
+                                        <p class="mb-1 small text-muted">
+                                            Patient: {{ meal.user.first_name }} {{ meal.user.last_name }}
+                                        </p>
+                                        <small class="text-muted">
+                                            {{ meal.created_at|date:"H:i" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge badge-success">{{ meal.items.count }} items</span>
+                                </div>
+                                <p class="mb-0 small text-success mt-2">
+                                    <i class="fas fa-check"></i> Ready for delivery
+                                </p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No ready meals</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meal Items Breakdown -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-list"></i> Meal Items to Prepare
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if meal_items_to_prepare %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Meal Type</th>
+                                        <th>Patient</th>
+                                        <th>Quantity</th>
+                                        <th>Special Instructions</th>
+                                        <th>Order Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in meal_items_to_prepare %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ item.menu_item.name }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if item.menu_item.category %}
+                                                <span class="badge badge-secondary">{{ item.menu_item.category.name }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.order.user.first_name }} {{ item.order.user.last_name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ item.special_instructions|default:"None" }}
+                                            </small>
+                                        </td>
+                                        <td>{{ item.order.created_at|date:"H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No meal items to prepare</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+</style>
+{% endblock %}

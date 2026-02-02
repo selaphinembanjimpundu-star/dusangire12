@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-truck"></i> Delivery Dashboard
+            </h1>
+            <p class="text-muted">Real-time delivery tracking and management</p>
+        </div>
+    </div>
+
+    <!-- Delivery Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow">
+                <div class="card-body">
+                    <div class="text-primary text-uppercase mb-1 small font-weight-bold">Assigned</div>
+                    <div class="h3 mb-0">{{ total_assigned }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow">
+                <div class="card-body">
+                    <div class="text-warning text-uppercase mb-1 small font-weight-bold">In Transit</div>
+                    <div class="h3 mb-0">{{ total_in_transit }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-success shadow">
+                <div class="card-body">
+                    <div class="text-success text-uppercase mb-1 small font-weight-bold">Delivered</div>
+                    <div class="h3 mb-0">{{ total_delivered }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow">
+                <div class="card-body">
+                    <div class="text-info text-uppercase mb-1 small font-weight-bold">Completion Rate</div>
+                    <div class="h3 mb-0">{{ completion_rate|floatformat:0 }}%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Tabs -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#assigned">
+                <i class="fas fa-list"></i> Assigned ({{ total_assigned }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#transit">
+                <i class="fas fa-location-arrow"></i> In Transit ({{ total_in_transit }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#delivered">
+                <i class="fas fa-check-circle"></i> Delivered ({{ total_delivered }})
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Assigned Deliveries -->
+        <div id="assigned" class="tab-pane fade show active">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Ready for Pickup</h6>
+                </div>
+                <div class="card-body">
+                    {% if assigned_deliveries %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Delivery Address</th>
+                                        <th>Items</th>
+                                        <th>Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for delivery in assigned_deliveries %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ delivery.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ delivery.user.first_name }} {{ delivery.user.last_name }}</td>
+                                        <td>
+                                            <small>
+                                                {% if delivery.delivery_address %}
+                                                    {{ delivery.delivery_address.street_address|truncatewords:3 }}
+                                                {% else %}
+                                                    <span class="text-muted">No address</span>
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">{{ delivery.items.count }}</span>
+                                        </td>
+                                        <td>{{ delivery.created_at|date:"H:i" }}</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-success">Pick Up</a>
+                                            <a href="#" class="btn btn-sm btn-secondary">Details</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No assigned deliveries</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- In Transit -->
+        <div id="transit" class="tab-pane fade">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="m-0 font-weight-bold">Currently in Transit</h6>
+                </div>
+                <div class="card-body">
+                    {% if in_transit %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Destination</th>
+                                        <th>Items</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for delivery in in_transit %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ delivery.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ delivery.user.first_name }} {{ delivery.user.last_name }}</td>
+                                        <td>
+                                            <small>
+                                                {% if delivery.delivery_address %}
+                                                    {{ delivery.delivery_address.street_address|truncatewords:3 }}
+                                                {% else %}
+                                                    <span class="text-muted">No address</span>
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">{{ delivery.items.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-spinner fa-spin"></i> In Transit
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-success">Complete</a>
+                                            <a href="#" class="btn btn-sm btn-secondary">Map</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No deliveries in transit</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Delivered -->
+        <div id="delivered" class="tab-pane fade">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 font-weight-bold">Delivered Today ({{ total_delivered }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if delivered_today %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Customer</th>
+                                        <th>Delivered To</th>
+                                        <th>Items</th>
+                                        <th>Delivered At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for delivery in delivered_today %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ delivery.id|truncatechars:8 }}</strong>
+                                        </td>
+                                        <td>{{ delivery.user.first_name }} {{ delivery.user.last_name }}</td>
+                                        <td>
+                                            <small>
+                                                {% if delivery.delivery_address %}
+                                                    {{ delivery.delivery_address.street_address|truncatewords:3 }}
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">{{ delivery.items.count }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-success">{{ delivery.updated_at|date:"H:i" }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No deliveries completed today</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+</style>
+{% endblock %}
