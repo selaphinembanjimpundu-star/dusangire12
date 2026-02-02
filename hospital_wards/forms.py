@@ -5,9 +5,10 @@ Handles forms for patient admission, discharge, transfers, and bulk operations
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from .models import (
     PatientAdmission, PatientDischarge, PatientTransfer,
-    WardBed, Ward, Patient, BulkOperation
+    WardBed, Ward, BulkOperation
 )
 import csv
 from io import StringIO
@@ -31,8 +32,8 @@ class PatientAdmissionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Only show available beds
         self.fields['bed'].queryset = WardBed.objects.filter(status='available')
-        # Show all patients (no current_bed filter)
-        self.fields['patient'].queryset = Patient.objects.all()
+        # Show all users who can be patients
+        self.fields['patient'].queryset = User.objects.all()
 
 
 class PatientDischargeForm(forms.ModelForm):

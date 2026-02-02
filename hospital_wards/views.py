@@ -22,7 +22,7 @@ from .models import (
     MealNutritionInfo, DeliveryScheduleSlot,
     PatientEducationCategory, PatientEducationContent, PatientEducationProgress,
     CaregiverNotification, PatientAdmission, PatientDischarge, PatientTransfer,
-    BulkOperation, PatientNotification, NotificationTemplate, Patient
+    BulkOperation, PatientNotification, NotificationTemplate
 )
 from .forms import (
     BulkPatientImportForm, BulkPatientAssignmentForm, BulkDischargeForm,

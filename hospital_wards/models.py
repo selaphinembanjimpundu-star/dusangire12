@@ -81,47 +81,6 @@ class WardBed(models.Model):
         self.save()
 
 
-class Patient(models.Model):
-    """Patient information and medical history"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='patient_profile')
-    date_of_birth = models.DateField(null=True, blank=True)
-    gender = models.CharField(
-        max_length=10,
-        choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')],
-        blank=True
-    )
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.TextField(blank=True)
-    emergency_contact = models.CharField(max_length=100, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, blank=True)
-    blood_group = models.CharField(
-        max_length=5,
-        choices=[('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'), 
-                 ('O+', 'O+'), ('O-', 'O-'), ('AB+', 'AB+'), ('AB-', 'AB-')],
-        blank=True
-    )
-    medical_history = models.TextField(blank=True, help_text="Previous medical conditions")
-    allergies = models.TextField(blank=True, help_text="Known allergies")
-    current_medications = models.TextField(blank=True)
-    insurance_provider = models.CharField(max_length=100, blank=True)
-    insurance_policy_number = models.CharField(max_length=100, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"{self.user.get_full_name() or self.user.username}"
-    
-    def get_age(self):
-        """Calculate patient age"""
-        if self.date_of_birth:
-            today = timezone.now().date()
-            return today.year - self.date_of_birth.year
-        return None
-
-
 class PatientAdmission(models.Model):
     """Track patient admission history"""
     ADMISSION_REASON_CHOICES = [
@@ -795,69 +754,9 @@ class NotificationTemplate(models.Model):
         return f"{self.name} ({self.get_notification_type_display()})"
 
 
-class Notification(models.Model):
-    """User notifications (alias for PatientNotification)"""
-    NOTIFICATION_TYPES = [
-        ('admission', 'Patient Admission'),
-        ('discharge', 'Patient Discharge'),
-        ('transfer', 'Patient Transfer'),
-        ('bed_status', 'Bed Status Changed'),
-        ('appointment', 'Appointment Reminder'),
-        ('medication', 'Medication Reminder'),
-        ('alert', 'Medical Alert'),
-    ]
-    
-    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    title = models.CharField(max_length=255)
-    message = models.TextField()
-    
-    # Related objects
-    patient = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='notifications_about'
-    )
-    admission = models.ForeignKey(
-        PatientAdmission,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='user_notifications'
-    )
-    
-    # Status
-    is_read = models.BooleanField(default=False)
-    read_at = models.DateTimeField(null=True, blank=True)
-    
-    # Delivery tracking
-    email_sent = models.BooleanField(default=False)
-    in_app = models.BooleanField(default=True)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['user', 'is_read', '-created_at']),
-            models.Index(fields=['notification_type', '-created_at']),
-        ]
-    
-    def __str__(self):
-        return f"{self.get_notification_type_display()} - {self.user.username}"
-    
-    def mark_as_read(self):
-        """Mark notification as read"""
-        self.is_read = True
-        self.read_at = timezone.now()
-        self.save()
-
-
 class NotificationPreferences(models.Model):
     """User notification preferences"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preferences')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='hospital_notification_preferences')
     
     # Channels
     email_enabled = models.BooleanField(default=True)
