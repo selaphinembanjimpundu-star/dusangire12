@@ -31,8 +31,8 @@ class PatientAdmissionForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Only show available beds
         self.fields['bed'].queryset = WardBed.objects.filter(status='available')
-        # Only show unassigned patients
-        self.fields['patient'].queryset = Patient.objects.filter(current_bed__isnull=True)
+        # Show all patients (no current_bed filter)
+        self.fields['patient'].queryset = Patient.objects.all()
 
 
 class PatientDischargeForm(forms.ModelForm):
@@ -40,11 +40,12 @@ class PatientDischargeForm(forms.ModelForm):
     
     class Meta:
         model = PatientDischarge
-        fields = ['discharge_status', 'discharge_notes', 'follow_up_required']
+        fields = ['discharge_status', 'discharge_notes', 'follow_up_instructions', 'return_visit_date']
         widgets = {
             'discharge_status': forms.Select(attrs={'class': 'form-control'}),
             'discharge_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'follow_up_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'follow_up_instructions': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Instructions for follow-up care'}),
+            'return_visit_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
 
@@ -53,17 +54,16 @@ class PatientTransferForm(forms.ModelForm):
     
     class Meta:
         model = PatientTransfer
-        fields = ['new_bed', 'transfer_reason', 'notes']
+        fields = ['to_bed', 'reason']
         widgets = {
-            'new_bed': forms.Select(attrs={'class': 'form-control'}),
-            'transfer_reason': forms.TextInput(attrs={'class': 'form-control'}),
-            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'to_bed': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Select destination bed'}),
+            'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Reason for transfer'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Only show available beds
-        self.fields['new_bed'].queryset = WardBed.objects.filter(status='available')
+        self.fields['to_bed'].queryset = WardBed.objects.filter(status='available')
 
 
 class BulkPatientImportForm(forms.Form):
