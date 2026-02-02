@@ -164,18 +164,33 @@
         </div>
     </div>
 
+    {% if has_restriction %}
+    <div class="alert alert-warning mb-4">
+        <h6 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Your Meal Plan Has Restrictions</h6>
+        <p class="mb-2">You are on a <strong>{{ medical_prescription.get_meal_type_display }}</strong> meal plan. Meals that don't match your prescription are marked with <span class="badge bg-danger">🚫 Not Allowed</span> and cannot be ordered.</p>
+        <p class="mb-0"><strong>Why?</strong> Your doctor prescribed this specific meal type to support your recovery. Ordering outside your plan may affect your health. If you need different meals, please consult your doctor.</p>
+    </div>
+    {% endif %}
+
     <!-- Menu Items Grid -->
     <div class="row g-3">
         {% for item in menu_items %}
         <div class="col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm" style="border-top: 3px solid #667eea; transition: transform 0.3s;">
+            <div class="card h-100 shadow-sm {% if has_restriction and not item.is_allowed_for_patient %}opacity-50{% endif %}" style="border-top: 3px solid {% if has_restriction and not item.is_allowed_for_patient %}#dc2626{% else %}#667eea{% endif %}; transition: transform 0.3s;">
                 {% if item.image %}
-                <img src="{{ item.image.url }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ item.name }}">
+                <img src="{{ item.image.url }}" class="card-img-top" style="height: 180px; object-fit: cover; {% if has_restriction and not item.is_allowed_for_patient %}opacity: 0.6;{% endif %}" alt="{{ item.name }}">
                 {% else %}
                 <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px; color: #999;">
                     <i class="bi bi-image" style="font-size: 3rem;"></i>
                 </div>
                 {% endif %}
+                
+                {% if has_restriction and not item.is_allowed_for_patient %}
+                <div style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; padding: 0.5rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: bold;">
+                    🚫 Not Allowed
+                </div>
+                {% endif %}
+                
                 <div class="card-body">
                     <h6 class="card-title mb-1">{{ item.name }}</h6>
                     <small class="text-muted d-block mb-2">{{ item.category.name }}</small>
@@ -207,6 +222,11 @@
                 <div class="card-footer bg-white border-top">
                     <div class="d-flex justify-content-between align-items-center">
                         <strong class="text-success">RWF {{ item.price }}</strong>
+                        {% if has_restriction and not item.is_allowed_for_patient %}
+                        <button type="button" class="btn btn-sm btn-danger" disabled title="This meal is not recommended for your meal plan" onclick="alert('This meal is not recommended for your {{ medical_prescription.get_meal_type_display }} meal plan. Please order meals that match your prescription.')">
+                            <i class="bi bi-lock"></i> Restricted
+                        </button>
+                        {% else %}
                         <form method="post" action="{% url 'orders:add_to_cart' item.id %}" style="display: inline;">
                             {% csrf_token %}
                             <input type="hidden" name="quantity" value="1">
@@ -214,6 +234,7 @@
                                 <i class="bi bi-cart-plus"></i> Add
                             </button>
                         </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -5,9 +5,10 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from decimal import Decimal
-from menu.models import MenuItem
+from menu.models import MenuItem, DietaryTag
 from delivery.models import DeliveryAddress, DeliveryZone
 from payments.models import Payment, PaymentMethod, PaymentStatus
+from patients.models import MedicalPrescription
 from .models import Cart, CartItem, Order, OrderItem, OrderStatus
 
 
@@ -15,6 +16,64 @@ def get_or_create_cart(user):
     """Get or create cart for user"""
     cart, created = Cart.objects.get_or_create(user=user)
     return cart
+
+
+def check_meal_allowed_for_patient(user, menu_item):
+    """
+    Check if a patient is allowed to order this meal based on their medical prescription.
+    
+    Returns: (allowed: bool, reason: str)
+    """
+    # If user doesn't have a profile or isn't authenticated, allow by default
+    if not user.is_authenticated:
+        return True, ""
+    
+    profile = getattr(user, 'profile', None)
+    if not profile or not hasattr(profile, 'health_profile'):
+        return True, ""
+    
+    health_profile = profile.health_profile
+    
+    # Get active medical prescription
+    medical_prescription = MedicalPrescription.objects.filter(
+        health_profile=health_profile,
+        is_active=True
+    ).order_by('-start_date').first()
+    
+    # If no prescription, allow any meal
+    if not medical_prescription:
+        return True, ""
+    
+    # Check if meal matches the prescribed meal type
+    meal_type_tags = {
+        'DIABETIC': 'Diabetic-Friendly',
+        'LOW_SODIUM': 'Low-Sodium',
+        'HIGH_PROTEIN': 'High-Protein',
+        'LOW_FAT': 'Low-Fat',
+        'VEGETARIAN': 'Vegetarian',
+        'GLUTEN_FREE': 'Gluten-Free',
+        'VEGAN': 'Vegan',
+    }
+    
+    # Get the dietary tag name for this prescription
+    prescribed_tag_name = meal_type_tags.get(medical_prescription.meal_type)
+    
+    if not prescribed_tag_name:
+        return True, ""
+    
+    # Check if meal has the prescribed dietary tag
+    prescribed_tag = DietaryTag.objects.filter(name=prescribed_tag_name).first()
+    
+    if prescribed_tag:
+        # Check if menu item has this tag
+        if menu_item.dietary_tags.filter(id=prescribed_tag.id).exists():
+            return True, ""
+        else:
+            # Meal doesn't match prescription
+            reason = f"This meal is not recommended for your {medical_prescription.get_meal_type_display()} meal plan. Your doctor recommends {medical_prescription.get_meal_type_display()} meals only."
+            return False, reason
+    
+    return True, ""
 
 
 @login_required
@@ -26,6 +85,19 @@ def add_to_cart(request, item_id):
         
         if quantity < 1:
             messages.error(request, 'Quantity must be at least 1')
+            return redirect('menu:menu_detail', item_id=item_id)
+        
+        # Check if patient is allowed to order this meal
+        allowed, reason = check_meal_allowed_for_patient(request.user, menu_item)
+        
+        if not allowed:
+            messages.error(request, f'Cannot order this meal: {reason}')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': reason,
+                    'error_type': 'dietary_restriction'
+                }, status=403)
             return redirect('menu:menu_detail', item_id=item_id)
         
         cart = get_or_create_cart(request.user)

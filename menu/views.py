@@ -184,7 +184,7 @@ def patient_meal_plan_guide(request):
     Shows:
     - Patient's current meal prescription (doctor's recommendations)
     - Meals that match their dietary needs
-    - Full menu to browse and order
+    - Full menu to browse and order (with restrictions)
     - Shopping cart status
     """
     user = request.user
@@ -193,6 +193,7 @@ def patient_meal_plan_guide(request):
     # Get patient's current medical prescription (meal plan)
     medical_prescription = None
     matching_meals = []
+    prescribed_tag = None
     
     if profile and hasattr(profile, 'health_profile'):
         health_profile = profile.health_profile
@@ -218,17 +219,24 @@ def patient_meal_plan_guide(request):
                 
                 tag_name = meal_type_tags.get(medical_prescription.meal_type)
                 if tag_name:
-                    tag = DietaryTag.objects.filter(name=tag_name).first()
-                    if tag:
+                    prescribed_tag = DietaryTag.objects.filter(name=tag_name).first()
+                    if prescribed_tag:
                         matching_meals = MenuItem.objects.filter(
                             is_available=True,
-                            dietary_tags=tag
+                            dietary_tags=prescribed_tag
                         ).select_related('category').prefetch_related('dietary_tags')[:6]
     
     # Get all available menu items
     menu_items = MenuItem.objects.filter(
         is_available=True
     ).select_related('category').prefetch_related('dietary_tags').order_by('category', 'name')
+    
+    # Mark meals as allowed/restricted for patient
+    for item in menu_items:
+        if medical_prescription and prescribed_tag:
+            item.is_allowed_for_patient = item.dietary_tags.filter(id=prescribed_tag.id).exists()
+        else:
+            item.is_allowed_for_patient = True
     
     # Get user's cart count
     cart_count = 0
@@ -245,6 +253,7 @@ def patient_meal_plan_guide(request):
         'matching_meals': matching_meals,
         'menu_items': menu_items,
         'cart_count': cart_count,
+        'has_restriction': medical_prescription is not None,
     }
     
     return render(request, 'menu/patient_menu_guide.html', context)
