@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Payment Selection{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Header -->
+            <div class="mb-5">
+                <h2 class="display-5 fw-bold text-dark">Checkout</h2>
+                <p class="text-muted">Select payment method to complete your order</p>
+            </div>
+
+            {% if pending_payments %}
+                <!-- Pending Payments List -->
+                <div class="row">
+                    {% for payment in pending_payments %}
+                    <div class="col-md-12 mb-4">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title mb-2">Order #{{ payment.order.order_number }}</h5>
+                                        <p class="text-muted mb-1">
+                                            <i class="fas fa-box"></i>
+                                            <strong>Items:</strong> {{ payment.order.items.count }}
+                                        </p>
+                                        <p class="text-muted mb-1">
+                                            <i class="fas fa-calendar"></i>
+                                            <strong>Date:</strong> {{ payment.order.created_at|date:"M d, Y" }}
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <strong>Delivery:</strong> {{ payment.order.delivery_address }}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="d-flex flex-column align-items-end">
+                                            <h4 class="text-success fw-bold mb-3">
+                                                FRW {{ payment.amount|floatformat:0|default:"0" }}
+                                            </h4>
+                                            <a href="{% url 'payments:initiate_payment' payment.id %}" 
+                                               class="btn btn-primary btn-lg">
+                                                <i class="fas fa-credit-card"></i>
+                                                Pay Now
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Pending Payments -->
+                <div class="alert alert-info text-center py-5" role="alert">
+                    <i class="fas fa-info-circle fa-2x mb-3" style="color: #0c63e4;"></i>
+                    <h5 class="mt-3">No Pending Payments</h5>
+                    <p class="text-muted mb-0">You don't have any pending orders. Start shopping now!</p>
+                    <a href="{% url 'orders:order_list' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-shopping-cart"></i>
+                        View Products
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Payment Methods Info -->
+            <div class="mt-5 pt-5">
+                <div class="divider my-4"></div>
+                <h5 class="mb-4">Available Payment Methods</h5>
+                <div class="row">
+                    {% for code, label in payment_methods %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card text-center border-0 bg-light">
+                            <div class="card-body p-4">
+                                {% if code == 'COD' %}
+                                    <i class="fas fa-money-check text-success fa-2x mb-2"></i>
+                                    <h6 class="card-title">{{ label }}</h6>
+                                    <p class="card-text small text-muted">Pay at delivery</p>
+                                {% elif code == 'MTN_MM' %}
+                                    <i class="fas fa-mobile-alt text-warning fa-2x mb-2"></i>
+                                    <h6 class="card-title">{{ label }}</h6>
+                                    <p class="card-text small text-muted">Quick mobile payment</p>
+                                {% elif code == 'AIR_MM' %}
+                                    <i class="fas fa-phone text-info fa-2x mb-2"></i>
+                                    <h6 class="card-title">{{ label }}</h6>
+                                    <p class="card-text small text-muted">Instant mobile money</p>
+                                {% elif code == 'BNK_TRF' %}
+                                    <i class="fas fa-university text-primary fa-2x mb-2"></i>
+                                    <h6 class="card-title">{{ label }}</h6>
+                                    <p class="card-text small text-muted">Bank transfer</p>
+                                {% elif code == 'CARD' %}
+                                    <i class="fas fa-credit-card text-danger fa-2x mb-2"></i>
+                                    <h6 class="card-title">{{ label }}</h6>
+                                    <p class="card-text small text-muted">Debit/Credit card</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="mt-5 text-center">
+                <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Orders
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .divider {
+        border-top: 2px solid #e9ecef;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+{% endblock %}

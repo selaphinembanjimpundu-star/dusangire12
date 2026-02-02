@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Airtel Money - Payment{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <a href="{% url 'payments:checkout' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
+                <div class="text-center">
+                    <i class="fas fa-phone text-primary" style="font-size: 3rem;"></i>
+                    <h2 class="display-5 fw-bold text-dark mt-3">Airtel Money</h2>
+                    <p class="text-muted lead">Quick mobile payment via Airtel Money</p>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form method="post" id="airtelPaymentForm">
+                {% csrf_token %}
+                
+                <!-- Order Summary -->
+                <div class="card shadow-sm border-0 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <h6 class="text-muted mb-3">Payment Amount</h6>
+                        <h3 class="text-primary fw-bold">FRW {{ payment.amount|floatformat:0|default:"0" }}</h3>
+                    </div>
+                </div>
+
+                <!-- Phone Number Input -->
+                <div class="mb-4">
+                    <label for="phoneNumber" class="form-label fw-bold">
+                        <i class="fas fa-phone"></i>
+                        Enter Your Airtel Phone Number
+                    </label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-phone text-primary"></i>
+                        </span>
+                        <input 
+                            type="tel" 
+                            class="form-control border-start-0 py-3" 
+                            id="phoneNumber" 
+                            name="phone_number" 
+                            placeholder="0730123456 or +250730123456"
+                            pattern="(\+?250|0)?[0-9]{9}$"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    <small class="form-text text-muted">
+                        Enter your Airtel mobile number without spaces or dashes
+                    </small>
+                </div>
+
+                <!-- Instructions -->
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle"></i>
+                        How It Works
+                    </h6>
+                    <ol class="mb-0 small">
+                        <li>Enter your Airtel mobile number above</li>
+                        <li>Click "Pay Now" to initiate the transaction</li>
+                        <li>You will receive a payment prompt on your phone</li>
+                        <li>Follow the on-screen instructions to confirm</li>
+                        <li>Your payment will be processed instantly</li>
+                    </ol>
+                </div>
+
+                <!-- Security Info -->
+                <div class="alert alert-warning" role="alert">
+                    <i class="fas fa-shield-alt"></i>
+                    <strong>Security Tips:</strong>
+                    <ul class="mb-0 mt-2 small">
+                        <li>Airtel will send you a secure payment code</li>
+                        <li>We will never ask you to share this code</li>
+                        <li>Always verify the payment details on your phone</li>
+                        <li>Only use your registered Airtel account</li>
+                    </ul>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-5">
+                    <a href="{% url 'payments:initiate_payment' payment.id %}" class="btn btn-outline-secondary btn-lg flex-grow-1">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                        <i class="fas fa-check"></i>
+                        Pay Now
+                    </button>
+                </div>
+            </form>
+
+            <!-- Need Help? -->
+            <div class="mt-5 pt-4 border-top">
+                <p class="text-muted text-center small">
+                    <i class="fas fa-question-circle"></i>
+                    Having trouble? <a href="#" data-bs-toggle="modal" data-bs-target="#helpModal">Get help</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Airtel Money Help</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="mb-3">Common Issues:</h6>
+                <div class="mb-3">
+                    <strong>Not receiving payment prompt?</strong>
+                    <p class="text-muted small">Verify your phone number is correct and your Airtel account is active. Wait a moment and try again.</p>
+                </div>
+                <div class="mb-3">
+                    <strong>Payment failed?</strong>
+                    <p class="text-muted small">Ensure you have sufficient balance in your Airtel Money account. Contact Airtel customer service if needed.</p>
+                </div>
+                <div class="mb-3">
+                    <strong>Wrong amount charged?</strong>
+                    <p class="text-muted small">Contact our support team with your transaction details and we'll investigate immediately.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('airtelPaymentForm').addEventListener('submit', function(e) {
+        const phoneInput = document.getElementById('phoneNumber');
+        let phone = phoneInput.value.trim();
+        
+        // Normalize phone number
+        phone = phone.replace(/\s+/g, '');
+        if (phone.startsWith('+250')) {
+            phone = phone.substring(1);
+        } else if (phone.startsWith('250')) {
+            phone = phone;
+        } else if (phone.startsWith('0')) {
+            phone = '25' + phone;
+        } else {
+            phone = '250' + phone;
+        }
+        
+        phoneInput.value = phone;
+        
+        if (!phone.match(/^250[0-9]{9}$/)) {
+            e.preventDefault();
+            alert('Please enter a valid Airtel phone number');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

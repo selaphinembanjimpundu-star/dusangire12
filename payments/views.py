@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
+from django.db.models import Q
 import logging
 from .models import Payment, PaymentMethod, PaymentStatus
 from .gateways import PaymentGatewayService, PaymentGatewayError
@@ -179,3 +180,370 @@ def payment_callback(request):
     
     messages.error(request, 'Payment not found')
     return redirect('payments:payment_history')
+
+
+# ============================================================================
+# SELF-SERVICE PAYMENT PROCESSING VIEWS
+# Allows users to process payments themselves through multiple payment methods
+# ============================================================================
+
+@login_required
+def checkout(request):
+    """
+    Self-service checkout page where users can select payment method
+    and process payment for pending orders
+    """
+    # Get pending payments for the user
+    pending_payments = Payment.objects.filter(
+        order__user=request.user,
+        status=PaymentStatus.PENDING
+    ).select_related('order').order_by('-created_at')
+    
+    # Get available payment methods
+    payment_methods = PaymentMethod.choices
+    
+    context = {
+        'pending_payments': pending_payments,
+        'payment_methods': payment_methods,
+    }
+    return render(request, 'payments/checkout.html', context)
+
+
+@login_required
+def initiate_payment(request, payment_id):
+    """
+    User initiates payment processing for a specific payment
+    Allows selection of payment method
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    order = payment.order
+    
+    # Only allow payment initiation if payment is pending
+    if payment.status != PaymentStatus.PENDING:
+        messages.warning(request, 'This payment has already been processed.')
+        return redirect('payments:payment_detail', payment_id=payment.id)
+    
+    if request.method == 'POST':
+        selected_method = request.POST.get('payment_method')
+        
+        if selected_method not in dict(PaymentMethod.choices):
+            messages.error(request, 'Invalid payment method selected.')
+            return redirect('payments:initiate_payment', payment_id=payment.id)
+        
+        # Save selected payment method
+        payment.payment_method = selected_method
+        payment.status = PaymentStatus.PROCESSING
+        payment.save()
+        
+        # Redirect to appropriate payment processor
+        if selected_method == PaymentMethod.CASH_ON_DELIVERY:
+            return redirect('payments:process_cash_on_delivery', payment_id=payment.id)
+        elif selected_method == PaymentMethod.MTN_MOBILE_MONEY:
+            return redirect('payments:process_mtn_money', payment_id=payment.id)
+        elif selected_method == PaymentMethod.AIRTEL_MONEY:
+            return redirect('payments:process_airtel_money', payment_id=payment.id)
+        elif selected_method == PaymentMethod.BANK_TRANSFER:
+            return redirect('payments:process_bank_transfer', payment_id=payment.id)
+        elif selected_method == PaymentMethod.CARD:
+            return redirect('payments:process_card_payment', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': order,
+        'payment_methods': PaymentMethod.choices,
+    }
+    return render(request, 'payments/initiate_payment.html', context)
+
+
+@login_required
+def process_cash_on_delivery(request, payment_id):
+    """
+    Process cash on delivery payment
+    No transaction needed, just confirm delivery method
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        # Mark payment as pending cash on delivery
+        payment.payment_method = PaymentMethod.CASH_ON_DELIVERY
+        payment.status = PaymentStatus.PENDING
+        payment.save()
+        
+        messages.success(request, 'Order confirmed for cash on delivery. Our staff will collect payment upon delivery.')
+        return redirect('payments:payment_confirmation', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+    }
+    return render(request, 'payments/payment_methods/cash_on_delivery.html', context)
+
+
+@login_required
+def process_mtn_money(request, payment_id):
+    """
+    Process MTN Mobile Money payment
+    User enters phone number and transaction is initiated
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        
+        if not phone_number:
+            messages.error(request, 'Phone number is required.')
+            return redirect('payments:process_mtn_money', payment_id=payment.id)
+        
+        try:
+            # Initiate payment with MTN Mobile Money gateway
+            gateway_result = PaymentGatewayService.initiate_mtn_payment(
+                payment=payment,
+                phone_number=phone_number
+            )
+            
+            if gateway_result.get('success'):
+                payment.transaction_id = gateway_result.get('transaction_id')
+                payment.status = PaymentStatus.PROCESSING
+                payment.save()
+                
+                messages.info(
+                    request,
+                    f'Payment initiated. Please enter your MTN PIN on your phone to complete the transaction.'
+                )
+                return redirect('payments:payment_awaiting_confirmation', payment_id=payment.id)
+            else:
+                messages.error(
+                    request,
+                    gateway_result.get('error', 'Failed to initiate MTN payment.')
+                )
+                return redirect('payments:process_mtn_money', payment_id=payment.id)
+                
+        except PaymentGatewayError as e:
+            logger.error(f"MTN payment initiation error: {str(e)}")
+            messages.error(request, f'Payment error: {str(e)}')
+            return redirect('payments:process_mtn_money', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+    }
+    return render(request, 'payments/payment_methods/mtn_money.html', context)
+
+
+@login_required
+def process_airtel_money(request, payment_id):
+    """
+    Process Airtel Money payment
+    User enters phone number and transaction is initiated
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        
+        if not phone_number:
+            messages.error(request, 'Phone number is required.')
+            return redirect('payments:process_airtel_money', payment_id=payment.id)
+        
+        try:
+            # Initiate payment with Airtel Money gateway
+            gateway_result = PaymentGatewayService.initiate_airtel_payment(
+                payment=payment,
+                phone_number=phone_number
+            )
+            
+            if gateway_result.get('success'):
+                payment.transaction_id = gateway_result.get('transaction_id')
+                payment.status = PaymentStatus.PROCESSING
+                payment.save()
+                
+                messages.info(
+                    request,
+                    'Payment initiated. Please check your Airtel account for a prompt and complete the transaction.'
+                )
+                return redirect('payments:payment_awaiting_confirmation', payment_id=payment.id)
+            else:
+                messages.error(
+                    request,
+                    gateway_result.get('error', 'Failed to initiate Airtel payment.')
+                )
+                return redirect('payments:process_airtel_money', payment_id=payment.id)
+                
+        except PaymentGatewayError as e:
+            logger.error(f"Airtel payment initiation error: {str(e)}")
+            messages.error(request, f'Payment error: {str(e)}')
+            return redirect('payments:process_airtel_money', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+    }
+    return render(request, 'payments/payment_methods/airtel_money.html', context)
+
+
+@login_required
+def process_bank_transfer(request, payment_id):
+    """
+    Process bank transfer payment
+    Shows bank account details and awaits payment confirmation
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        transaction_ref = request.POST.get('transaction_ref', '').strip()
+        
+        if not transaction_ref:
+            messages.error(request, 'Transaction reference is required.')
+            return redirect('payments:process_bank_transfer', payment_id=payment.id)
+        
+        # Save bank transfer reference
+        payment.transaction_id = transaction_ref
+        payment.status = PaymentStatus.PROCESSING
+        payment.save()
+        
+        messages.info(
+            request,
+            'Bank transfer payment recorded. We will verify your payment within 24 hours.'
+        )
+        return redirect('payments:payment_awaiting_confirmation', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+        # Bank details would be loaded from settings
+    }
+    return render(request, 'payments/payment_methods/bank_transfer.html', context)
+
+
+@login_required
+def process_card_payment(request, payment_id):
+    """
+    Process card payment (credit/debit card)
+    Integrates with Flutterwave or other payment gateway
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        try:
+            # Initiate card payment through gateway
+            gateway_result = PaymentGatewayService.initiate_card_payment(payment=payment)
+            
+            if gateway_result.get('success'):
+                payment.transaction_id = gateway_result.get('transaction_id')
+                payment.status = PaymentStatus.PROCESSING
+                payment.save()
+                
+                # Redirect to gateway payment page
+                return redirect(gateway_result.get('payment_url'))
+            else:
+                messages.error(
+                    request,
+                    gateway_result.get('error', 'Failed to initiate card payment.')
+                )
+                return redirect('payments:process_card_payment', payment_id=payment.id)
+                
+        except PaymentGatewayError as e:
+            logger.error(f"Card payment initiation error: {str(e)}")
+            messages.error(request, f'Payment error: {str(e)}')
+            return redirect('payments:process_card_payment', payment_id=payment.id)
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+    }
+    return render(request, 'payments/payment_methods/card_payment.html', context)
+
+
+@login_required
+def payment_awaiting_confirmation(request, payment_id):
+    """
+    Page shown while awaiting payment confirmation
+    Allows user to check payment status or cancel
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if request.method == 'POST':
+        if 'check_status' in request.POST:
+            # Check payment status
+            try:
+                result = PaymentGatewayService.verify_payment(payment)
+                if result.get('status') == 'completed':
+                    payment.status = PaymentStatus.COMPLETED
+                    payment.save()
+                    messages.success(request, 'Payment confirmed successfully!')
+                    return redirect('payments:payment_detail', payment_id=payment.id)
+                else:
+                    messages.info(request, 'Payment status is still being verified. Please check again shortly.')
+            except Exception as e:
+                logger.error(f"Status check error: {str(e)}")
+                messages.warning(request, 'Could not verify payment status. Please try again.')
+        
+        elif 'cancel' in request.POST:
+            # Cancel payment
+            payment.status = PaymentStatus.CANCELLED
+            payment.save()
+            messages.info(request, 'Payment cancelled. You can try again later.')
+            return redirect('payments:checkout')
+    
+    context = {
+        'payment': payment,
+        'order': payment.order,
+    }
+    return render(request, 'payments/payment_awaiting_confirmation.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def retry_payment(request, payment_id):
+    """
+    Retry payment for a failed transaction
+    User can select a different payment method
+    """
+    payment = get_object_or_404(Payment, id=payment_id, order__user=request.user)
+    
+    if payment.status not in [PaymentStatus.FAILED, PaymentStatus.CANCELLED]:
+        messages.warning(request, 'This payment cannot be retried.')
+        return redirect('payments:payment_detail', payment_id=payment.id)
+    
+    # Reset payment status and clear transaction ID
+    payment.status = PaymentStatus.PENDING
+    payment.transaction_id = ''
+    payment.payment_method = ''
+    payment.save()
+    
+    messages.info(request, 'Payment reset. Please select a payment method and try again.')
+    return redirect('payments:initiate_payment', payment_id=payment.id)
+
+
+@login_required
+def payment_methods_list(request):
+    """
+    Display all available payment methods for the user
+    """
+    payment_methods = PaymentMethod.choices
+    
+    # Check which payment methods are available (based on app configuration)
+    available_methods = []
+    for code, label in payment_methods:
+        available_methods.append({
+            'code': code,
+            'label': label,
+            'description': get_payment_method_description(code)
+        })
+    
+    context = {
+        'available_methods': available_methods,
+    }
+    return render(request, 'payments/payment_methods_list.html', context)
+
+
+def get_payment_method_description(method_code):
+    """Get description for a payment method"""
+    descriptions = {
+        PaymentMethod.CASH_ON_DELIVERY: 'Pay when the order is delivered to you',
+        PaymentMethod.MTN_MOBILE_MONEY: 'Pay using your MTN Mobile Money account',
+        PaymentMethod.AIRTEL_MONEY: 'Pay using your Airtel Money account',
+        PaymentMethod.BANK_TRANSFER: 'Transfer funds to our bank account',
+        PaymentMethod.CARD: 'Pay using your credit or debit card',
+    }
+    return descriptions.get(method_code, 'Payment method')

@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Processing - Please Wait{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="mb-5 text-center">
+                <div class="spinner-border text-primary mb-4" role="status" style="width: 4rem; height: 4rem;">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <h2 class="display-5 fw-bold text-dark">Payment Processing</h2>
+                <p class="text-muted lead">Please wait while we confirm your payment</p>
+            </div>
+
+            <!-- Payment Details -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Payment Details</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Order Number</p>
+                            <h6 class="fw-bold">{{ order.order_number }}</h6>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <p class="text-muted mb-1">Payment Amount</p>
+                            <h6 class="fw-bold text-success">FRW {{ payment.amount|floatformat:0|default:"0" }}</h6>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Payment Method</p>
+                            <h6 class="fw-bold">
+                                {% if payment.payment_method == 'MTN_MM' %}
+                                    <i class="fas fa-mobile-alt text-warning"></i> MTN Mobile Money
+                                {% elif payment.payment_method == 'AIR_MM' %}
+                                    <i class="fas fa-phone text-primary"></i> Airtel Money
+                                {% elif payment.payment_method == 'BNK_TRF' %}
+                                    <i class="fas fa-university text-primary"></i> Bank Transfer
+                                {% elif payment.payment_method == 'CARD' %}
+                                    <i class="fas fa-credit-card text-danger"></i> Card Payment
+                                {% else %}
+                                    <i class="fas fa-hourglass-half"></i> Pending
+                                {% endif %}
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-muted mb-1">Transaction ID</p>
+                            <h6 class="fw-bold">{{ payment.transaction_id|default:"Processing..." }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Payment Status</h5>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item mb-4 completed">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-success rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Payment Initiated</h6>
+                                    <p class="text-muted small mb-0">{{ payment.created_at|date:"M d, Y H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item mb-4 processing">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-warning rounded-circle me-3 pulse" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Processing Payment</h6>
+                                    <p class="text-muted small mb-0">Verifying transaction with payment provider...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item pending">
+                            <div class="d-flex align-items-start">
+                                <div class="badge bg-secondary rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1">Payment Confirmed</h6>
+                                    <p class="text-muted small mb-0">Waiting for confirmation...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Based on Payment Method -->
+            <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading">
+                    <i class="fas fa-info-circle"></i>
+                    What to Do Now
+                </h6>
+                {% if payment.payment_method == 'MTN_MM' or payment.payment_method == 'AIR_MM' %}
+                    <p class="mb-2">
+                        <strong>Check your phone:</strong> You should receive a payment prompt shortly. 
+                        Follow the on-screen instructions to confirm the payment.
+                    </p>
+                    <p class="mb-0">
+                        <strong>Important:</strong> Do not close this page until payment is confirmed.
+                    </p>
+                {% elif payment.payment_method == 'BNK_TRF' %}
+                    <p class="mb-2">
+                        <strong>Bank Transfer:</strong> We've received your transfer reference and are verifying the payment with your bank.
+                    </p>
+                    <p class="mb-0">
+                        <strong>Timeline:</strong> Verification usually completes within 24 hours.
+                    </p>
+                {% elif payment.payment_method == 'CARD' %}
+                    <p class="mb-2">
+                        <strong>Card Payment:</strong> Your payment is being processed through the secure gateway.
+                    </p>
+                    <p class="mb-0">
+                        <strong>Note:</strong> You should receive an SMS and email confirmation shortly.
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <form method="post" class="mb-3">
+                {% csrf_token %}
+                <button type="submit" name="check_status" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-sync-alt"></i>
+                    Check Payment Status
+                </button>
+            </form>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="cancel" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="fas fa-times"></i>
+                    Cancel Payment
+                </button>
+            </form>
+
+            <!-- FAQ Section -->
+            <div class="mt-5 pt-4 border-top">
+                <h6 class="fw-bold mb-3">Frequently Asked Questions</h6>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="false" aria-controls="faq1">
+                                How long does payment verification take?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p class="mb-0">
+                                    Most mobile money payments are confirmed instantly. Bank transfers may take up to 24 hours. 
+                                    Card payments are usually confirmed within minutes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                                What if payment fails?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p class="mb-0">
+                                    If payment fails, you'll be notified and can retry with the same or different payment method. 
+                                    No amount will be deducted if payment fails.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                                Can I cancel the payment?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p class="mb-0">
+                                    Yes, you can cancel the payment by clicking the "Cancel Payment" button below. 
+                                    This will stop the verification process and return you to checkout.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .pulse {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .timeline {
+        position: relative;
+    }
+    
+    .timeline-item {
+        padding-bottom: 20px;
+        border-left: 3px solid #e9ecef;
+        padding-left: 20px;
+        margin-left: 10px;
+    }
+    
+    .timeline-item.completed {
+        border-left-color: #198754;
+    }
+    
+    .timeline-item.processing {
+        border-left-color: #ffc107;
+    }
+</style>
+
+<!-- Auto-refresh status every 5 seconds -->
+<script>
+    setTimeout(function() {
+        // Check if payment status has changed
+        const statusCheckForm = document.querySelector('button[name="check_status"]').form;
+        if (statusCheckForm) {
+            // Uncomment to enable auto-refresh
+            // statusCheckForm.submit();
+        }
+    }, 5000);
+</script>
+{% endblock %}

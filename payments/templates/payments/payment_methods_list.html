@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Available Payment Methods{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Header -->
+            <div class="mb-5">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
+                <h2 class="display-5 fw-bold text-dark">Payment Methods</h2>
+                <p class="text-muted lead">Choose the most convenient way to pay for your orders</p>
+            </div>
+
+            <!-- Payment Methods Grid -->
+            <div class="row">
+                {% for method in available_methods %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body p-4">
+                            {% if method.code == 'COD' %}
+                                <div class="mb-3">
+                                    <i class="fas fa-money-check text-success" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ method.label }}</h5>
+                                <p class="card-text text-muted mb-3">
+                                    {{ method.description }}
+                                </p>
+                                <h6 class="mb-3">Benefits:</h6>
+                                <ul class="small mb-0">
+                                    <li>No advance payment required</li>
+                                    <li>Payment at your convenience</li>
+                                    <li>Flexible payment timing</li>
+                                    <li>Verified delivery confirmation</li>
+                                </ul>
+                            {% elif method.code == 'MTN_MM' %}
+                                <div class="mb-3">
+                                    <i class="fas fa-mobile-alt text-warning" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ method.label }}</h5>
+                                <p class="card-text text-muted mb-3">
+                                    {{ method.description }}
+                                </p>
+                                <h6 class="mb-3">Benefits:</h6>
+                                <ul class="small mb-0">
+                                    <li>Instant payment processing</li>
+                                    <li>Low transaction fees</li>
+                                    <li>Available 24/7</li>
+                                    <li>Immediate confirmation</li>
+                                </ul>
+                            {% elif method.code == 'AIR_MM' %}
+                                <div class="mb-3">
+                                    <i class="fas fa-phone text-primary" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ method.label }}</h5>
+                                <p class="card-text text-muted mb-3">
+                                    {{ method.description }}
+                                </p>
+                                <h6 class="mb-3">Benefits:</h6>
+                                <ul class="small mb-0">
+                                    <li>Quick mobile money transfer</li>
+                                    <li>Competitive rates</li>
+                                    <li>Real-time confirmation</li>
+                                    <li>Easy to use</li>
+                                </ul>
+                            {% elif method.code == 'BNK_TRF' %}
+                                <div class="mb-3">
+                                    <i class="fas fa-university text-primary" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ method.label }}</h5>
+                                <p class="card-text text-muted mb-3">
+                                    {{ method.description }}
+                                </p>
+                                <h6 class="mb-3">Benefits:</h6>
+                                <ul class="small mb-0">
+                                    <li>Direct bank account transfer</li>
+                                    <li>Receipt available</li>
+                                    <li>Officially recorded transaction</li>
+                                    <li>Full audit trail</li>
+                                </ul>
+                            {% elif method.code == 'CARD' %}
+                                <div class="mb-3">
+                                    <i class="fas fa-credit-card text-danger" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ method.label }}</h5>
+                                <p class="card-text text-muted mb-3">
+                                    {{ method.description }}
+                                </p>
+                                <h6 class="mb-3">Benefits:</h6>
+                                <ul class="small mb-0">
+                                    <li>Secure encrypted payment</li>
+                                    <li>Credit card rewards</li>
+                                    <li>Instant confirmation</li>
+                                    <li>Buyer protection</li>
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="mt-5 pt-5">
+                <h4 class="fw-bold mb-4">Payment Methods Comparison</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Payment Method</th>
+                                <th>Processing Time</th>
+                                <th>Fees</th>
+                                <th>Availability</th>
+                                <th>Security Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-money-check text-success"></i> Cash on Delivery
+                                </td>
+                                <td>At Delivery</td>
+                                <td>Free</td>
+                                <td>When delivering</td>
+                                <td>
+                                    <span class="badge bg-warning">Medium</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-mobile-alt text-warning"></i> MTN Mobile Money
+                                </td>
+                                <td>Instant</td>
+                                <td>Low</td>
+                                <td>24/7</td>
+                                <td>
+                                    <span class="badge bg-success">High</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-phone text-primary"></i> Airtel Money
+                                </td>
+                                <td>Instant</td>
+                                <td>Low</td>
+                                <td>24/7</td>
+                                <td>
+                                    <span class="badge bg-success">High</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-university text-primary"></i> Bank Transfer
+                                </td>
+                                <td>1-24 hours</td>
+                                <td>Variable</td>
+                                <td>Bank hours</td>
+                                <td>
+                                    <span class="badge bg-success">Very High</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-credit-card text-danger"></i> Card Payment
+                                </td>
+                                <td>Instant</td>
+                                <td>Variable</td>
+                                <td>24/7</td>
+                                <td>
+                                    <span class="badge bg-success">Very High</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Security & Privacy -->
+            <div class="row mt-5 pt-5">
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <i class="fas fa-lock text-success" style="font-size: 2.5rem;"></i>
+                        <h6 class="fw-bold mt-3">Encrypted & Secure</h6>
+                        <p class="text-muted small">All payments are encrypted with industry-standard security.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt text-success" style="font-size: 2.5rem;"></i>
+                        <h6 class="fw-bold mt-3">Data Protection</h6>
+                        <p class="text-muted small">Your personal information is protected and never shared.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-success" style="font-size: 2.5rem;"></i>
+                        <h6 class="fw-bold mt-3">Verified Providers</h6>
+                        <p class="text-muted small">All payment providers are certified and regulated.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <div class="text-center mt-5 pt-5">
+                <a href="{% url 'payments:checkout' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-cart"></i>
+                    Start Shopping & Checkout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

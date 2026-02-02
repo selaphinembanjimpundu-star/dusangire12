@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Card Payment - Secure Payment{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <a href="{% url 'payments:checkout' %}" class="btn btn-outline-secondary btn-sm mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
+                <div class="text-center">
+                    <i class="fas fa-credit-card text-danger" style="font-size: 3rem;"></i>
+                    <h2 class="display-5 fw-bold text-dark mt-3">Card Payment</h2>
+                    <p class="text-muted lead">Secure debit or credit card payment</p>
+                </div>
+            </div>
+
+            <!-- Payment Form -->
+            <form method="post" id="cardPaymentForm">
+                {% csrf_token %}
+                
+                <!-- Order Summary -->
+                <div class="card shadow-sm border-0 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <h6 class="text-muted mb-3">Payment Amount</h6>
+                        <h3 class="text-danger fw-bold">FRW {{ payment.amount|floatformat:0|default:"0" }}</h3>
+                    </div>
+                </div>
+
+                <!-- Payment Processing Info -->
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle"></i>
+                        Secure Payment Processing
+                    </h6>
+                    <p class="mb-0 small">
+                        Your payment will be processed securely through our trusted payment gateway. 
+                        You will be redirected to complete the payment. Your card details are encrypted and secure.
+                    </p>
+                </div>
+
+                <!-- Accepted Cards -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Accepted Cards</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <span class="badge bg-light text-dark">
+                            <i class="fab fa-cc-visa"></i> Visa
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fab fa-cc-mastercard"></i> Mastercard
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fab fa-cc-amex"></i> American Express
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-credit-card"></i> RwandaCard
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Instructions -->
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle"></i>
+                        What Happens Next
+                    </h6>
+                    <ol class="mb-0 small">
+                        <li>Click "Pay Now" to proceed to payment</li>
+                        <li>You will be redirected to our secure payment gateway</li>
+                        <li>Enter your card details (card will never be stored)</li>
+                        <li>Complete the payment authentication</li>
+                        <li>You will receive confirmation immediately</li>
+                    </ol>
+                </div>
+
+                <!-- Security Features -->
+                <div class="card shadow-sm border-0 mb-4 bg-light">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-shield-alt text-success"></i>
+                            Security Features
+                        </h6>
+                        <ul class="mb-0 small">
+                            <li><i class="fas fa-check text-success"></i> 256-bit SSL encryption</li>
+                            <li><i class="fas fa-check text-success"></i> PCI-DSS compliant</li>
+                            <li><i class="fas fa-check text-success"></i> 3D Secure authentication</li>
+                            <li><i class="fas fa-check text-success"></i> Card details never stored</li>
+                            <li><i class="fas fa-check text-success"></i> Fraud detection enabled</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Terms Agreement -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                    <label class="form-check-label small" for="agreeTerms">
+                        I agree to the payment terms and understand that my payment will be processed immediately
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-5">
+                    <a href="{% url 'payments:initiate_payment' payment.id %}" class="btn btn-outline-secondary btn-lg flex-grow-1">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger btn-lg flex-grow-1">
+                        <i class="fas fa-lock"></i>
+                        Proceed to Secure Payment
+                    </button>
+                </div>
+            </form>
+
+            <!-- Trust Indicators -->
+            <div class="mt-5 pt-4 border-top">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <i class="fas fa-lock text-success" style="font-size: 2rem;"></i>
+                        <p class="small mt-2">Secure Payment</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <i class="fas fa-shield-alt text-success" style="font-size: 2rem;"></i>
+                        <p class="small mt-2">Data Protected</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
+                        <p class="small mt-2">Verified Safe</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('cardPaymentForm').addEventListener('submit', function(e) {
+        if (!document.getElementById('agreeTerms').checked) {
+            e.preventDefault();
+            alert('Please agree to the payment terms to continue');
+            return false;
+        }
+    });
+</script>
+{% endblock %}
