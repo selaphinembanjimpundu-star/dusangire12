@@ -9,8 +9,6 @@ from django.contrib.auth.decorators import login_required
 from .models import Category, MenuItem, DietaryTag
 from .forms import MenuFilterForm
 from .utils import get_recommendations, get_popular_items, get_highly_rated_items
-from patients.models import MedicalPrescription
-from orders.models import Cart, CartItem
 
 
 def menu_list(request):
@@ -178,93 +176,52 @@ def menu_detail(request, item_id):
 
 
 @login_required
-def patient_meal_plan_guide(request):
-    """
-    Patient-friendly view to browse menu and understand meal plan recommendations
-    Shows:
-    - Patient's current meal prescription (doctor's recommendations)
-    - Meals that match their dietary needs
-    - Full menu to browse and order (with restrictions)
-    - Shopping cart status
-    """
-    user = request.user
-    profile = getattr(user, 'profile', None)
-    
-    # Get patient's current medical prescription (meal plan)
-    medical_prescription = None
-    matching_meals = []
-    prescribed_tag = None
-    
-    if profile and hasattr(profile, 'health_profile'):
-        health_profile = profile.health_profile
-        # Get the most recent active prescription
-        medical_prescription = MedicalPrescription.objects.filter(
-            health_profile=health_profile,
-            is_active=True
-        ).order_by('-start_date').first()
-        
-        if medical_prescription:
-            # Find meals that match the prescribed meal type
-            if hasattr(medical_prescription, 'meal_type'):
-                # Create a mapping of meal types to dietary tags
-                meal_type_tags = {
-                    'DIABETIC': 'Diabetic-Friendly',
-                    'LOW_SODIUM': 'Low-Sodium',
-                    'HIGH_PROTEIN': 'High-Protein',
-                    'LOW_FAT': 'Low-Fat',
-                    'VEGETARIAN': 'Vegetarian',
-                    'GLUTEN_FREE': 'Gluten-Free',
-                    'VEGAN': 'Vegan',
-                }
-                
-                tag_name = meal_type_tags.get(medical_prescription.meal_type)
-                if tag_name:
-                    prescribed_tag = DietaryTag.objects.filter(name=tag_name).first()
-                    if prescribed_tag:
-                        matching_meals = MenuItem.objects.filter(
-                            is_available=True,
-                            dietary_tags=prescribed_tag
-                        ).select_related('category').prefetch_related('dietary_tags')[:6]
-    
-    # Get all available menu items
-    menu_items = MenuItem.objects.filter(
+def menu_detail(request, item_id):
+    """Display detailed view of a menu item"""
+    menu_item = get_object_or_404(
+        MenuItem.objects.select_related('category').prefetch_related('dietary_tags'),
+        id=item_id,
         is_available=True
-    ).select_related('category').prefetch_related('dietary_tags').order_by('category', 'name')
+    )
     
-    # Mark meals as allowed/restricted for patient
-    for item in menu_items:
-        if medical_prescription and prescribed_tag:
-            item.is_allowed_for_patient = item.dietary_tags.filter(id=prescribed_tag.id).exists()
-        else:
-            item.is_allowed_for_patient = True
+    # Get related items from the same category
+    related_items = MenuItem.objects.filter(
+        category=menu_item.category,
+        is_available=True
+    ).exclude(id=item_id)[:4]
     
-    # Get user's cart count
-    cart_count = 0
+    # Get recommendations
+    recommendations = None
     if request.user.is_authenticated:
-        try:
-            cart = Cart.objects.get(user=user)
-            cart_count = CartItem.objects.filter(cart=cart).aggregate(
-                total=Count('quantity'))['total'] or 0
-        except Cart.DoesNotExist:
-            cart_count = 0
+        recommendations = get_recommendations(request.user, limit=4)
     
-    context = {
-        'medical_prescription': medical_prescription,
-        'matching_meals': matching_meals,
-        'menu_items': menu_items,
-        'cart_count': cart_count,
-        'has_restriction': medical_prescription is not None,
+    # Get review statistics (use cached values from model)
+    from reviews.models import Review
+    # Use cached average_rating and total_reviews from MenuItem
+    # But also get detailed stats for display
+    review_stats = {
+        'avg_rating': float(menu_item.average_rating),
+        'total_reviews': menu_item.total_reviews,
+        'rating_distribution': Review.objects.filter(
+            menu_item=menu_item,
+            is_approved=True
+        ).values('rating').annotate(count=Count('id')).order_by('-rating')
     }
     
-    return render(request, 'menu/patient_menu_guide.html', context)
-
-
-def meal_ordering_guide(request):
-    """
-    User-friendly guide for patients on how to order meals
-    Includes step-by-step instructions and FAQs
-    """
-    return render(request, 'menu/meal_ordering_guide.html')
+    # Get recent approved reviews for preview
+    recent_reviews = Review.objects.filter(
+        menu_item=menu_item,
+        is_approved=True
+    ).select_related('user').order_by('-created_at', '-is_verified_purchase')[:5]
+    
+    context = {
+        'menu_item': menu_item,
+        'related_items': related_items,
+        'recommendations': recommendations,
+        'review_stats': review_stats,
+        'recent_reviews': recent_reviews,
+    }
+    return render(request, 'menu/menu_detail.html', context)
 
 
 

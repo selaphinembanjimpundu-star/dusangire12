@@ -4,5 +4,6 @@ from . import views
 app_name = 'patients'
 
 urlpatterns = [
-    path('dashboard/', views.patient_dashboard, name='dashboard'),
+    path('', views.patient_portal, name='portal'),  # Main unified portal
+    path('dashboard/', views.patient_dashboard, name='dashboard'),  # Legacy redirect
 ]
