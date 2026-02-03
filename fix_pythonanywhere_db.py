@@ -9,7 +9,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dusangire.settings')
 django.setup()
 
-from orders.models import Order, DeliveryAddress
+from orders.models import Order
+from delivery.models import DeliveryAddress
 
 print("=" * 60)
 print("PythonAnywhere Database Fix - Remove Invalid Orders")
