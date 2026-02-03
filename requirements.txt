@@ -1,37 +1,31 @@
 # Core Django Framework
-Django==5.2.8
+Django>=5.0.0
+python-decouple>=3.8
+django-environ>=0.11.0
 
-# Image Processing
-Pillow==10.2.0
+# Frontend & UI
+Pillow>=10.0.0
+django-crispy-forms>=2.0
+crispy-bootstrap5>=0.7
+whitenoise>=6.6.0
 
-# Forms & Frontend
-django-crispy-forms==2.1
-crispy-bootstrap5==0.7
+# Web Server & Deployment
+gunicorn>=21.2.0
+requests>=2.31.0
 
-# Configuration Management
-python-decouple==3.8
-django-environ==0.11.2
+# APIs & REST Framework
+djangorestframework>=3.14.0
 
-# Static Files & Serving
-whitenoise==6.6.0
-gunicorn==21.2.0
+# Authentication & Authorization
+django-allauth>=0.57.0
+google-auth-oauthlib>=1.1.0
+google-auth>=2.25.0
 
-# HTTP Requests
-requests==2.31.0
+# CORS Support
+django-cors-headers>=4.3.1
 
-# REST API Framework
-djangorestframework==3.14.0
-
-# Authentication & User Management
-django-allauth==0.57.0
-
-# CORS Handling
-django-cors-headers==4.3.1
-
-# Real-time WebSocket Support
-channels==4.0.0
-daphne==4.0.0
-channels-redis==4.1.0
-
-# Redis Cache Backend
-redis==5.0.1
+# TODO: WebSocket Real-Time Features (Phase 5)
+# channels>=4.0.0
+# daphne>=4.0.0
+# channels-redis>=4.0.0
+# redis>=4.0.0
