@@ -84,13 +84,28 @@ pip install --no-cache-dir \
 ```bash
 cd ~/dusangire12
 
-# If you get foreign key constraint error during migrate:
-# This fixes orders with invalid delivery addresses
+# IMPORTANT: If you get an IntegrityError about invalid delivery addresses:
+# 1. Run the fix script FIRST before migrations
 python fix_pythonanywhere_db.py
 
 # Then run migrations
 python manage.py migrate
+
+# Finally collect static files
 python manage.py collectstatic --noinput
+```
+
+**If you get IntegrityError during migrations:**
+```bash
+# The error looks like:
+# django.db.utils.IntegrityError: The row in table 'orders_order' with primary key '1' 
+# has an invalid foreign key: orders_order.delivery_address_id contains a value 'ward 3'
+
+# FIX: Run this to remove invalid orders
+python fix_pythonanywhere_db.py
+
+# Then retry migration
+python manage.py migrate
 ```
 
 ### Step 5: Reload Web App
@@ -135,7 +150,32 @@ These are required for the web app to function:
 
 ## Troubleshooting
 
-### Still Getting Quota Error After Installing Minimal?
+### IntegrityError: Invalid Foreign Key During Migration
+**Problem:** Migration fails with error about 'ward 3' not found
+```
+django.db.utils.IntegrityError: The row in table 'orders_order' with primary key '1' 
+has an invalid foreign key: orders_order.delivery_address_id contains a value 'ward 3' 
+that does not have a corresponding value in delivery_deliveryaddress.id.
+```
+
+**Solution:** Run database fix before migrations
+```bash
+cd ~/dusangire12
+
+# 1. Fix database constraint issues
+python fix_pythonanywhere_db.py
+
+# 2. Then run migrations
+python manage.py migrate
+
+# 3. Collect static
+python manage.py collectstatic --noinput
+```
+
+Or use the automated deployment script:
+```bash
+bash pythonanywhere_deploy.sh
+```
 
 **The venv directory is taking too much space.** Follow the aggressive cleanup:
 
