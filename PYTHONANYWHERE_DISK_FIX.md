@@ -83,6 +83,12 @@ pip install --no-cache-dir \
 ### Step 4: Run Migrations and Collect Static
 ```bash
 cd ~/dusangire12
+
+# If you get foreign key constraint error during migrate:
+# This fixes orders with invalid delivery addresses
+python fix_pythonanywhere_db.py
+
+# Then run migrations
 python manage.py migrate
 python manage.py collectstatic --noinput
 ```
